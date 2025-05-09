@@ -1,0 +1,119 @@
+# Use the official image for ROS2 Jazzy under Ubuntu 24.04
+ARG BASE_IMAGE=osrf/ros:jazzy-desktop-full-noble
+
+FROM ${BASE_IMAGE}
+
+##############################################################################
+# 1) Base Environment
+##############################################################################
+ARG TZ=Europe/Berlin
+ENV TZ=${TZ}
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
+
+##############################################################################
+# 2) Install Base Apt Dependencies
+##############################################################################
+RUN apt-get update && apt-get install -y \
+    tmux \
+    python3-pip \
+    python3-venv \
+    gosu \
+    ssh \
+    curl \
+    sudo \
+    iputils-ping \
+    libyaml-cpp-dev \
+    x11-apps \
+    ros-$ROS_DISTRO-foxglove-bridge \
+    ros-$ROS_DISTRO-topic-tools \
+    ros-$ROS_DISTRO-rmw-cyclonedds-cpp \
+ && rm -rf /var/lib/apt/lists/*
+
+##############################################################################
+# 3) Setup shared directory
+##############################################################################
+RUN groupadd --system shared && usermod -aG shared root
+ENV SHARED_DIR=/shared
+RUN mkdir -p $SHARED_DIR && \
+    chown root:shared $SHARED_DIR && \
+    chmod g+rwXs $SHARED_DIR
+RUN echo 'umask 002' >> /etc/profile.d/umask.sh
+RUN setfacl -d -m g::rwx /shared
+
+##############################################################################
+# 4) Prepare shared ROS2 workspace
+##############################################################################
+RUN mkdir -p /shared/ros2ws
+
+##############################################################################
+# 5) Setup Virtual Python Environment
+##############################################################################
+ENV PYTHON_VENV_PATH=/opt/ros_venv
+RUN python3 -m venv $PYTHON_VENV_PATH --system-site-packages
+ENV PATH="$PYTHON_VENV_PATH/bin:$PATH"
+
+##############################################################################
+# 6) Install Base Pip Dependencies
+##############################################################################
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        PyYAML \
+        catmux
+
+##############################################################################
+# 7) Install User Apt Dependencies
+##############################################################################
+COPY apt-packages.txt /tmp/apt-packages.txt
+RUN if [ -s /tmp/apt-packages.txt ]; then \
+      apt-get update && \
+      xargs -a /tmp/apt-packages.txt apt-get install -y && \
+      rm -rf /var/lib/apt/lists/*; \
+    fi
+
+##############################################################################
+# 8) Install User Pip Dependencies
+##############################################################################
+COPY requirements.txt /tmp/requirements.txt
+RUN if [ -s /tmp/requirements.txt ]; then \
+      pip install --no-cache-dir -r /tmp/requirements.txt; \
+    fi
+
+##############################################################################
+# 9) Environment settings
+##############################################################################
+RUN echo "source ${PYTHON_VENV_PATH}/bin/activate" >> /root/.bashrc
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
+RUN echo '[ -f /shared/ros2ws/install/setup.bash ] && source /shared/ros2ws/install/setup.bash' >> /root/.bashrc
+RUN echo 'alias catmux="tmux -L catmux"' >> /root/.bashrc
+ARG ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
+RUN echo "export ROS_AUTOMATIC_DISCOVERY_RANGE=${ROS_AUTOMATIC_DISCOVERY_RANGE}" >> /root/.bashrc
+ARG RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+RUN echo "export RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION}" >> /root/.bashrc
+ARG ROS_DOMAIN_ID
+RUN echo "export ROS_DOMAIN_ID=${ROS_DOMAIN_ID}" >> /root/.bashrc
+ENV SHELL=/bin/bash
+
+##############################################################################
+# 10) EntryPoint
+##############################################################################
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+##############################################################################
+# 11) Create Non-Root User
+##############################################################################
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+ENV CONTAINER_USERNAME=containeruser
+RUN userdel -r $(id -un 1000) \
+    && groupadd --gid "$USER_GID" "$CONTAINER_USERNAME" \
+    && useradd --uid "$USER_UID" --gid "$USER_GID" -m "$CONTAINER_USERNAME" \
+    && echo "$CONTAINER_USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$CONTAINER_USERNAME \
+    && chmod 0440 /etc/sudoers.d/$CONTAINER_USERNAME \
+    && usermod -aG shared "$CONTAINER_USERNAME" \
+    && cp /root/.bashrc "/home/$CONTAINER_USERNAME/.bashrc" \
+    && chown "$USER_UID:$USER_GID" "/home/$CONTAINER_USERNAME/.bashrc"

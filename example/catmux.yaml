@@ -1,0 +1,13 @@
+---
+parameters:
+  mock_param: default_value
+windows:
+  - name: Turtle
+    layout: even-vertical
+    splits:
+      - commands:
+        - echo "mock_param '${mock_param}'"
+      - commands:
+        - ros2 launch turtle_example_py turtle_example_launch.py
+      - commands:
+        - ros2 run turtlesim turtle_teleop_key

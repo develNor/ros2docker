@@ -1,0 +1,13 @@
+{
+    "core_docker_run_args": [
+        // use settings from local.json
+        "--name", "#container_name",
+        "-v", "#ros2ws_src:/shared/ros2ws/src",
+        "-w", "/shared/ros2ws",
+        // independent standard settings
+        "--user", "#uid:#gid",
+        "--group-add", "shared",
+        "--rm",
+        "-e", "LIBGL_ALWAYS_SOFTWARE=1" // Needed for software rendering of opengl
+    ]
+}
