@@ -32,21 +32,15 @@ RUN apt-get update && apt-get install -y \
     ros-$ROS_DISTRO-rmw-cyclonedds-cpp \
  && rm -rf /var/lib/apt/lists/*
 
-##############################################################################
-# 3) Setup shared directory
-##############################################################################
-RUN groupadd --system shared && usermod -aG shared root
-ENV SHARED_DIR=/shared
-RUN mkdir -p $SHARED_DIR && \
-    chown root:shared $SHARED_DIR && \
-    chmod g+rwXs $SHARED_DIR
-RUN echo 'umask 002' >> /etc/profile.d/umask.sh
-RUN setfacl -d -m g::rwx /shared
-
-##############################################################################
-# 4) Prepare shared ROS2 workspace
-##############################################################################
-RUN mkdir -p /shared/ros2ws
+# ##############################################################################
+# # 3) Setup shared directory
+# ##############################################################################
+# RUN groupadd --system shared && usermod -aG shared root
+# RUN mkdir -p /ros2ws && \
+#     chown root:shared /ros2ws && \
+#     chmod g+rwXs /ros2ws
+# RUN echo 'umask 002' >> /etc/profile.d/umask.sh
+# RUN setfacl -d -m g::rwx /ros2ws
 
 ##############################################################################
 # 5) Setup Virtual Python Environment
@@ -86,7 +80,8 @@ RUN if [ -n "${PIP_PACKAGES}" ]; then \
 ##############################################################################
 RUN echo "source ${PYTHON_VENV_PATH}/bin/activate" >> /root/.bashrc
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
-RUN echo '[ -f /shared/ros2ws/install/setup.bash ] && source /shared/ros2ws/install/setup.bash' >> /root/.bashrc
+# RUN echo '[ -f /shared/ros2ws/install/setup.bash ] && source /shared/ros2ws/install/setup.bash' >> /root/.bashrc
+RUN echo '[ -f /ros2ws/install/setup.bash ] && source /ros2ws/install/setup.bash' >> /root/.bashrc
 RUN echo 'alias catmux="tmux -L catmux"' >> /root/.bashrc
 ARG ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 RUN echo "export ROS_AUTOMATIC_DISCOVERY_RANGE=${ROS_AUTOMATIC_DISCOVERY_RANGE}" >> /root/.bashrc
@@ -114,6 +109,6 @@ RUN userdel -r $(id -un 1000) \
     && useradd --uid "$USER_UID" --gid "$USER_GID" -m "$CONTAINER_USERNAME" \
     && echo "$CONTAINER_USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$CONTAINER_USERNAME \
     && chmod 0440 /etc/sudoers.d/$CONTAINER_USERNAME \
-    && usermod -aG shared "$CONTAINER_USERNAME" \
     && cp /root/.bashrc "/home/$CONTAINER_USERNAME/.bashrc" \
     && chown "$USER_UID:$USER_GID" "/home/$CONTAINER_USERNAME/.bashrc"
+    # && usermod -aG shared "$CONTAINER_USERNAME" \

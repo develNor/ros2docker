@@ -6,8 +6,8 @@
         "-w", "/ws",
         // independent standard settings
         "--user", "#uid:#gid",
-        "--group-add", "shared",
         "--rm",
         "-e", "LIBGL_ALWAYS_SOFTWARE=1" // Needed for software rendering of opengl
     ]
 }
+        //"--group-add", "shared",
