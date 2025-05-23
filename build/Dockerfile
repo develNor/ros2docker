@@ -64,21 +64,21 @@ RUN pip install --no-cache-dir --upgrade pip && \
         catmux
 
 ##############################################################################
-# 7) Install User Apt Dependencies
+# 7) Install user-specified APT dependencies
 ##############################################################################
-COPY apt-packages.txt /tmp/apt-packages.txt
-RUN if [ -s /tmp/apt-packages.txt ]; then \
-      apt-get update && \
-      xargs -a /tmp/apt-packages.txt apt-get install -y && \
-      rm -rf /var/lib/apt/lists/*; \
+ARG APT_PACKAGES=""
+RUN if [ -n "${APT_PACKAGES}" ]; then \
+        apt-get update && \
+        apt-get install -y ${APT_PACKAGES} && \
+        rm -rf /var/lib/apt/lists/*; \
     fi
 
 ##############################################################################
-# 8) Install User Pip Dependencies
+# 8) Install user-specified Python packages
 ##############################################################################
-COPY requirements.txt /tmp/requirements.txt
-RUN if [ -s /tmp/requirements.txt ]; then \
-      pip install --no-cache-dir -r /tmp/requirements.txt; \
+ARG PIP_PACKAGES=""
+RUN if [ -n "${PIP_PACKAGES}" ]; then \
+        pip install --no-cache-dir ${PIP_PACKAGES}; \
     fi
 
 ##############################################################################

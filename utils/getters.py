@@ -3,9 +3,9 @@ import sys
 import json
 import json
 import os
-import shlex
+import warnings
+from pathlib import Path
 from typing import List, Sequence
-
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 project_dir = os.path.dirname(script_dir)
@@ -14,22 +14,33 @@ sys.path.append(project_dir)
 from utils.files import *
 
 def get_local_config():
-    return json_to_dict(f"{project_dir}/config/local.json")
+    project_dir = Path(__file__).resolve().parent.parent
+    fallback_config = project_dir / "example" / "config.json"
+    local_config = project_dir.parent / "config.json"
+
+    if local_config.is_file():
+        return json_to_dict(str(local_config))
+    else:
+        warnings.warn(f"Local config not found at {local_config}, using fallback: {fallback_config}")
+        return json_to_dict(str(fallback_config))
 
 def get_core_docker_run_args():
     local_config = get_local_config()
 
-    template_file_path = f"{project_dir}/config/core_docker_run_args.json.template"
+    template_file_path = f"{project_dir}/utils/core_docker_run_args.json.template"
 
-    ros2ws_src = local_config['ros2ws_src']
-    if not os.path.isabs(ros2ws_src):
-        ros2ws_src = os.path.abspath(os.path.join(project_dir, ros2ws_src))
+    ws_host = os.path.abspath(os.path.join(project_dir, "../ws"))
+    if not os.path.exists(ws_host):
+        warnings.warn(f"Workspace directory not found at {ws_host}, using example directory")
+        ws_host = os.path.abspath(os.path.join(project_dir, "./example/ws"))
+    
+    warnings.warn(f"Workspace directory is {ws_host}")
 
     substitutions = {
         "#uid": str(os.getuid()),
         "#gid": str(os.getgid()),
         "#container_name": local_config['container_name'],
-        "#ros2ws_src": ros2ws_src
+        "#ws": ws_host
     }
 
     processed_content = process_template(template_file_path, substitutions)
@@ -80,18 +91,7 @@ def get_cli_args() -> Sequence[str]:
     local_config = get_local_config()
     run_type = local_config.get("run_type", "bash")
 
-    if run_type == "catmux":
-        catmux_file = local_config["catmux_file"]
-        if not os.path.isabs(catmux_file):
-            catmux_file = os.path.abspath(os.path.join(project_dir, catmux_file))
-
-        return [
-            "-it",
-            "-v",
-            f"{catmux_file}:/shared/catmux.yaml",
-        ]
-
-    if run_type == "bash":
+    if run_type == "bash" or run_type == "catmux":
         return ["-it"]
 
     if run_type == "up":
@@ -103,8 +103,10 @@ def _build_catmux_run_cmd() -> List[str]:
     """
     Create the long `/bin/bash -c "catmux_create_session …"` sequence.
     """
+    local_config = get_local_config()
+    catmux_file = local_config["catmux_file"]
     # inner command as list → join at the end so quoting stays trivial
-    inner_cmd = ["catmux_create_session", "/shared/catmux.yaml", "--session_name", get_container_name()]
+    inner_cmd = ["catmux_create_session", catmux_file, "--session_name", get_container_name()]
 
     # append any --overwrite k=v pairs
     for k, v in (get_local_config().get("catmux_params") or {}).items():

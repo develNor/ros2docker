@@ -3,7 +3,8 @@
 import os
 import sys
 
-project_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_dir = os.path.dirname(script_dir)
 sys.path.append(project_dir)
 
 from utils.files import *
@@ -11,13 +12,9 @@ from utils.getters import *
 
 
 def main():
-    # Get the directory of the project relative to this script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_dir = os.path.dirname(script_dir)
-
     # Save the contents of the vsc-template-files
-    devcontainer_template_file = os.path.join(project_dir, "config/devcontainer.json.template")
-    devcontainer_file = os.path.join(project_dir, ".devcontainer/devcontainer.json")
+    devcontainer_template_file = os.path.join(script_dir, "devcontainer.json.template")
+    devcontainer_file = os.path.join(script_dir, "devcontainer.json")
 
     substitutions = { 
         "#docker_run_args": str(get_docker_run_args()).replace("'", '"')[1:-1], 

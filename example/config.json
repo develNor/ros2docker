@@ -4,7 +4,6 @@
   // ──────────────────────────
   "image_name":     "example_ros2image",      // Docker image to build
   "container_name": "example_ros2container",  // Name of the running container
-  "ros2ws_src":     "./example/ros2ws_src",   // Path to ROS 2 workspace (src)
 
   // ──────────────────────────
   // HOW TO RUN THE CONTAINER
@@ -16,7 +15,7 @@
   "run_type": "catmux",
 
   // catmux-specific options
-  "catmux_file":   "./example/catmux.yaml",   // Required when run_type = "catmux"
+  "catmux_file":   "/ws/catmux.yaml",         // Required when run_type = "catmux"
   "catmux_params": {                          // Optional runtime parameters
     "mock_param": "mock_value"
   },
@@ -40,6 +39,8 @@
   // Build-time arguments — defaults shown; override if necessary
   // "build_args": {
   //   "BASE_IMAGE":                    "osrf/ros:jazzy-desktop-full-noble",
+  //   "APT_PACKAGES":                  "git wget curl",
+  //   "PIP_PACKAGES":                  "pytest pytest-cov",
   //   "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
   //   "RMW_IMPLEMENTATION":            "rmw_cyclonedds_cpp",
   //   "ROS_DOMAIN_ID":                 0
