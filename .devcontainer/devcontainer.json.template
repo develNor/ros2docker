@@ -4,7 +4,7 @@
 	"initializeCommand": "./build.py",
 	"postCreateCommand": "/entrypoint.sh",
 	"workspaceMount": "",
-	"workspaceFolder": "/shared/ros2ws",
+	"workspaceFolder": "/ws",
 	"runArgs": [
 		#docker_run_args,
 	],
