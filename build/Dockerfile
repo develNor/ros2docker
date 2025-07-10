@@ -92,14 +92,23 @@ RUN echo "export ROS_DOMAIN_ID=${ROS_DOMAIN_ID}" >> /root/.bashrc
 ENV SHELL=/bin/bash
 
 ##############################################################################
-# 10) EntryPoint
+# 10) Hotfix: Replace deprecated rosdep version shipped with ROS 2 Jazzy image
+##############################################################################
+# The base image includes an outdated rosdep installed via APT,
+# which uses the deprecated 'pkg_resources' API and causes a DeprecationWarning.
+# To avoid this warning, we remove the APT version and install the latest rosdep via pip.
+RUN apt-get remove -y python3-rosdep && \
+    pip install --no-cache-dir --upgrade rosdep
+
+##############################################################################
+# 11) EntryPoint
 ##############################################################################
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 ##############################################################################
-# 11) Create Non-Root User
+# 12) Create Non-Root User
 ##############################################################################
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID

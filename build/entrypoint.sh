@@ -31,6 +31,7 @@ fi
 
 if [[ "${BUILD_ROS2WS:-0}" == "1" ]]; then
     echo "Building ROS 2 workspace..."
+    source /opt/ros/jazzy/setup.bash
     pushd /ros2ws
     colcon build
     popd
