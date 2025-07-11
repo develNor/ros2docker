@@ -24,7 +24,10 @@ RUN apt-get update && apt-get install -y \
     ssh \
     curl \
     sudo \
-    iputils-ping \
+    vim \
+    git \
+    wget \
+    build-essential \
     libyaml-cpp-dev \
     x11-apps \
     ros-$ROS_DISTRO-foxglove-bridge \
@@ -58,7 +61,16 @@ RUN pip install --no-cache-dir --upgrade pip && \
         catmux
 
 ##############################################################################
-# 7) Install user-specified APT dependencies
+# 7) Hotfix: Replace deprecated rosdep version shipped with ROS 2 Jazzy image
+##############################################################################
+# The base image includes an outdated rosdep installed via APT,
+# which uses the deprecated 'pkg_resources' API and causes a DeprecationWarning.
+# To avoid this warning, we remove the APT version and install the latest rosdep via pip.
+RUN apt-get remove -y python3-rosdep && \
+    pip install --no-cache-dir --upgrade rosdep
+
+##############################################################################
+# 8) Install user-specified APT dependencies
 ##############################################################################
 ARG APT_PACKAGES=""
 RUN if [ -n "${APT_PACKAGES}" ]; then \
@@ -68,7 +80,7 @@ RUN if [ -n "${APT_PACKAGES}" ]; then \
     fi
 
 ##############################################################################
-# 8) Install user-specified Python packages
+# 9) Install user-specified Python packages
 ##############################################################################
 ARG PIP_PACKAGES=""
 RUN if [ -n "${PIP_PACKAGES}" ]; then \
@@ -76,7 +88,7 @@ RUN if [ -n "${PIP_PACKAGES}" ]; then \
     fi
 
 ##############################################################################
-# 9) Environment settings
+# 10) Environment settings
 ##############################################################################
 RUN echo "source ${PYTHON_VENV_PATH}/bin/activate" >> /root/.bashrc
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
@@ -87,15 +99,6 @@ ENV ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ENV SHELL=/bin/bash
 SHELL ["/bin/bash", "-c"]
-
-##############################################################################
-# 10) Hotfix: Replace deprecated rosdep version shipped with ROS 2 Jazzy image
-##############################################################################
-# The base image includes an outdated rosdep installed via APT,
-# which uses the deprecated 'pkg_resources' API and causes a DeprecationWarning.
-# To avoid this warning, we remove the APT version and install the latest rosdep via pip.
-RUN apt-get remove -y python3-rosdep && \
-    pip install --no-cache-dir --upgrade rosdep
 
 ##############################################################################
 # 11) EntryPoint

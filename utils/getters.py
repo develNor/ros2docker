@@ -100,18 +100,18 @@ def get_cli_args(manual_config=None) -> Sequence[str]:
 
 def _build_catmux_run_cmd(manual_config=None) -> List[str]:
     """
-    Create the long `/bin/bash -c "catmux_create_session …"` sequence.
+    Create the "catmux_create_session …" sequence.
     """
     local_config = get_local_config(manual_config)
     catmux_file = local_config["catmux_file"]
     # inner command as list → join at the end so quoting stays trivial
-    inner_cmd = ["catmux_create_session", catmux_file, "--session_name", get_container_name()]
+    command = ["catmux_create_session", catmux_file, "--session_name", get_container_name()]
 
     # append any --overwrite k=v pairs
     for k, v in (get_local_config(manual_config).get("catmux_params") or {}).items():
-        inner_cmd.extend(["--overwrite", f"{k}={v}"])
+        command.extend(["--overwrite", f"{k}={v}"])
 
-    return [" ".join(inner_cmd)]
+    return command
 
 def get_run_cmd(manual_config=None) -> Sequence[str]:
     """
