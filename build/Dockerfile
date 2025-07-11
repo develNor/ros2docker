@@ -90,6 +90,7 @@ RUN echo "export RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION}" >> /root/.bashrc
 ARG ROS_DOMAIN_ID
 RUN echo "export ROS_DOMAIN_ID=${ROS_DOMAIN_ID}" >> /root/.bashrc
 ENV SHELL=/bin/bash
+SHELL ["/bin/bash", "-c"]
 
 ##############################################################################
 # 10) Hotfix: Replace deprecated rosdep version shipped with ROS 2 Jazzy image

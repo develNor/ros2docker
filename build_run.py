@@ -8,35 +8,34 @@ import sys
 project_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(project_dir)
 
-from utils.getters import get_docker_run_args, get_cli_args, get_image_name, get_run_cmd
+from utils.getters import get_docker_run_args, get_cli_args, get_image_name, get_run_cmd, get_config_dir
 from build import main as build
 
 
 
-def run(run_command=None):
-    run_command = run_command or get_run_cmd()
+def run(config=None, run_command=None):
+    run_command = run_command or get_run_cmd(config)
 
     docker_command = [
         'docker',
         'run',
-        *get_docker_run_args(),
-        *get_cli_args(),
-        get_image_name(),
+        *get_docker_run_args(config),
+        *get_cli_args(config),
+        get_image_name(config),
         *run_command
     ]
 
     print("Executing Docker command:", ' '.join(docker_command))
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    parent_dir = os.path.dirname(script_dir)
-    subprocess.run(docker_command, check=True, cwd=parent_dir)
+    subprocess.run(docker_command, check=True, cwd=get_config_dir(config))
 
-def main(**run_args):
-    build()
-    run(**run_args)
+def main(config=None, run_command=None):
+    build(config)
+    run(config, run_command)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run a Docker container with specified arguments.")
     parser.add_argument('-c', '--run_command', help='Command to run in the Docker container')
+    parser.add_argument('-f', '--config_file')
     args = parser.parse_args()
 
     # Use **vars(args) to convert argparse.Namespace to a dict, filtering out None values

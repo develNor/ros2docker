@@ -2,8 +2,6 @@
     "core_docker_run_args": [
         // use settings from local.json
         "--name", "#container_name",
-        "-v", "#ws:/ws",
-        "-w", "/ws",
         // independent standard settings
         "--user", "#uid:#gid",
         "--rm",
