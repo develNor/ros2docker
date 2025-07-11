@@ -83,12 +83,8 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
 # RUN echo '[ -f /shared/ros2ws/install/setup.bash ] && source /shared/ros2ws/install/setup.bash' >> /root/.bashrc
 RUN echo '[ -f /ros2ws/install/setup.bash ] && source /ros2ws/install/setup.bash' >> /root/.bashrc
 RUN echo 'alias catmux="tmux -L catmux"' >> /root/.bashrc
-ARG ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
-RUN echo "export ROS_AUTOMATIC_DISCOVERY_RANGE=${ROS_AUTOMATIC_DISCOVERY_RANGE}" >> /root/.bashrc
-ARG RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-RUN echo "export RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION}" >> /root/.bashrc
-ARG ROS_DOMAIN_ID
-RUN echo "export ROS_DOMAIN_ID=${ROS_DOMAIN_ID}" >> /root/.bashrc
+ENV ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 ENV SHELL=/bin/bash
 SHELL ["/bin/bash", "-c"]
 

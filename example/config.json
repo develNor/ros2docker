@@ -31,6 +31,9 @@
 
   // Extra docker run arguments (add as needed)
   "run_args": [
+    // "-e", "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST", // (default)
+    // "-e", "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp", // (default)
+    // "-e", "ROS_DOMAIN_ID=0", // (default)
     "-e", "BUILD_ROS2WS=1",
     "-e", "CHECK_ROS2WS_DEPENDENCIES=1"
   ]
@@ -49,8 +52,5 @@
   //   "BASE_IMAGE":                    "osrf/ros:jazzy-desktop-full-noble",
   //   "APT_PACKAGES":                  "git wget curl",
   //   "PIP_PACKAGES":                  "pytest pytest-cov",
-  //   "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
-  //   "RMW_IMPLEMENTATION":            "rmw_cyclonedds_cpp",
-  //   "ROS_DOMAIN_ID":                 0
   // }
 }
