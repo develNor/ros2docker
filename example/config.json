@@ -1,0 +1,56 @@
+{
+  // ──────────────────────────
+  // RUN SETTINGS
+  // ──────────────────────────
+  "container_name": "example_ros2container",  // Name of the running container [Required]
+
+  // ──────────────────────────
+  // HOW TO RUN THE CONTAINER
+  // Choose ONE of:
+  //   • "bash"     – interactive shell (default)
+  //   • "up"       – docker-compose up
+  //   • "catmux"   – start a catmux session
+  //   • "commmand" – set custom command to run
+  // ──────────────────────────
+  "run_type": "catmux",
+
+  // catmux-specific options
+  "catmux_file":   "/ws/catmux.yaml",         // Required when run_type = "catmux"
+  "catmux_params": {                          // Optional runtime parameters
+    "mock_param": "mock_value"
+  },
+
+  // command-specific options
+  // "command": "ros2 topic echo /chatter", // Required when run_type = "command". String or list of strings supported.
+
+  // mounts the ws directory into the container. Optionally this ws also contains a ros2src.
+  "mount_ws": true,
+
+  // Enable X11/Wayland GUI forwarding
+  "enable_gui_forwarding": true,
+
+  // Extra docker run arguments (add as needed)
+  "run_args": [
+    // "-e", "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST", // (default)
+    // "-e", "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp", // (default)
+    // "-e", "ROS_DOMAIN_ID=0", // (default)
+    "-e", "BUILD_ROS2WS=1",
+    "-e", "CHECK_ROS2WS_DEPENDENCIES=1"
+  ]
+
+  // Forward your local SSH agent into the container
+  // "forward_ssh_agent": true,
+
+
+  // ─────────────────────────────────────────────
+  // BUILD Settings (all optional; defaults shown)
+  // ─────────────────────────────────────────────
+
+  // "image_name":     "ros2docker",     // Docker image to build
+
+  // "build_args": {
+  //   "BASE_IMAGE":                    "osrf/ros:jazzy-desktop-full-noble",
+  //   "APT_PACKAGES":                  "git wget curl",
+  //   "PIP_PACKAGES":                  "pytest pytest-cov",
+  // }
+}

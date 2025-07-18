@@ -1,0 +1,11 @@
+{
+    "core_docker_run_args": [
+        // use settings from local.json
+        "--name", "#container_name",
+        // independent standard settings
+        "--user", "#uid:#gid",
+        "--rm",
+        "-e", "LIBGL_ALWAYS_SOFTWARE=1" // Needed for software rendering of opengl
+    ]
+}
+        //"--group-add", "shared",
