@@ -99,7 +99,7 @@ def get_container_name(manual_config=None, override=None) -> str:
     return get_local_config(manual_config, override)["container_name"]
 
 def get_docker_build_args(manual_config=None, override=None) -> List[str]:
-    build_args = ["--build-arg", "USER_UID="+str(os.getuid()), "--build-arg", "USER_UID="+str(os.getgid())]
+    build_args = ["--build-arg", "USER_UID="+str(os.getuid()), "--build-arg", "USER_GID="+str(os.getgid())]
     for key, value in get_local_config(manual_config, override).get("build_args", {}).items():
         build_args.append("--build-arg")
         build_args.append(f"{key}={value}")
