@@ -4,7 +4,7 @@ set -x
 
 echo "**** Entrypoint script starting ****"
 
-source /opt/ros/jazzy/setup.bash
+source /opt/ros/${ROS_DISTRO}/setup.bash
 
 if [ -d "/ws/ros2src" ]; then
     echo "ROS 2 workspace found at /ws/ros2src"
