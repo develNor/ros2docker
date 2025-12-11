@@ -16,6 +16,7 @@ if [ -d "/ws/ros2src" ]; then
 
     if [[ "${CHECK_ROS2WS_DEPENDENCIES:-0}" == "1" ]]; then
         echo "Checking for missing dependencies..."
+        # sudo /opt/ros_venv/bin/pip install --upgrade rosdep # not sure if needed
         rosdep update --rosdistro ${ROS_DISTRO}
         output=$(rosdep install --from-paths /ros2ws/src --ignore-src --simulate 2>&1)
         if [ -z "$output" ]; then
