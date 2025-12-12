@@ -17,12 +17,10 @@ if [ -d "/ws/ros2src" ]; then
     if [[ "${CHECK_ROS2WS_DEPENDENCIES:-0}" == "1" ]]; then
         echo "Checking for missing dependencies..."
         rosdep update --rosdistro ${ROS_DISTRO}
-        output=$(rosdep install --from-paths /ros2ws/src --ignore-src --simulate 2>&1)
-        if [ -z "$output" ]; then
+        if rosdep install --from-paths /ros2_ws/src --ignore-src --simulate; then
             echo "All dependencies are satisfied."
         else
-            echo "Dependencies are missing. Add these installations to the Dockerfile:"
-            echo "$output"
+            echo "Dependencies are missing. See rosdep output above."
             exit 1
         fi
     else
