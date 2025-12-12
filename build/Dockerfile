@@ -27,13 +27,36 @@ RUN apt-get update && apt-get install -y \
     vim \
     git \
     wget \
+    unzip \
+    ca-certificates \
     build-essential \
     libyaml-cpp-dev \
     x11-apps \
     ros-$ROS_DISTRO-foxglove-bridge \
     ros-$ROS_DISTRO-topic-tools \
     ros-$ROS_DISTRO-rmw-cyclonedds-cpp \
+    ros-$ROS_DISTRO-rmw-zenoh-cpp \
  && rm -rf /var/lib/apt/lists/*
+
+# install zenoh and zenoh-plugin-ros2dds
+ARG ZENOH_VERSION=1.7.0
+ARG ZENOH_ROS2DDS_VERSION=${ZENOH_VERSION}
+ENV ZENOH_PLATFORM=x86_64-unknown-linux-gnu
+# Zenoh router
+# - see: https://download.eclipse.org/zenoh/zenoh/latest/
+RUN mkdir -p /opt/zenoh \
+    && wget -qO /tmp/zenoh.zip \
+         "https://download.eclipse.org/zenoh/zenoh/${ZENOH_VERSION}/zenoh-${ZENOH_VERSION}-${ZENOH_PLATFORM}-standalone.zip" \
+    && unzip -q /tmp/zenoh.zip -d /opt/zenoh \
+    && rm /tmp/zenoh.zip
+# ROS2 bridge plugin
+# - see: https://download.eclipse.org/zenoh/zenoh-plugin-ros2dds/latest/
+RUN mkdir -p /opt/zenoh/lib \
+    && wget -qO /tmp/zenoh-plugin-ros2dds.zip \
+         "https://download.eclipse.org/zenoh/zenoh-plugin-ros2dds/${ZENOH_ROS2DDS_VERSION}/zenoh-plugin-ros2dds-${ZENOH_ROS2DDS_VERSION}-${ZENOH_PLATFORM}-standalone.zip" \
+    && unzip -q /tmp/zenoh-plugin-ros2dds.zip -d /opt/zenoh \
+    && rm /tmp/zenoh-plugin-ros2dds.zip
+ENV PATH="/opt/zenoh:${PATH}"
 
 # ##############################################################################
 # # 3) Setup shared directory
