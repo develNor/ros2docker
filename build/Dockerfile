@@ -33,9 +33,12 @@ RUN apt-get update && apt-get install -y \
     libyaml-cpp-dev \
     x11-apps \
     ros-$ROS_DISTRO-foxglove-bridge \
+    ros-$ROS_DISTRO-foxglove-msgs \
     ros-$ROS_DISTRO-topic-tools \
     ros-$ROS_DISTRO-rmw-cyclonedds-cpp \
     ros-$ROS_DISTRO-rmw-zenoh-cpp \
+    ros-$ROS_DISTRO-ffmpeg-image-transport \
+    ros-$ROS_DISTRO-foxglove-compressed-video-transport \
  && rm -rf /var/lib/apt/lists/*
 
 # install zenoh and zenoh-plugin-ros2dds
