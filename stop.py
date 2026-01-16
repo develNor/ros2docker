@@ -5,7 +5,7 @@ import os
 import sys
 import subprocess
 
-project_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+project_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(project_dir)
 
 from utils.getters import *
