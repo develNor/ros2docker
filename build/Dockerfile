@@ -61,6 +61,15 @@ RUN mkdir -p /opt/zenoh/lib \
     && rm /tmp/zenoh-plugin-ros2dds.zip
 ENV PATH="/opt/zenoh:${PATH}"
 
+# iperf3 3.20 with --json-stream which the packaged version for ubuntu 24.04 does not have
+RUN wget https://downloads.es.net/pub/iperf/iperf-3.20.tar.gz -O /tmp/iperf-3.20.tar.gz \
+    && tar -xzf /tmp/iperf-3.20.tar.gz -C /tmp \
+    && cd /tmp/iperf-3.20 \
+    && ./configure \
+    && make \
+    && make install \
+    && ldconfig
+
 # ##############################################################################
 # # 3) Setup shared directory
 # ##############################################################################
@@ -77,6 +86,9 @@ ENV PATH="/opt/zenoh:${PATH}"
 ENV PYTHON_VENV_PATH=/opt/ros_venv
 RUN python3 -m venv $PYTHON_VENV_PATH --system-site-packages
 ENV PATH="$PYTHON_VENV_PATH/bin:$PATH"
+# set PYTHONPATH to include the venv site-packages. Python version depends on the base image.
+ENV PY_VER=3.12
+ENV PYTHONPATH="${PYTHON_VENV_PATH}/lib/python${PY_VER}/site-packages:${PYTHONPATH}"
 
 ##############################################################################
 # 6) Install Base Pip Dependencies
