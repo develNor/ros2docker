@@ -70,6 +70,10 @@ RUN wget https://downloads.es.net/pub/iperf/iperf-3.20.tar.gz -O /tmp/iperf-3.20
     && make install \
     && ldconfig
 
+# mcap CLI for fast filtering of rosbags
+RUN curl -L https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.61/mcap-linux-amd64 -o /usr/local/bin/mcap \
+    && chmod +x /usr/local/bin/mcap
+
 # ##############################################################################
 # # 3) Setup shared directory
 # ##############################################################################
