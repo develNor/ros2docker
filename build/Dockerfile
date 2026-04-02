@@ -41,7 +41,17 @@ RUN apt-get update && apt-get install -y \
     ros-$ROS_DISTRO-foxglove-compressed-video-transport \
     ros-$ROS_DISTRO-gps-msgs \
  && rm -rf /var/lib/apt/lists/*
-    # ros-$ROS_DISTRO-novatel-oem7-msgs \
+
+# novatel_oem7_msgs: no binary deb for Kilted yet, build from source
+RUN mkdir -p /tmp/novatel_ws/src \
+    && git clone --depth 1 --branch kilted \
+       https://github.com/novatel/novatel_oem7_driver.git \
+       /tmp/novatel_ws/src/novatel_oem7_driver \
+    && . /opt/ros/${ROS_DISTRO}/setup.sh \
+    && cd /tmp/novatel_ws \
+    && colcon build --packages-select novatel_oem7_msgs \
+       --cmake-args -DCMAKE_INSTALL_PREFIX=/opt/ros/${ROS_DISTRO} \
+    && rm -rf /tmp/novatel_ws
 
 # install zenoh and zenoh-plugin-ros2dds
 ARG ZENOH_VERSION=1.7.0
