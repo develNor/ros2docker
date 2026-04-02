@@ -60,5 +60,8 @@ Examples:
 
     kwargs = {k: v for k, v in vars(args).items() if v is not None}
     if extra_run_args:
-        kwargs['extra_run_args'] = extra_run_args
+        if extra_run_args[0] == '--':
+            extra_run_args = extra_run_args[1:]
+        if extra_run_args:
+            kwargs['extra_run_args'] = extra_run_args
     main(**kwargs)

@@ -1,5 +1,5 @@
 # Use the official image for ROS2 Jazzy under Ubuntu 24.04
-ARG BASE_IMAGE=osrf/ros:jazzy-desktop-full-noble
+ARG BASE_IMAGE=osrf/ros:kilted-desktop-full-noble
 
 FROM ${BASE_IMAGE}
 
@@ -100,7 +100,8 @@ ENV PYTHONPATH="${PYTHON_VENV_PATH}/lib/python${PY_VER}/site-packages:${PYTHONPA
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
         PyYAML \
-        catmux
+        catmux \
+        rosbags
 
 ##############################################################################
 # 7) Hotfix: Replace deprecated rosdep version shipped with ROS 2 Jazzy image

@@ -49,7 +49,7 @@
   // "image_name":     "ros2docker",     // Docker image to build
 
   // "build_args": {
-  //   "BASE_IMAGE":                    "osrf/ros:jazzy-desktop-full-noble",
+  //   "BASE_IMAGE":                    "osrf/ros:kilted-desktop-full-noble",
   //   "APT_PACKAGES":                  "git wget curl",
   //   "PIP_PACKAGES":                  "pytest pytest-cov",
   // }
