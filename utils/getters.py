@@ -103,7 +103,8 @@ def get_local_docker_run_args(manual_config=None, override=None) -> List[str]:
             "-v", f"{ssh_auth_sock}:{ssh_auth_sock}"
         ])
 
-    raw_run_args = get_local_config(manual_config, override).get("run_args", [])
+    local_config = get_local_config(manual_config, override)
+    raw_run_args = local_config.get("run_args", []) + local_config.get("extra_run_args", [])
     project_dir = get_config_dir(manual_config)
 
     i = 0
@@ -124,8 +125,8 @@ def get_local_docker_run_args(manual_config=None, override=None) -> List[str]:
 
     return local_docker_run_args
 
-def get_docker_run_args(manual_config=None, override=None, cli_mount=None) -> List[str]:
-    return get_core_docker_run_args(manual_config, override) + get_local_docker_run_args(manual_config, override) + get_workspace_mount_run_args(manual_config, override, cli_mount)
+def get_docker_run_args(manual_config=None, override=None, cli_mount=None, cli_extra_run_args=None) -> List[str]:
+    return get_core_docker_run_args(manual_config, override) + get_local_docker_run_args(manual_config, override) + get_workspace_mount_run_args(manual_config, override, cli_mount) + (cli_extra_run_args or [])
 
 def get_docker_build_args(manual_config=None, override=None) -> List[str]:
     build_args = ["--build-arg", "USER_UID="+str(os.getuid()), "--build-arg", "USER_GID="+str(os.getgid())]

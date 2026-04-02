@@ -40,6 +40,22 @@ python build_run.py -f /path/to/your/config.json
 
 See `example/config.json` for all available options.
 
+### Extra Docker Run Arguments
+
+Pass additional `docker run` arguments after `--` without modifying the config:
+
+```bash
+# Add a volume mount and env var on top of the config's run_args
+python build_run.py -f ./config.json -- -v /host/data:/data -e MY_VAR=1
+```
+
+You can also use the `extra_run_args` config key (or supply it via `-o` override)
+to append arguments without replacing the base `run_args`:
+
+```bash
+python build_run.py -f ./config.json -o '{"extra_run_args": ["-v", "/host/data:/data"]}'
+```
+
 ## CLI Options
 
 | Option | Description |
@@ -47,6 +63,7 @@ See `example/config.json` for all available options.
 | `-m, --mount PATH` | Mount a directory into `/ws`. Use `.` for current directory |
 | `-f, --config_file PATH` | Path to a `config.json` file |
 | `-o, --override JSON` | JSON string to override config values |
+| `-- ARGS...` | Additional docker run arguments appended after config args |
 
 ## Config File Options
 
@@ -72,6 +89,11 @@ Place a `config.json` in the parent directory of `ros2docker/`, or specify one w
   // Extra docker run arguments
   "run_args": [
     "-e", "ROS_DOMAIN_ID=42"
+  ],
+
+  // Additional docker run arguments (appended to run_args, useful with -o override)
+  "extra_run_args": [
+    "-v", "/host/path:/container/path"
   ],
 
   // Custom image name (default: "ros2docker")
