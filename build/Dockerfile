@@ -39,6 +39,8 @@ RUN apt-get update && apt-get install -y \
     ros-$ROS_DISTRO-rmw-zenoh-cpp \
     ros-$ROS_DISTRO-ffmpeg-image-transport \
     ros-$ROS_DISTRO-foxglove-compressed-video-transport \
+    ros-$ROS_DISTRO-gps-msgs \
+    ros-$ROS_DISTRO-novatel-oem7-msgs \
  && rm -rf /var/lib/apt/lists/*
 
 # install zenoh and zenoh-plugin-ros2dds
