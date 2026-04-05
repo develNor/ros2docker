@@ -50,7 +50,11 @@ RUN mkdir -p /tmp/novatel_ws/src \
     && . /opt/ros/${ROS_DISTRO}/setup.sh \
     && cd /tmp/novatel_ws \
     && colcon build --packages-select novatel_oem7_msgs \
-       --cmake-args -DCMAKE_INSTALL_PREFIX=/opt/ros/${ROS_DISTRO} \
+       --merge-install --install-base /tmp/novatel_ws/install \
+    && for d in include lib share; do \
+         [ -d /tmp/novatel_ws/install/$d ] \
+         && cp -r /tmp/novatel_ws/install/$d/. /opt/ros/${ROS_DISTRO}/$d/; \
+       done \
     && rm -rf /tmp/novatel_ws
 
 # bake_packages: project-specific ROS packages to pre-build into the image.
@@ -60,7 +64,11 @@ RUN if [ -n "$(ls -A /tmp/bake_ws/src/ 2>/dev/null)" ]; then \
         . /opt/ros/${ROS_DISTRO}/setup.sh \
         && cd /tmp/bake_ws \
         && colcon build \
-           --cmake-args -DCMAKE_INSTALL_PREFIX=/opt/ros/${ROS_DISTRO} \
+           --merge-install --install-base /tmp/bake_ws/install \
+        && for d in include lib share; do \
+             [ -d /tmp/bake_ws/install/$d ] \
+             && cp -r /tmp/bake_ws/install/$d/. /opt/ros/${ROS_DISTRO}/$d/; \
+           done \
         && rm -rf /tmp/bake_ws; \
     else \
         rm -rf /tmp/bake_ws; \

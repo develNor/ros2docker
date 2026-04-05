@@ -2,5 +2,6 @@ __pycache__
 config/local.json
 build/apt-packages.txt
 build/requirements.txt
-build/bake_packages/
+build/bake_packages/*
+!build/bake_packages/.gitkeep
 .devcontainer/devcontainer.json

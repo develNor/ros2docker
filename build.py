@@ -31,8 +31,16 @@ def _stage_bake_packages(config_file=None, override=None):
 
 def _cleanup_bake_packages():
     bake_dir = os.path.join(project_dir, 'build', 'bake_packages')
-    if os.path.exists(bake_dir):
-        shutil.rmtree(bake_dir)
+    if not os.path.exists(bake_dir):
+        return
+    for entry in os.listdir(bake_dir):
+        if entry == '.gitkeep':
+            continue
+        path = os.path.join(bake_dir, entry)
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+        else:
+            os.remove(path)
 
 def main(config_file=None, override=None):
     _stage_bake_packages(config_file, override)
