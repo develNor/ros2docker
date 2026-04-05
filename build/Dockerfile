@@ -42,37 +42,29 @@ RUN apt-get update && apt-get install -y \
     ros-$ROS_DISTRO-gps-msgs \
  && rm -rf /var/lib/apt/lists/*
 
+##############################################################################
+# 2b) Custom overlay workspace – packages baked into the image
+#     (third-party source-only packages + project-specific bake_packages)
+#     Workspace chain: /opt/ros/$ROS_DISTRO → /opt/custom_ws/install
+##############################################################################
+ENV CUSTOM_WS=/opt/custom_ws
+
 # novatel_oem7_msgs: no binary deb for Kilted yet, build from source
-RUN mkdir -p /tmp/novatel_ws/src \
+RUN mkdir -p ${CUSTOM_WS}/src \
     && git clone --depth 1 --branch kilted \
        https://github.com/novatel/novatel_oem7_driver.git \
-       /tmp/novatel_ws/src/novatel_oem7_driver \
-    && . /opt/ros/${ROS_DISTRO}/setup.sh \
-    && cd /tmp/novatel_ws \
-    && colcon build --packages-select novatel_oem7_msgs \
-       --merge-install --install-base /tmp/novatel_ws/install \
-    && for d in include lib share; do \
-         [ -d /tmp/novatel_ws/install/$d ] \
-         && cp -r /tmp/novatel_ws/install/$d/. /opt/ros/${ROS_DISTRO}/$d/; \
-       done \
-    && rm -rf /tmp/novatel_ws
+       ${CUSTOM_WS}/src/novatel_oem7_driver
 
-# bake_packages: project-specific ROS packages to pre-build into the image.
-# build.py stages them here from paths listed in config "bake_ros_packages".
-COPY bake_packages/ /tmp/bake_ws/src/
-RUN if [ -n "$(ls -A /tmp/bake_ws/src/ 2>/dev/null)" ]; then \
-        . /opt/ros/${ROS_DISTRO}/setup.sh \
-        && cd /tmp/bake_ws \
-        && colcon build \
-           --merge-install --install-base /tmp/bake_ws/install \
-        && for d in include lib share; do \
-             [ -d /tmp/bake_ws/install/$d ] \
-             && cp -r /tmp/bake_ws/install/$d/. /opt/ros/${ROS_DISTRO}/$d/; \
-           done \
-        && rm -rf /tmp/bake_ws; \
-    else \
-        rm -rf /tmp/bake_ws; \
-    fi
+# bake_packages: project-specific ROS packages staged by build.py
+# from paths listed in config "bake_ros_packages"
+COPY bake_packages/ ${CUSTOM_WS}/src/
+
+RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
+    && cd ${CUSTOM_WS} \
+    && colcon build --merge-install --packages-select novatel_oem7_msgs \
+    && rm -rf ${CUSTOM_WS}/src/novatel_oem7_driver \
+    && colcon build --merge-install \
+    && rm -rf ${CUSTOM_WS}/src ${CUSTOM_WS}/build ${CUSTOM_WS}/log
 
 # install zenoh and zenoh-plugin-ros2dds
 ARG ZENOH_VERSION=1.7.0
@@ -167,8 +159,7 @@ RUN if [ -n "${PIP_PACKAGES}" ]; then \
 # 10) Environment settings
 ##############################################################################
 RUN echo "source ${PYTHON_VENV_PATH}/bin/activate" >> /root/.bashrc
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /root/.bashrc
-# RUN echo '[ -f /shared/ros2ws/install/setup.bash ] && source /shared/ros2ws/install/setup.bash' >> /root/.bashrc
+RUN echo "source ${CUSTOM_WS}/install/setup.bash" >> /root/.bashrc
 RUN echo '[ -f /ros2ws/install/setup.bash ] && source /ros2ws/install/setup.bash' >> /root/.bashrc
 RUN echo 'alias catmux="tmux -L catmux"' >> /root/.bashrc
 ENV ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
