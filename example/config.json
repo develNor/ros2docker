@@ -48,6 +48,11 @@
 
   // "image_name":     "ros2docker",     // Docker image to build
 
+  // ROS packages to pre-build into the Docker image (paths relative to this config file).
+  // These are installed into /opt/ros/$ROS_DISTRO so every container gets them without
+  // needing them in each workspace's ros2src/.
+  // "bake_ros_packages": ["../shared_msgs/com_msgs"],
+
   // "build_args": {
   //   "BASE_IMAGE":                    "osrf/ros:kilted-desktop-full-noble",
   //   "APT_PACKAGES":                  "git wget curl",

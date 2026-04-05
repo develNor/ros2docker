@@ -53,6 +53,19 @@ RUN mkdir -p /tmp/novatel_ws/src \
        --cmake-args -DCMAKE_INSTALL_PREFIX=/opt/ros/${ROS_DISTRO} \
     && rm -rf /tmp/novatel_ws
 
+# bake_packages: project-specific ROS packages to pre-build into the image.
+# build.py stages them here from paths listed in config "bake_ros_packages".
+COPY bake_packages/ /tmp/bake_ws/src/
+RUN if [ -n "$(ls -A /tmp/bake_ws/src/ 2>/dev/null)" ]; then \
+        . /opt/ros/${ROS_DISTRO}/setup.sh \
+        && cd /tmp/bake_ws \
+        && colcon build \
+           --cmake-args -DCMAKE_INSTALL_PREFIX=/opt/ros/${ROS_DISTRO} \
+        && rm -rf /tmp/bake_ws; \
+    else \
+        rm -rf /tmp/bake_ws; \
+    fi
+
 # install zenoh and zenoh-plugin-ros2dds
 ARG ZENOH_VERSION=1.7.0
 ARG ZENOH_ROS2DDS_VERSION=${ZENOH_VERSION}
