@@ -53,17 +53,23 @@ def get_local_config_file(manual_config=None):
     """
     Returns the config file path, or None if no config is provided/found.
     When None is returned, the system uses sensible defaults (basic ROS2 bash).
+
+    Without -f/--config_file, resolution order is:
+    1. ros2docker/example/config.json (generic template default)
+    2. config.json in the parent of ros2docker/ (e.g. deployment-specific overlay)
     """
     if manual_config:
         return manual_config
-    
+
     project_dir = Path(__file__).resolve().parent.parent
-    local_config = project_dir.parent / "config.json"
-    
-    if local_config.is_file():
-        return local_config
-    
-    # No config found - return None to trigger default behavior
+    example_config = project_dir / "example" / "config.json"
+    if example_config.is_file():
+        return example_config
+
+    # local_config = project_dir.parent / "config.json"
+    # if local_config.is_file():
+    #     return local_config
+
     return None
 
 def get_image_name(manual_config=None, override=None) -> str:
