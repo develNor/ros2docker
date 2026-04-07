@@ -61,10 +61,10 @@ def get_local_config_file(manual_config=None):
     if manual_config:
         return manual_config
 
-    project_dir = Path(__file__).resolve().parent.parent
-    example_config = project_dir / "example" / "config.json"
-    if example_config.is_file():
-        return example_config
+    # project_dir = Path(__file__).resolve().parent.parent
+    # example_config = project_dir / "example" / "config.json"
+    # if example_config.is_file():
+    #     return example_config
 
     # local_config = project_dir.parent / "config.json"
     # if local_config.is_file():
