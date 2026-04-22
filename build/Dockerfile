@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libyaml-cpp-dev \
     x11-apps \
+    ros-$ROS_DISTRO-domain-bridge \
     ros-$ROS_DISTRO-foxglove-bridge \
     ros-$ROS_DISTRO-foxglove-msgs \
     ros-$ROS_DISTRO-topic-tools \
