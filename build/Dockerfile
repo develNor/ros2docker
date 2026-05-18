@@ -119,7 +119,7 @@ RUN python3 -m venv $PYTHON_VENV_PATH --system-site-packages
 ENV PATH="$PYTHON_VENV_PATH/bin:$PATH"
 # set PYTHONPATH to include the venv site-packages. Python version depends on the base image.
 ENV PY_VER=3.12
-ENV PYTHONPATH="${PYTHON_VENV_PATH}/lib/python${PY_VER}/site-packages:${PYTHONPATH}"
+ENV PYTHONPATH="${PYTHON_VENV_PATH}/lib/python${PY_VER}/site-packages"
 
 ##############################################################################
 # 6) Install Base Pip Dependencies

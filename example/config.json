@@ -34,6 +34,8 @@
     // "-e", "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST", // (default)
     // "-e", "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp", // (default)
     // "-e", "ROS_DOMAIN_ID=0", // (default)
+    // If /ws/ros2src exists, BUILD_ROS2WS uses symlink-install and sources
+    // /ros2ws/install/setup.bash before the configured command starts.
     "-e", "BUILD_ROS2WS=1",
     "-e", "CHECK_ROS2WS_DEPENDENCIES=1"
   ]

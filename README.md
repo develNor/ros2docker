@@ -56,6 +56,38 @@ to append arguments without replacing the base `run_args`:
 python build_run.py -f ./config.json -o '{"extra_run_args": ["-v", "/host/data:/data"]}'
 ```
 
+### Mounted ROS 2 Workspaces
+
+When `/ws/ros2src` exists in the container, the entrypoint links it to
+`/ros2ws/src`. This keeps arbitrary workspace assets under `/ws` while giving
+ROS 2 tools a normal colcon workspace at `/ros2ws`.
+
+Set these environment variables through `run_args` when you want automatic
+workspace validation/builds:
+
+```jsonc
+"run_args": [
+  "-e", "BUILD_ROS2WS=1",
+  "-e", "CHECK_ROS2WS_DEPENDENCIES=1"
+]
+```
+
+With `BUILD_ROS2WS=1`, ros2docker builds the mounted workspace with
+`--symlink-install`, suppresses known unused CMake CLI variable warnings, and
+sources `/ros2ws/install/setup.bash` before running the configured command. This
+means generated message packages and installed Python entry points are visible
+to `bash`, `catmux`, and `command` run types without per-command overlay setup.
+
+Useful knobs:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BUILD_ROS2WS` | `0` | Build `/ros2ws` before running the command |
+| `CHECK_ROS2WS_DEPENDENCIES` | `0` | Run `rosdep install --simulate` for `/ros2ws/src` |
+| `ROS2WS_SYMLINK_INSTALL` | `1` | Use `colcon build --symlink-install` |
+| `ROS2WS_SUPPRESS_UNUSED_CMAKE_WARNINGS` | `1` | Add `--cmake-args --no-warn-unused-cli` |
+| `ROS2DOCKER_TRACE` | `0` | Enable shell tracing in the entrypoint |
+
 ## CLI Options
 
 | Option | Description |
@@ -129,4 +161,3 @@ python exec_bash.py [-f config.json]
 # Stop container
 python stop.py [-f config.json]
 ```
-
