@@ -42,6 +42,9 @@ RUN apt-get update && apt-get install -y \
     ros-$ROS_DISTRO-ffmpeg-image-transport \
     ros-$ROS_DISTRO-foxglove-compressed-video-transport \
     ros-$ROS_DISTRO-gps-msgs \
+    ros-$ROS_DISTRO-ament-copyright \
+    ros-$ROS_DISTRO-ament-flake8 \
+    ros-$ROS_DISTRO-ament-pep257 \
  && rm -rf /var/lib/apt/lists/*
 
 ##############################################################################
