@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -y \
     libyaml-cpp-dev \
     x11-apps \
     iperf3 \
-    ros-$ROS_DISTRO-domain-bridge \
+    # ros-$ROS_DISTRO-domain-bridge \ not available in Lyrical yet. include soon!
     ros-$ROS_DISTRO-foxglove-bridge \
     ros-$ROS_DISTRO-foxglove-msgs \
     ros-$ROS_DISTRO-topic-tools \
@@ -73,7 +73,7 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && rm -rf ${CUSTOM_WS}/src ${CUSTOM_WS}/build ${CUSTOM_WS}/log
 
 # install zenoh and zenoh-plugin-ros2dds
-ARG ZENOH_VERSION=1.7.0
+ARG ZENOH_VERSION=1.9.0
 ARG ZENOH_ROS2DDS_VERSION=${ZENOH_VERSION}
 ENV ZENOH_PLATFORM=x86_64-unknown-linux-gnu
 # Zenoh router
@@ -93,7 +93,8 @@ RUN mkdir -p /opt/zenoh/lib \
 ENV PATH="/opt/zenoh:${PATH}"
 
 # mcap CLI for fast filtering of rosbags
-RUN curl -L https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.61/mcap-linux-amd64 -o /usr/local/bin/mcap \
+ARG MCAP_CLI_VERSION=0.0.62
+RUN curl -L https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv${MCAP_CLI_VERSION}/mcap-linux-amd64 -o /usr/local/bin/mcap \
     && chmod +x /usr/local/bin/mcap
 
 # ##############################################################################
@@ -112,9 +113,10 @@ RUN curl -L https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-c
 ENV PYTHON_VENV_PATH=/opt/ros_venv
 RUN python3 -m venv $PYTHON_VENV_PATH --system-site-packages
 ENV PATH="$PYTHON_VENV_PATH/bin:$PATH"
-# set PYTHONPATH to include the venv site-packages. Python version depends on the base image.
-ENV PY_VER=3.12
-ENV PYTHONPATH="${PYTHON_VENV_PATH}/lib/python${PY_VER}/site-packages"
+# set PYTHONPATH to include the venv site-packages. Hacky but might be required.
+# RUN VENV_SITE="$("$PYTHON_VENV_PATH/bin/python" -c 'import sysconfig; print(sysconfig.get_path("purelib"))')" \
+#  && ln -sfn "$VENV_SITE" "$PYTHON_VENV_PATH/site-packages"
+# ENV PYTHONPATH="${PYTHON_VENV_PATH}/site-packages"
 
 ##############################################################################
 # 6) Install Base Pip Dependencies
