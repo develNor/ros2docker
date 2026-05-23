@@ -1,5 +1,5 @@
-# Use the official image for ROS2 Jazzy under Ubuntu 24.04
-ARG BASE_IMAGE=osrf/ros:kilted-desktop-full-noble
+# Use the official image for ROS2 Lyrical under Ubuntu 26.04
+ARG BASE_IMAGE=osrf/ros:lyrical-desktop-full-resolute
 
 FROM ${BASE_IMAGE}
 
@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libyaml-cpp-dev \
     x11-apps \
+    iperf3 \
     ros-$ROS_DISTRO-domain-bridge \
     ros-$ROS_DISTRO-foxglove-bridge \
     ros-$ROS_DISTRO-foxglove-msgs \
@@ -90,15 +91,6 @@ RUN mkdir -p /opt/zenoh/lib \
     && unzip -q /tmp/zenoh-plugin-ros2dds.zip -d /opt/zenoh \
     && rm /tmp/zenoh-plugin-ros2dds.zip
 ENV PATH="/opt/zenoh:${PATH}"
-
-# iperf3 3.20 with --json-stream which the packaged version for ubuntu 24.04 does not have
-RUN wget https://downloads.es.net/pub/iperf/iperf-3.20.tar.gz -O /tmp/iperf-3.20.tar.gz \
-    && tar -xzf /tmp/iperf-3.20.tar.gz -C /tmp \
-    && cd /tmp/iperf-3.20 \
-    && ./configure \
-    && make \
-    && make install \
-    && ldconfig
 
 # mcap CLI for fast filtering of rosbags
 RUN curl -L https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.61/mcap-linux-amd64 -o /usr/local/bin/mcap \
