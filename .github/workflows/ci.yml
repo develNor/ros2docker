@@ -83,3 +83,20 @@ jobs:
         with:
           name: ros2docker-dist
           path: dist/*
+
+  ci-success:
+    name: ci-success
+    runs-on: ubuntu-latest
+    needs: [python, package]
+    if: always()
+    steps:
+      - name: Verify required jobs
+        run: |
+          if [[ "${{ needs.python.result }}" != "success" ]]; then
+            echo "python failed: ${{ needs.python.result }}"
+            exit 1
+          fi
+          if [[ "${{ needs.package.result }}" != "success" ]]; then
+            echo "package failed: ${{ needs.package.result }}"
+            exit 1
+          fi
