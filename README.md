@@ -1,5 +1,7 @@
 # ros2docker
 
+[![CI](https://github.com/develNor/ros2docker/actions/workflows/ci.yml/badge.svg)](https://github.com/develNor/ros2docker/actions/workflows/ci.yml)
+
 `ros2docker` is a versioned Python CLI and API for building and running ROS 2 Docker workspaces from JSON-with-comments config files.
 
 ## Install
@@ -118,6 +120,8 @@ Run all Docker end-to-end fixtures, including slow image and ROS launch checks:
 ```bash
 ROS2DOCKER_RUN_E2E=1 ROS2DOCKER_RUN_SLOW_E2E=1 python3 -m pytest -q tests/e2e -m e2e
 ```
+
+See `docs/ci.md` for GitHub Actions setup and branch protection guidance.
 
 ## Python API
 
