@@ -8,7 +8,7 @@ A change is complete only if:
 2. Unit tests or contract tests cover the behavior.
 3. Docker/E2E tests are added or updated when Docker runtime behavior changes.
 4. README and examples are updated when CLI, config, API, or Docker behavior changes.
-5. `tests/test_docs.py` passes.
+5. `tests/contract/test_public_config_surface.py` passes.
 6. `just check` passes.
 7. Obsolete behavior is removed unless compatibility is explicitly requested.
 

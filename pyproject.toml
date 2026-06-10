@@ -43,6 +43,7 @@ where = ["src"]
 ros2docker = [
   "resources/build/*",
   "resources/examples/*",
+  "resources/schema/*",
 ]
 
 [tool.pytest.ini_options]

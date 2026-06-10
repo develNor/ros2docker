@@ -6,6 +6,8 @@ import copy
 import json
 import os
 from collections.abc import Mapping, Sequence
+from functools import lru_cache
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +30,24 @@ DEFAULT_CONFIG: dict[str, Any] = {
 }
 
 VALID_RUN_TYPES = {"bash", "catmux", "up", "command"}
+
+
+@lru_cache
+def public_config_keys() -> frozenset[str]:
+    """Return the supported top-level ros2docker config keys."""
+
+    schema_text = (
+        resources.files("ros2docker")
+        .joinpath("resources")
+        .joinpath("schema")
+        .joinpath("ros2docker.schema.json")
+        .read_text(encoding="utf-8")
+    )
+    schema = json.loads(schema_text)
+    properties = schema.get("properties", {})
+    if not isinstance(properties, dict):
+        raise ConfigError("ros2docker config schema must define object properties.")
+    return frozenset(str(key) for key in properties)
 
 
 def strip_json_comments(text: str) -> str:
@@ -122,9 +142,12 @@ def load_config(
             raise ConfigError(f"Invalid JSON in {config_path}: {exc}") from exc
         if not isinstance(loaded, dict):
             raise ConfigError(f"Config file must contain a JSON object: {config_path}")
+        _validate_public_config_keys(loaded)
         config.update(loaded)
 
-    config.update(parse_override(override))
+    override_config = parse_override(override)
+    _validate_public_config_keys(override_config)
+    config.update(override_config)
     _normalize_config_paths(config, config_dir, resolve_run_args=resolve_run_args)
     _validate_config(config)
     return config
@@ -135,6 +158,13 @@ def _resolve_config_file(config_file: str | os.PathLike[str]) -> Path:
     if not path.is_absolute():
         path = Path.cwd() / path
     return path.resolve()
+
+
+def _validate_public_config_keys(config: Mapping[str, Any]) -> None:
+    unknown_keys = sorted(set(config) - public_config_keys())
+    if unknown_keys:
+        key = unknown_keys[0]
+        raise ConfigError(f"Unknown config key {key!r}. This key is not part of ros2docker core.")
 
 
 def _validate_config(config: Mapping[str, Any]) -> None:
@@ -174,10 +204,6 @@ def _normalize_config_paths(config: dict[str, Any], config_dir: Path, *, resolve
             )
         bake_packages.append(str(resolved))
     config["bake_ros_packages"] = bake_packages
-
-    session_configs_dir = config.get("session_configs_dir")
-    if isinstance(session_configs_dir, str) and _is_relative_path(session_configs_dir):
-        config["session_configs_dir"] = str(resolve_host_path(session_configs_dir, config_dir, must_exist=False))
 
 
 def normalize_docker_host_paths(

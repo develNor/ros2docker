@@ -82,6 +82,9 @@ Config files are JSON with `//` and `/* ... */` comments. Supported keys include
 }
 ```
 
+The machine-readable schema lives at `src/ros2docker/resources/schema/ros2docker.schema.json`.
+See `docs/configuration.md` for the full configuration contract. Unknown top-level config keys are rejected.
+
 Supported `run_type` values are:
 
 - `bash`: start an interactive shell.
@@ -98,10 +101,10 @@ Host paths in `-v/--volume` and bind `--mount` args expand `~` and environment v
 
 ## Testing
 
-Run unit and static tests:
+Run unit and contract tests:
 
 ```bash
-python3 -m pytest -q
+python3 -m pytest -q tests/unit tests/contract
 ```
 
 Run fast Docker end-to-end fixtures:

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://develnor.github.io/ros2docker/schema/ros2docker.schema.json",
+  "title": "ros2docker config",
+  "description": "Public configuration schema for ros2docker JSON-with-comments config files after comments are stripped.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "container_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Docker container name."
+    },
+    "image_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Docker image tag used for build and run commands."
+    },
+    "run_type": {
+      "type": "string",
+      "enum": ["bash", "catmux", "command", "up"],
+      "description": "Container entry behavior."
+    },
+    "mount_ws": {
+      "type": "boolean",
+      "description": "Mount a config-adjacent ws directory into /ws."
+    },
+    "enable_gui_forwarding": {
+      "type": "boolean",
+      "description": "Forward the host X11 socket into the container."
+    },
+    "forward_ssh_agent": {
+      "type": "boolean",
+      "description": "Forward SSH_AUTH_SOCK into the container when available."
+    },
+    "run_args": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Docker run arguments normalized relative to the config file."
+    },
+    "extra_run_args": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional Docker run arguments appended after run_args."
+    },
+    "build_args": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["string", "number", "boolean", "null"]
+      },
+      "description": "Docker build-arg values."
+    },
+    "bake_ros_packages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "ROS package directories copied into the Docker build context."
+    },
+    "catmux_file": {
+      "type": "string",
+      "description": "Catmux session file used when run_type is catmux."
+    },
+    "catmux_params": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["string", "number", "boolean", "null"]
+      },
+      "description": "Catmux overwrite parameters passed as key=value pairs."
+    },
+    "command": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": ["string", "number", "boolean"]
+          }
+        }
+      ],
+      "description": "Command to execute when run_type is command."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "run_type": {
+            "const": "catmux"
+          }
+        },
+        "required": ["run_type"]
+      },
+      "then": {
+        "required": ["catmux_file"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "run_type": {
+            "const": "command"
+          }
+        },
+        "required": ["run_type"]
+      },
+      "then": {
+        "required": ["command"]
+      }
+    }
+  ]
+}

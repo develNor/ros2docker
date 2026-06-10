@@ -8,7 +8,7 @@
 
 - `README.md` for user-facing behavior.
 - `DEVELOPMENT_PRINCIPLES.md` for project rules.
-- `tests/test_docs.py` before changing README, examples or config keys
+- `tests/contract/test_public_config_surface.py` before changing README, examples or config keys
 
 ## Standard commands
 
@@ -17,6 +17,7 @@ Use these commands from the repository root:
 - `just setup`
 - `just lint`
 - `just test-unit`
+- `just test-contract`
 - `just docs`
 - `just test-e2e-fast`
 - `just test-e2e-slow`
