@@ -1,28 +1,56 @@
-.PHONY: setup lint format test test-unit test-e2e-fast test-e2e-slow docs docker-build check
+python := ".venv/bin/python"
+bin := ".venv/bin"
 
-setup:
-	python3 -m pip install -e ".[dev]"
+default:
+	@just --list
+
+venv:
+	python3 -m venv .venv
+	{{python}} -m pip install --upgrade pip
+
+setup: venv
+	{{python}} -m pip install -e ".[dev]"
+	{{python}} -m pre_commit install
 
 format:
-	ruff format .
+	{{python}} -m ruff check --fix .
+	{{python}} -m ruff format .
 
 lint:
-	ruff check .
-	python3 -m py_compile src/ros2docker/*.py
+	{{python}} -m ruff check .
+	{{python}} -m ruff format --check .
+	{{python}} -m py_compile src/ros2docker/*.py
+
+typecheck:
+	{{python}} -m mypy
+
+test: test-unit
 
 test-unit:
-	python3 -m pytest -q tests -m "not e2e"
+	{{python}} -m pytest -q tests -m "not e2e"
+
+coverage:
+	{{python}} -m pytest -q tests -m "not e2e" --cov=ros2docker --cov-report=term-missing
 
 test-e2e-fast:
-	ROS2DOCKER_RUN_E2E=1 python3 -m pytest -q tests/e2e -m "e2e and not slow"
+	ROS2DOCKER_RUN_E2E=1 {{python}} -m pytest -q tests/e2e -m "e2e and not slow"
 
 test-e2e-slow:
-	ROS2DOCKER_RUN_E2E=1 ROS2DOCKER_RUN_SLOW_E2E=1 python3 -m pytest -q tests/e2e -m e2e
+	ROS2DOCKER_RUN_E2E=1 ROS2DOCKER_RUN_SLOW_E2E=1 {{python}} -m pytest -q tests/e2e -m e2e
 
 docs:
-	python3 -m pytest -q tests/test_docs.py
+	{{python}} -m pytest -q tests/test_docs.py
+
+package:
+	rm -rf build dist src/*.egg-info
+	{{python}} -m build
+	{{python}} -m twine check dist/*
+	{{bin}}/check-wheel-contents dist/*.whl
 
 docker-build:
-	ros2docker build --dry-run
+	{{bin}}/ros2docker build --dry-run
 
-check: lint test-unit docs
+pre-commit:
+	{{python}} -m pre_commit run --all-files
+
+check: lint typecheck test-unit docs package

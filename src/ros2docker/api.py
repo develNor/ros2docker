@@ -7,10 +7,10 @@ import shlex
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from importlib import resources
 from pathlib import Path
-from typing import Iterator, Mapping, Sequence
 
 from .commands import (
     make_build_command,
@@ -20,13 +20,15 @@ from .commands import (
 )
 from .config import get_config_dir, load_config
 
+RunResult = list[str] | subprocess.CompletedProcess[bytes]
+
 
 def build(
     config_file: str | os.PathLike[str] | None = None,
     override: str | Mapping[str, object] | None = None,
     *,
     dry_run: bool = False,
-):
+) -> RunResult:
     with build_context(config_file, override) as context_dir:
         command = make_build_command(config_file, override, context_dir=context_dir)
         return _run(command, dry_run=dry_run)
@@ -39,7 +41,7 @@ def run(
     mount: str | os.PathLike[str] | None = None,
     extra_run_args: Sequence[str] | None = None,
     dry_run: bool = False,
-):
+) -> RunResult:
     command = make_run_command(
         config_file,
         override,
@@ -56,7 +58,7 @@ def build_run(
     mount: str | os.PathLike[str] | None = None,
     extra_run_args: Sequence[str] | None = None,
     dry_run: bool = False,
-):
+) -> tuple[RunResult, RunResult]:
     build_result = build(config_file, override, dry_run=dry_run)
     run_result = run(
         config_file,
@@ -73,7 +75,7 @@ def stop(
     override: str | Mapping[str, object] | None = None,
     *,
     dry_run: bool = False,
-):
+) -> RunResult:
     command = make_stop_command(config_file, override)
     return _run(command, dry_run=dry_run, check=False)
 
@@ -85,7 +87,7 @@ def exec_shell(
     command: Sequence[str] | None = None,
     interactive: bool = True,
     dry_run: bool = False,
-):
+) -> RunResult:
     docker_command = make_exec_shell_command(
         config_file,
         override,
@@ -109,21 +111,27 @@ def build_context(
 
 
 def _copy_build_resources(context_dir: Path) -> None:
-    build_resource = resources.files("ros2docker").joinpath("resources", "build")
+    build_resource = resources.files("ros2docker").joinpath("resources").joinpath("build")
     for item in build_resource.iterdir():
         destination = context_dir / item.name
-        if item.is_dir():
-            shutil.copytree(item, destination)
-        else:
-            with resources.as_file(item) as source:
+        with resources.as_file(item) as source:
+            if source.is_dir():
+                shutil.copytree(source, destination)
+            else:
                 shutil.copy2(source, destination)
     (context_dir / "bake_packages").mkdir(exist_ok=True)
 
 
 def _stage_bake_packages(config: Mapping[str, object], bake_dir: Path) -> None:
     seen_names: set[str] = set()
-    for package_path in config.get("bake_ros_packages", []):
-        source = Path(os.fspath(package_path))
+    package_paths = config.get("bake_ros_packages", [])
+    if not isinstance(package_paths, list):
+        raise ValueError("'bake_ros_packages' must be a list.")
+
+    for package_path in package_paths:
+        if not isinstance(package_path, str | os.PathLike):
+            raise TypeError(f"bake package path must be path-like, got {type(package_path).__name__}.")
+        source = Path(package_path)
         package_name = source.name
         if package_name in seen_names:
             raise ValueError(f"Duplicate bake package directory name: {package_name}")
@@ -137,7 +145,7 @@ def _run(
     dry_run: bool,
     cwd: str | os.PathLike[str] | None = None,
     check: bool = True,
-):
+) -> RunResult:
     print(shlex.join(list(command)), flush=True)
     if dry_run:
         return list(command)

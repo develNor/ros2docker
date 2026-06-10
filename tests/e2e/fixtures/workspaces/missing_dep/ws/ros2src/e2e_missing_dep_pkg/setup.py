@@ -1,6 +1,5 @@
 from setuptools import setup
 
-
 package_name = "e2e_missing_dep_pkg"
 
 setup(

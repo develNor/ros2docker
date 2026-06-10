@@ -6,7 +6,6 @@ from pathlib import Path
 
 from ros2docker.config import strip_json_comments
 
-
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 
 SUPPORTED_CONFIG_KEYS = {
@@ -50,4 +49,3 @@ def test_example_config_surface_matches_supported_keys() -> None:
 
     assert set(config) <= SUPPORTED_CONFIG_KEYS
     assert "session_configs_dir" not in config
-

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import os
 import shlex
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Mapping, Sequence
 
 from .config import ConfigError, get_config_dir, load_config, normalize_docker_host_paths, resolve_host_path
 
@@ -113,13 +113,11 @@ def _local_run_args(config: Mapping[str, object]) -> list[str]:
             raise ConfigError("forward_ssh_agent is true but SSH_AUTH_SOCK is not set.")
         sock_path = Path(ssh_auth_sock)
         if not sock_path.exists():
-            raise FileNotFoundError(
-                f"forward_ssh_agent is true but SSH_AUTH_SOCK does not exist: {ssh_auth_sock}"
-            )
+            raise FileNotFoundError(f"forward_ssh_agent is true but SSH_AUTH_SOCK does not exist: {ssh_auth_sock}")
         args.extend(["-e", "SSH_AUTH_SOCK", "-v", f"{ssh_auth_sock}:{ssh_auth_sock}"])
 
-    args.extend(config.get("run_args", []))
-    args.extend(config.get("extra_run_args", []))
+    args.extend(_string_list(config, "run_args"))
+    args.extend(_string_list(config, "extra_run_args"))
     return args
 
 
@@ -135,9 +133,7 @@ def _workspace_mount_args(
     if config.get("mount_ws"):
         ws_host = Path(get_config_dir(config_file)) / "ws"
         if not ws_host.exists():
-            raise FileNotFoundError(
-                f"mount_ws is true but workspace directory does not exist: {ws_host}"
-            )
+            raise FileNotFoundError(f"mount_ws is true but workspace directory does not exist: {ws_host}")
         return ["-v", f"{ws_host.resolve()}:/ws", "-w", "/ws"]
 
     return []
@@ -159,7 +155,7 @@ def _run_command(config: Mapping[str, object]) -> list[str]:
 
     if run_type == "catmux":
         catmux_file = str(config["catmux_file"])
-        command = [
+        catmux_command = [
             "catmux_create_session",
             catmux_file,
             "--session_name",
@@ -168,8 +164,8 @@ def _run_command(config: Mapping[str, object]) -> list[str]:
         catmux_params = config.get("catmux_params")
         if isinstance(catmux_params, Mapping) and catmux_params:
             params = ",".join(f"{key}={value}" for key, value in catmux_params.items())
-            command.extend(["--overwrite", params])
-        return command
+            catmux_command.extend(["--overwrite", params])
+        return catmux_command
 
     if run_type == "bash":
         return ["bash"]
@@ -178,11 +174,18 @@ def _run_command(config: Mapping[str, object]) -> list[str]:
         return ["tail", "-f", "/dev/null"]
 
     if run_type == "command":
-        command = config["command"]
-        if isinstance(command, str):
-            return shlex.split(command)
-        if isinstance(command, list):
-            return [str(part) for part in command]
+        raw_command = config["command"]
+        if isinstance(raw_command, str):
+            return shlex.split(raw_command)
+        if isinstance(raw_command, list):
+            return [str(part) for part in raw_command]
         raise ConfigError("'command' must be a string or list.")
 
     raise ConfigError(f"Unsupported run_type: {run_type!r}")
+
+
+def _string_list(config: Mapping[str, object], key: str) -> list[str]:
+    value = config.get(key, [])
+    if not isinstance(value, list):
+        raise ConfigError(f"{key!r} must be a list.")
+    return [str(item) for item in value]

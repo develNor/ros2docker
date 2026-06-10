@@ -5,8 +5,9 @@ from __future__ import annotations
 import copy
 import json
 import os
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 
 class ConfigError(ValueError):
@@ -139,9 +140,7 @@ def _resolve_config_file(config_file: str | os.PathLike[str]) -> Path:
 def _validate_config(config: Mapping[str, Any]) -> None:
     run_type = config.get("run_type", "bash")
     if run_type not in VALID_RUN_TYPES:
-        raise ConfigError(
-            f"Unsupported run_type {run_type!r}. Expected one of: {', '.join(sorted(VALID_RUN_TYPES))}."
-        )
+        raise ConfigError(f"Unsupported run_type {run_type!r}. Expected one of: {', '.join(sorted(VALID_RUN_TYPES))}.")
 
     for list_key in ("run_args", "extra_run_args", "bake_ros_packages"):
         if not isinstance(config.get(list_key, []), list):
@@ -155,7 +154,7 @@ def _validate_config(config: Mapping[str, Any]) -> None:
 
     if run_type == "command":
         command = config.get("command")
-        if not isinstance(command, (str, list)):
+        if not isinstance(command, str | list):
             raise ConfigError("'command' must be a string or list when run_type is 'command'.")
 
 
@@ -168,9 +167,7 @@ def _normalize_config_paths(config: dict[str, Any], config_dir: Path, *, resolve
     for raw_path in config.get("bake_ros_packages", []):
         resolved = resolve_host_path(raw_path, config_dir)
         if not resolved.exists():
-            raise FileNotFoundError(
-                f"bake_ros_packages path does not exist: {raw_path!r} (resolved to {resolved})"
-            )
+            raise FileNotFoundError(f"bake_ros_packages path does not exist: {raw_path!r} (resolved to {resolved})")
         if not resolved.is_dir():
             raise NotADirectoryError(
                 f"bake_ros_packages path must be a directory: {raw_path!r} (resolved to {resolved})"
@@ -287,8 +284,7 @@ def _looks_like_host_path(path: str) -> bool:
     expanded = os.path.expanduser(os.path.expandvars(path))
     return (
         path in {".", ".."}
-        or
-        path.startswith("./")
+        or path.startswith("./")
         or path.startswith("../")
         or path.startswith("~")
         or path.startswith("$")

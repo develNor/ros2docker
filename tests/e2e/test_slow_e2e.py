@@ -3,9 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from conftest import FIXTURES_ROOT, write_config
-
 
 pytestmark = [pytest.mark.e2e, pytest.mark.slow]
 

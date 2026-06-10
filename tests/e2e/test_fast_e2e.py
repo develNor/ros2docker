@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import os
 import time
 from pathlib import Path
 
 import pytest
-
 from conftest import copy_fixture_tree, wait_for_file, write_config
-
 
 pytestmark = pytest.mark.e2e
 
@@ -96,7 +93,7 @@ def test_command_string_mount_and_extra_args(docker_harness, shared_image: str, 
             "mount_ws": True,
             "command": (
                 "bash -lc 'test -f /ws/probe.txt && test -f /mounted/in.txt && "
-                "test \"$CONFIG_EXTRA\" = config && test \"$CLI_EXTRA\" = cli && "
+                'test "$CONFIG_EXTRA" = config && test "$CLI_EXTRA" = cli && '
                 "echo E2E_MOUNT_OK'"
             ),
             "run_args": ["-v", "./mounted:/mounted:ro"],
@@ -149,8 +146,7 @@ def test_workspace_custom_msgs_uses_baked_message_package(
             "command": [
                 "bash",
                 "-lc",
-                "ros2 interface show e2e_msgs/msg/Ping >/tmp/ping.interface && "
-                "ros2 run e2e_custom_pkg custom_probe",
+                "ros2 interface show e2e_msgs/msg/Ping >/tmp/ping.interface && ros2 run e2e_custom_pkg custom_probe",
             ],
             "run_args": ["-e", "BUILD_ROS2WS=1"],
         }
@@ -270,7 +266,7 @@ def test_gui_and_ssh_forwarding_contracts(docker_harness, shared_image: str, tmp
         ssh_config.update(
             {
                 "forward_ssh_agent": True,
-                "command": ["bash", "-lc", "test -e \"$SSH_AUTH_SOCK\" && echo E2E_SSH_OK"],
+                "command": ["bash", "-lc", 'test -e "$SSH_AUTH_SOCK" && echo E2E_SSH_OK'],
             }
         )
         ssh_path = write_config(tmp_path / "ssh.ros2docker.json", ssh_config)
@@ -322,8 +318,7 @@ def test_multi_container_native_chatter(docker_harness, shared_image: str, tmp_p
         "command": [
             "bash",
             "-lc",
-            f"ros2 topic pub -r 5 {topic} std_msgs/msg/String "
-            "'{data: hello_e2e}' >/tmp/e2e_pub.log 2>&1",
+            f"ros2 topic pub -r 5 {topic} std_msgs/msg/String '{{data: hello_e2e}}' >/tmp/e2e_pub.log 2>&1",
         ],
         "run_args": ["--network", "host", "-e", f"ROS_DOMAIN_ID={domain_id}"],
     }

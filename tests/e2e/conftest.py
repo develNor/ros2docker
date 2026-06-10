@@ -9,11 +9,10 @@ import subprocess
 import sys
 import time
 import uuid
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Mapping, Sequence
 
 import pytest
-
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 FIXTURES_ROOT = Path(__file__).resolve().parent / "fixtures"
@@ -47,7 +46,7 @@ def copy_fixture_tree(name: str, tmp_path: Path) -> Path:
     return target
 
 
-def wait_for_file(path: Path, *, timeout: float, pty_command: "PtyCommand | None" = None) -> None:
+def wait_for_file(path: Path, *, timeout: float, pty_command: PtyCommand | None = None) -> None:
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if pty_command is not None:

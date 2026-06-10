@@ -7,7 +7,7 @@ name = "ros2docker"
 version = "0.1.0"
 description = "Versioned CLI and Python API for building and running ROS 2 Docker workspaces."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "BSD-3-Clause"
 authors = [
   { name = "develNor" },
@@ -16,6 +16,18 @@ keywords = ["docker", "ros2", "cli"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2",
+  "check-wheel-contents>=0.6",
+  "mypy>=1.14",
+  "pre-commit>=4.0",
+  "pytest>=8.3",
+  "pytest-cov>=6.0",
+  "ruff==0.8.6",
+  "twine>=6.0",
 ]
 
 [project.scripts]
@@ -35,7 +47,56 @@ ros2docker = [
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+testpaths = ["tests"]
 markers = [
   "e2e: Docker-backed end-to-end ros2docker tests",
   "slow: slow Docker-backed tests for image matrix and long-running ROS workflows",
 ]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ros2docker"]
+
+[tool.ruff.lint.per-file-ignores]
+".devcontainer/re_generate_devcontainer_json.py" = ["E402"]
+
+[tool.mypy]
+python_version = "3.10"
+mypy_path = "src"
+files = ["src/ros2docker"]
+check_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_ignores = true
+
+[tool.coverage.run]
+branch = true
+source = ["ros2docker"]
+
+[tool.coverage.paths]
+source = [
+  "src/ros2docker",
+  "*/site-packages/ros2docker",
+]
+
+[tool.coverage.report]
+fail_under = 65
+show_missing = true
+skip_covered = true
+exclude_also = [
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+
+[tool.check-wheel-contents]
+toplevel = ["ros2docker"]

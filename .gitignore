@@ -1,4 +1,12 @@
 __pycache__
+.coverage
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+build/
+coverage.xml
+dist/
 *.egg-info/
 config/local.json
 build/apt-packages.txt
