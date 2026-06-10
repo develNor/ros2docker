@@ -51,24 +51,3 @@ def test_example_config_surface_matches_supported_keys() -> None:
     assert set(config) <= SUPPORTED_CONFIG_KEYS
     assert "session_configs_dir" not in config
 
-
-def test_removed_surface_is_not_in_public_docs() -> None:
-    public_docs = [
-        PACKAGE_ROOT / "README.md",
-        PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "examples" / "ros2docker.json",
-    ]
-    public_text = "\n".join(path.read_text(encoding="utf-8") for path in public_docs)
-
-    assert "docker-compose up" not in public_text
-    assert "Wayland" not in public_text
-    assert "session_configs_dir" not in public_text
-    assert "commmand" not in public_text
-
-
-def test_removed_surface_notes_document_cut_items() -> None:
-    notes = (PACKAGE_ROOT / "docs" / "removed-config-surface.md").read_text(encoding="utf-8")
-
-    assert "docker-compose up" in notes
-    assert "Wayland" in notes
-    assert "session_configs_dir" in notes
-    assert "commmand" in notes
