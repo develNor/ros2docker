@@ -1,0 +1,20 @@
+---
+parameters:
+  role: default-role
+  mission: default-mission
+  out_file: /ws/out/catmux_probe.txt
+
+common:
+  before_commands:
+    - source ~/.bashrc
+
+windows:
+  - name: CENTER
+    layout: even-vertical
+    splits:
+      - commands:
+          - bash -lc "mkdir -p /ws/out && printf 'role=${role}\nmission=${mission}\n' > ${out_file} && sleep 300"
+  - name: OBSERVER
+    splits:
+      - commands:
+          - bash -lc "echo observer-${role}; sleep 300"

@@ -1,0 +1,93 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from conftest import FIXTURES_ROOT, write_config
+
+
+pytestmark = [pytest.mark.e2e, pytest.mark.slow]
+
+
+def test_rosbag_record_and_play_round_trip(docker_harness, shared_image: str, tmp_path: Path) -> None:
+    container = docker_harness.container_name("rosbag_round_trip")
+    command = r"""
+set -euo pipefail
+bag=/tmp/ros2docker_e2e_bag
+topic=/ros2docker_e2e_bag_topic
+rm -rf "$bag"
+timeout 10 ros2 bag record -o "$bag" "$topic" >/tmp/e2e_record.log 2>&1 &
+rec_pid=$!
+sleep 3
+ros2 topic pub --once "$topic" std_msgs/msg/String "{data: bag-ok}" >/tmp/e2e_pub.log 2>&1
+sleep 2
+kill -INT "$rec_pid" || true
+wait "$rec_pid" || true
+test -f "$bag/metadata.yaml"
+ros2 bag info "$bag" >/tmp/e2e_bag_info.log
+timeout 15 ros2 bag play "$bag" >/tmp/e2e_bag_play.log 2>&1
+echo E2E_BAG_OK
+"""
+    config_path = write_config(
+        tmp_path / "rosbag.ros2docker.json",
+        {
+            "container_name": container,
+            "image_name": shared_image,
+            "run_type": "command",
+            "command": ["bash", "-lc", command],
+        },
+    )
+
+    result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=180)
+
+    assert "E2E_BAG_OK" in result.stdout
+
+
+def test_foxglove_bridge_launch_smoke(docker_harness, shared_image: str, tmp_path: Path) -> None:
+    container = docker_harness.container_name("foxglove_smoke")
+    command = r"""
+set -euo pipefail
+status=0
+timeout 12 ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765 >/tmp/e2e_foxglove.log 2>&1 || status=$?
+test "$status" = 124
+grep -E "foxglove|Foxglove|bridge" /tmp/e2e_foxglove.log >/dev/null
+echo E2E_FOXGLOVE_OK
+"""
+    config_path = write_config(
+        tmp_path / "foxglove.ros2docker.json",
+        {
+            "container_name": container,
+            "image_name": shared_image,
+            "run_type": "command",
+            "command": ["bash", "-lc", command],
+        },
+    )
+
+    result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=120)
+
+    assert "E2E_FOXGLOVE_OK" in result.stdout
+
+
+def test_alternate_base_image_builds_and_runs(docker_harness, tmp_path: Path) -> None:
+    image = docker_harness.image_tag("alt-base")
+    container = docker_harness.container_name("alt_base")
+    config_path = write_config(
+        tmp_path / "alt-base.ros2docker.json",
+        {
+            "container_name": container,
+            "image_name": image,
+            "run_type": "command",
+            "command": ["bash", "-lc", "ros2 --help >/tmp/ros2_help && echo E2E_ALT_BASE_OK"],
+            "bake_ros_packages": [str(FIXTURES_ROOT / "bake" / "e2e_msgs")],
+            "build_args": {
+                "BASE_IMAGE": "osrf/ros:lyrical-ros-base-resolute",
+                "DIGEST": "",
+            },
+        },
+    )
+
+    docker_harness.cli("build", "-f", str(config_path), timeout=2400)
+    result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=180)
+
+    assert "E2E_ALT_BASE_OK" in result.stdout

@@ -78,14 +78,43 @@ Config files are JSON with `//` and `/* ... */` comments. Supported keys include
   "bake_ros_packages": [],
   "catmux_file": "/ws/catmux.yaml",
   "catmux_params": {},
-  "command": "ros2 topic list",
-  "session_configs_dir": "/session/configs"
+  "command": "ros2 topic list"
 }
 ```
+
+Supported `run_type` values are:
+
+- `bash`: start an interactive shell.
+- `command`: run the configured `command`.
+- `catmux`: start a catmux session from `catmux_file`.
+- `up`: start a detached keepalive container.
 
 Host paths in `-v/--volume` and bind `--mount` args expand `~` and environment variables. Relative `./` and `../` host paths are resolved from the config file directory.
 
 `bake_ros_packages` paths are also resolved from the config file directory and copied into a temporary Docker build context. The installed Python package directory is never mutated during builds.
+
+`enable_gui_forwarding` forwards the X11 socket at `/tmp/.X11-unix`.
+`forward_ssh_agent` forwards the host `SSH_AUTH_SOCK` path when the variable is set and points to an existing socket or file.
+
+## Testing
+
+Run unit and static tests:
+
+```bash
+python3 -m pytest -q
+```
+
+Run fast Docker end-to-end fixtures:
+
+```bash
+ROS2DOCKER_RUN_E2E=1 python3 -m pytest -q tests/e2e -m "e2e and not slow"
+```
+
+Run all Docker end-to-end fixtures, including slow image and ROS launch checks:
+
+```bash
+ROS2DOCKER_RUN_E2E=1 ROS2DOCKER_RUN_SLOW_E2E=1 python3 -m pytest -q tests/e2e -m e2e
+```
 
 ## Python API
 

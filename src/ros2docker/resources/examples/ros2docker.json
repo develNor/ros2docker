@@ -1,35 +1,32 @@
 {
-  // ──────────────────────────
-  // RUN SETTINGS
-  // ──────────────────────────
-  "container_name": "example_ros2container",  // Name of the running container [Required]
+  // Run settings
+  "container_name": "example_ros2container",
+  "image_name": "ros2docker",
 
-  // ──────────────────────────
-  // HOW TO RUN THE CONTAINER
-  // Choose ONE of:
-  //   • "bash"     – interactive shell (default)
-  //   • "up"       – docker-compose up
-  //   • "catmux"   – start a catmux session
-  //   • "commmand" – set custom command to run
-  // ──────────────────────────
+  // Supported run types:
+  //   "bash"    - interactive shell
+  //   "command" - run the configured command
+  //   "catmux"  - start a catmux session
+  //   "up"      - detached keepalive container
   "run_type": "catmux",
 
-  // catmux-specific options
-  "catmux_file":   "/ws/catmux.yaml",         // Required when run_type = "catmux"
-  "catmux_params": {                          // Optional runtime parameters
+  // Used when run_type = "catmux".
+  "catmux_file": "/ws/catmux.yaml",
+  "catmux_params": {
     "mock_param": "mock_value"
   },
 
-  // command-specific options
-  // "command": "ros2 topic echo /chatter", // Required when run_type = "command". String or list of strings supported.
+  // Used when run_type = "command". String and argv-list forms are supported.
+  "command": ["ros2", "topic", "list"],
 
-  // mounts the ws directory into the container. Optionally this ws also contains a ros2src.
+  // Mount the config-adjacent ws directory into /ws.
   "mount_ws": true,
 
-  // Enable X11/Wayland GUI forwarding
-  "enable_gui_forwarding": true,
+  // Enable X11 forwarding through /tmp/.X11-unix.
+  "enable_gui_forwarding": false,
+  "forward_ssh_agent": false,
 
-  // Extra docker run arguments (add as needed)
+  // Extra docker run arguments.
   "run_args": [
     // "-e", "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST", // (default)
     // "-e", "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp", // (default)
@@ -38,26 +35,17 @@
     // /ros2ws/install/setup.bash before the configured command starts.
     "-e", "BUILD_ROS2WS=1",
     "-e", "CHECK_ROS2WS_DEPENDENCIES=1"
-  ]
+  ],
+  "extra_run_args": [],
 
-  // Forward your local SSH agent into the container
-  // "forward_ssh_agent": true,
-
-
-  // ─────────────────────────────────────────────
-  // BUILD Settings (all optional; defaults shown)
-  // ─────────────────────────────────────────────
-
-  // "image_name":     "ros2docker",     // Docker image to build
-
-  // ROS packages to pre-build into the Docker image (paths relative to this config file).
+  // ROS packages to pre-build into the Docker image, relative to this config.
   // These are installed into /opt/ros/$ROS_DISTRO so every container gets them without
   // needing them in each workspace's ros2src/.
-  // "bake_ros_packages": ["../shared_msgs/com_msgs"],
+  "bake_ros_packages": [],
 
-  // "build_args": {
-  //   "BASE_IMAGE":                    "osrf/ros:kilted-desktop-full-noble",
-  //   "APT_PACKAGES":                  "git wget curl",
-  //   "PIP_PACKAGES":                  "pytest pytest-cov",
-  // }
+  // Optional Docker build arguments.
+  "build_args": {
+    "APT_PACKAGES": "git wget curl",
+    "PIP_PACKAGES": "pytest pytest-cov"
+  }
 }

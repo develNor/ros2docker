@@ -35,3 +35,7 @@ ros2docker = [
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+markers = [
+  "e2e: Docker-backed end-to-end ros2docker tests",
+  "slow: slow Docker-backed tests for image matrix and long-running ROS workflows",
+]
