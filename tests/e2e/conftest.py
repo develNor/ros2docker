@@ -250,6 +250,9 @@ class DockerHarness:
     def _env(extra: Mapping[str, str] | None = None) -> dict[str, str]:
         env = os.environ.copy()
         env.setdefault("PYTHONUNBUFFERED", "1")
+        src_path = str(PACKAGE_ROOT / "src")
+        existing_pythonpath = env.get("PYTHONPATH")
+        env["PYTHONPATH"] = f"{src_path}{os.pathsep}{existing_pythonpath}" if existing_pythonpath else src_path
         if extra:
             env.update(extra)
         return env

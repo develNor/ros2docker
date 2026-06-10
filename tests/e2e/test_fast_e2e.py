@@ -211,11 +211,12 @@ def test_dependency_check_fails_before_command_for_missing_rosdep(
     tmp_path: Path,
 ) -> None:
     project = copy_fixture_tree("workspaces/missing_dep", tmp_path)
+    probe_file = project / "ws" / "out" / "should_not_run"
     config = _base_config(shared_image, docker_harness.container_name("deps_fail"))
     config.update(
         {
             "mount_ws": True,
-            "command": ["bash", "-lc", "echo SHOULD_NOT_RUN"],
+            "command": ["bash", "-lc", "mkdir -p /ws/out && touch /ws/out/should_not_run"],
             "run_args": ["-e", "CHECK_ROS2WS_DEPENDENCIES=1"],
         }
     )
@@ -225,7 +226,7 @@ def test_dependency_check_fails_before_command_for_missing_rosdep(
     output = result.stdout + result.stderr
 
     assert result.returncode != 0
-    assert "SHOULD_NOT_RUN" not in output
+    assert not probe_file.exists()
     assert "Dependencies are missing." in output or "Cannot locate rosdep definition" in output
 
 

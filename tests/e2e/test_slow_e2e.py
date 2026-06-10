@@ -17,16 +17,23 @@ set -euo pipefail
 bag=/tmp/ros2docker_e2e_bag
 topic=/ros2docker_e2e_bag_topic
 rm -rf "$bag"
-timeout 10 ros2 bag record -o "$bag" "$topic" >/tmp/e2e_record.log 2>&1 &
-rec_pid=$!
-sleep 3
-ros2 topic pub --once "$topic" std_msgs/msg/String "{data: bag-ok}" >/tmp/e2e_pub.log 2>&1
+ros2 topic pub -r 10 "$topic" std_msgs/msg/String "{data: bag-ok}" >/tmp/e2e_pub.log 2>&1 &
+pub_pid=$!
 sleep 2
-kill -INT "$rec_pid" || true
-wait "$rec_pid" || true
+set +e
+timeout -s INT 8 ros2 bag record -o "$bag" --topics "$topic" >/tmp/e2e_record.log 2>&1
+record_status=$?
+set -e
+kill "$pub_pid" >/dev/null 2>&1 || true
+wait "$pub_pid" >/dev/null 2>&1 || true
+if [ "$record_status" != "0" ] && [ "$record_status" != "124" ]; then
+  cat /tmp/e2e_record.log
+  exit "$record_status"
+fi
 test -f "$bag/metadata.yaml"
 ros2 bag info "$bag" >/tmp/e2e_bag_info.log
-timeout 15 ros2 bag play "$bag" >/tmp/e2e_bag_play.log 2>&1
+grep "/ros2docker_e2e_bag_topic" /tmp/e2e_bag_info.log >/dev/null
+timeout 30 ros2 bag play "$bag" >/tmp/e2e_bag_play.log 2>&1
 echo E2E_BAG_OK
 """
     config_path = write_config(
@@ -81,7 +88,7 @@ def test_alternate_base_image_builds_and_runs(docker_harness, tmp_path: Path) ->
             "command": ["bash", "-lc", "ros2 --help >/tmp/ros2_help && echo E2E_ALT_BASE_OK"],
             "bake_ros_packages": [str(FIXTURES_ROOT / "bake" / "e2e_msgs")],
             "build_args": {
-                "BASE_IMAGE": "osrf/ros:lyrical-ros-base-resolute",
+                "BASE_IMAGE": "osrf/ros:lyrical-desktop-resolute",
                 "DIGEST": "",
             },
         },
