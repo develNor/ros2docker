@@ -46,6 +46,18 @@ def test_cli_mount_and_extra_args_are_rendered(tmp_path: Path) -> None:
     assert "A=B" in command
 
 
+def test_default_config_can_open_mounted_bash_shell(tmp_path: Path) -> None:
+    mounted_dir = tmp_path / "mounted"
+    mounted_dir.mkdir()
+
+    command = make_run_command(mount=mounted_dir)
+
+    assert "--name" in command
+    assert "ros2docker" in command
+    assert f"{mounted_dir.resolve()}:/ws" in command
+    assert command[-2:] == ["ros2docker", "bash"]
+
+
 def test_build_stop_and_exec_commands(tmp_path: Path) -> None:
     config_path = tmp_path / "ros2docker.json"
     config_path.write_text(
@@ -64,4 +76,3 @@ def test_build_stop_and_exec_commands(tmp_path: Path) -> None:
     assert build[-1] == str(tmp_path / "context")
     assert stop == ["docker", "stop", "demo"]
     assert exec_command == ["docker", "exec", "demo", "bash", "-lc", "true"]
-

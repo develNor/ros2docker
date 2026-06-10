@@ -58,7 +58,7 @@ def _make_parser() -> argparse.ArgumentParser:
 
 
 def _add_config_options(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("-f", "--config", required=True, metavar="CONFIG", help="Path to ros2docker config.")
+    parser.add_argument("-f", "--config", metavar="CONFIG", help="Path to ros2docker config.")
     parser.add_argument("-o", "--override", metavar="JSON", help="JSON object overriding config values.")
 
 
@@ -113,4 +113,3 @@ def _exec(args: argparse.Namespace) -> None:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

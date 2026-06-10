@@ -22,9 +22,33 @@ Non-pipx fallback:
 python3 -m pip install --user --force-reinstall git+ssh://git@github.com/develNor/ros2docker.git@v0.1.0
 ```
 
+## Development Install
+
+When developing `ros2docker`, install this checkout in editable mode so the
+host `ros2docker` command imports the local source:
+
+```bash
+pipx install --force --editable /path/to/fleet_mgmt/ros_communication_devcontainer/ros2docker
+```
+
+Normal Python source changes are picked up immediately by new `ros2docker`
+commands. Reinstall after changing package metadata, dependencies, or console
+entry points in `pyproject.toml`.
+
+Verify the editable command with:
+
+```bash
+ros2docker run --no-build --dry-run -m .
+```
+
+The dry run should print a `docker run` command that mounts the current
+directory as `/ws` and starts `bash`, without requiring `-f/--config`.
+
 ## CLI
 
 ```bash
+ros2docker run -m /host/project
+ros2docker run --no-build -m /host/project
 ros2docker build -f ros2docker.json
 ros2docker run -f ros2docker.json
 ros2docker run -f ros2docker.json --no-build -- -v /host/data:/data
@@ -34,6 +58,7 @@ ros2docker --version
 ```
 
 Every Docker action accepts `--dry-run`, which prints the Docker argv and exits without running Docker.
+The `-f`/`--config` option is optional; without it, `ros2docker` uses the default config, which starts an interactive Bash shell.
 
 ## Config
 
@@ -69,4 +94,3 @@ from ros2docker.api import build, run, build_run, stop, exec_shell
 from ros2docker.config import load_config, get_config_dir
 from ros2docker.commands import make_build_command, make_run_command
 ```
-

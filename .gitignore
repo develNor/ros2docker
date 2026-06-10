@@ -1,4 +1,5 @@
 __pycache__
+*.egg-info/
 config/local.json
 build/apt-packages.txt
 build/requirements.txt

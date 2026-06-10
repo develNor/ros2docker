@@ -1,7 +1,10 @@
 # Use the official image for ROS2 Lyrical under Ubuntu 26.04
 ARG BASE_IMAGE=osrf/ros:lyrical-desktop-full-resolute
+# Pin digests for reproducibility. Leave empty to use the latest image. The digest can be found on Docker Hub for the respective tag, e.g. for osrf/ros:lyrical-desktop-full-resolute
+# Default: Latest Digist as of 2026-06-10 for https://hub.docker.com/layers/osrf/ros/lyrical-desktop-full-resolute
+ARG DIGEST=@sha256:ac6471b5c13e57674d9660630d0cb140f518cb5ea6add7169e5dd91e16bf0b50
 
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE}${DIGEST}
 
 ##############################################################################
 # 1) Base Environment
