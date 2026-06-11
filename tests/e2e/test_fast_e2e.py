@@ -18,11 +18,28 @@ def _base_config(image: str, container: str) -> dict[str, object]:
     }
 
 
+def _wait_for_container_file(docker_harness, container: str, path: str, *, timeout: float) -> None:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        result = docker_harness.docker("exec", container, "test", "-f", path, timeout=10, check=False)
+        if result.returncode == 0:
+            return
+        inspect = docker_harness.docker("inspect", "-f", "{{.State.Running}}", container, timeout=10, check=False)
+        if inspect.returncode == 0 and inspect.stdout.strip() != "true":
+            break
+        time.sleep(0.5)
+
+    logs = docker_harness.docker("logs", container, timeout=30, check=False)
+    raise AssertionError(f"Timed out waiting for {path} in {container}\nSTDOUT:\n{logs.stdout}\nSTDERR:\n{logs.stderr}")
+
+
 def test_minimal_cli_command_list_runs_ros_tools(docker_harness, shared_image: str, tmp_path: Path) -> None:
     config = _base_config(shared_image, docker_harness.container_name("minimal_cli"))
     config["command"] = [
         "bash",
         "-lc",
+        'test "$ROS_AUTOMATIC_DISCOVERY_RANGE" = LOCALHOST && '
+        'test "$RMW_IMPLEMENTATION" = rmw_cyclonedds_cpp && '
         "ros2 --help >/tmp/ros2_help && jq --version >/tmp/jq_version && "
         "python -c 'import rich; print(\"E2E_MINIMAL_OK\")'",
     ]
@@ -31,6 +48,36 @@ def test_minimal_cli_command_list_runs_ros_tools(docker_harness, shared_image: s
     result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=180)
 
     assert "E2E_MINIMAL_OK" in result.stdout
+
+
+def test_ros_runtime_env_defaults_can_be_overridden(
+    docker_harness,
+    shared_image: str,
+    tmp_path: Path,
+) -> None:
+    config = _base_config(shared_image, docker_harness.container_name("ros_env_override"))
+    config.update(
+        {
+            "command": [
+                "bash",
+                "-lc",
+                'test "$ROS_AUTOMATIC_DISCOVERY_RANGE" = SUBNET && '
+                'test "$RMW_IMPLEMENTATION" = rmw_zenoh_cpp && '
+                "echo E2E_ROS_ENV_OVERRIDE_OK",
+            ],
+            "run_args": [
+                "-e",
+                "ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET",
+                "-e",
+                "RMW_IMPLEMENTATION=rmw_zenoh_cpp",
+            ],
+        }
+    )
+    config_path = write_config(tmp_path / "ros-env-override.ros2docker.json", config)
+
+    result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=180)
+
+    assert "E2E_ROS_ENV_OVERRIDE_OK" in result.stdout
 
 
 def test_bash_run_type_starts_interactive_shell_under_pty(
@@ -118,19 +165,126 @@ def test_command_string_mount_and_extra_args(docker_harness, shared_image: str, 
 
 def test_workspace_std_msgs_builds_and_is_sourced(docker_harness, shared_image: str, tmp_path: Path) -> None:
     project = copy_fixture_tree("workspaces/std", tmp_path)
+    command = r"""
+set -euo pipefail
+ros2 run e2e_std_pkg std_probe
+python - <<'PY'
+import os
+
+paths = os.environ.get("PYTHONPATH", "").split(":")
+if "/ros2ws/build/e2e_std_pkg" not in paths:
+    raise SystemExit(f"expected symlink install build path in PYTHONPATH, got {paths}")
+PY
+"""
     config = _base_config(shared_image, docker_harness.container_name("workspace_std"))
     config.update(
         {
             "mount_ws": True,
-            "command": ["bash", "-lc", "ros2 run e2e_std_pkg std_probe"],
-            "run_args": ["-e", "BUILD_ROS2WS=1"],
+            "command": ["bash", "-lc", command],
+            "run_args": ["-e", "BUILD_ROS2WS=1", "-e", "ROS2DOCKER_TRACE=1"],
         }
     )
     config_path = write_config(project / "ros2docker.json", config)
 
     result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=420)
+    output = result.stdout + result.stderr
 
     assert "E2E_STD:std-ok" in result.stdout
+    assert "--symlink-install" in output
+    assert "--no-warn-unused-cli" in output
+
+
+def test_workspace_build_flag_overrides_disable_colcon_defaults(
+    docker_harness,
+    shared_image: str,
+    tmp_path: Path,
+) -> None:
+    project = copy_fixture_tree("workspaces/std", tmp_path)
+    command = r"""
+set -euo pipefail
+ros2 run e2e_std_pkg std_probe
+python - <<'PY'
+import os
+
+paths = os.environ.get("PYTHONPATH", "").split(":")
+if "/ros2ws/build/e2e_std_pkg" in paths:
+    raise SystemExit(f"did not expect symlink install build path in PYTHONPATH, got {paths}")
+if not any(
+    path.startswith("/ros2ws/install/e2e_std_pkg/lib/python") and path.endswith("/site-packages")
+    for path in paths
+):
+    raise SystemExit(f"expected copied install site-packages path in PYTHONPATH, got {paths}")
+PY
+"""
+    config = _base_config(shared_image, docker_harness.container_name("workspace_flags_off"))
+    config.update(
+        {
+            "mount_ws": True,
+            "command": ["bash", "-lc", command],
+            "run_args": [
+                "-e",
+                "BUILD_ROS2WS=1",
+                "-e",
+                "ROS2DOCKER_TRACE=1",
+                "-e",
+                "ROS2WS_SYMLINK_INSTALL=0",
+                "-e",
+                "ROS2WS_SUPPRESS_UNUSED_CMAKE_WARNINGS=0",
+            ],
+        }
+    )
+    config_path = write_config(project / "ros2docker.json", config)
+
+    result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=420)
+    output = result.stdout + result.stderr
+
+    assert "E2E_STD:std-ok" in result.stdout
+    assert "+ colcon build" in output
+    assert "--symlink-install" not in output
+    assert "--no-warn-unused-cli" not in output
+
+
+def test_interactive_bashrc_sources_venv_custom_overlay_workspace_and_alias(
+    docker_harness,
+    shared_image: str,
+    tmp_path: Path,
+) -> None:
+    project = copy_fixture_tree("workspaces/std", tmp_path)
+    container = docker_harness.container_name("bashrc_workspace")
+    config = {
+        "container_name": container,
+        "image_name": shared_image,
+        "mount_ws": True,
+        "run_type": "up",
+        "run_args": ["-e", "BUILD_ROS2WS=1"],
+    }
+    config_path = write_config(project / "ros2docker.json", config)
+    command = r"""
+set -euo pipefail
+test "$VIRTUAL_ENV" = /opt/ros_venv
+alias catmux | grep -F 'tmux -L catmux'
+ros2 interface show e2e_msgs/msg/Ping >/tmp/e2e_bashrc_ping.interface
+ros2 run e2e_std_pkg std_probe
+echo E2E_BASHRC_OK
+"""
+
+    docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=420)
+    try:
+        _wait_for_container_file(docker_harness, container, "/ros2ws/install/setup.bash", timeout=120)
+        exec_result = docker_harness.cli(
+            "exec",
+            "-f",
+            str(config_path),
+            "--",
+            "bash",
+            "-ic",
+            command,
+            timeout=120,
+        )
+        assert "E2E_STD:std-ok" in exec_result.stdout
+        assert "E2E_BASHRC_OK" in exec_result.stdout
+    finally:
+        docker_harness.docker("stop", container, timeout=30, check=False)
 
 
 def test_workspace_custom_msgs_uses_baked_message_package(
