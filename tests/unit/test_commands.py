@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from ros2docker.commands import make_build_command, make_exec_shell_command, make_run_command, make_stop_command
@@ -61,7 +62,16 @@ def test_default_config_can_open_mounted_bash_shell(tmp_path: Path) -> None:
 def test_build_stop_and_exec_commands(tmp_path: Path) -> None:
     config_path = tmp_path / "ros2docker.json"
     config_path.write_text(
-        '{"container_name": "demo", "image_name": "image", "build_args": {"BASE_IMAGE": "base"}}',
+        """
+        {
+          "container_name": "demo",
+          "image_name": "image",
+          "build_args": {
+            "BASE_IMAGE": "base",
+            "DIGEST": ""
+          }
+        }
+        """,
         encoding="utf-8",
     )
 
@@ -72,7 +82,10 @@ def test_build_stop_and_exec_commands(tmp_path: Path) -> None:
     assert build[0:3] == ["docker", "build", "-t"]
     assert "image" in build
     assert "--build-arg" in build
+    assert f"USER_UID={os.getuid()}" in build
+    assert f"USER_GID={os.getgid()}" in build
     assert "BASE_IMAGE=base" in build
+    assert "DIGEST=" in build
     assert build[-1] == str(tmp_path / "context")
     assert stop == ["docker", "stop", "demo"]
     assert exec_command == ["docker", "exec", "demo", "bash", "-lc", "true"]
