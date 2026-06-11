@@ -170,6 +170,32 @@ Avoid path filters or branch filters for required workflows. If a required
 workflow is skipped by filtering, GitHub can leave the check pending and block
 merging.
 
+## Release Workflow
+
+Releases are built from version tags. After the release PR has merged, create
+and push a tag in the form `vX.Y.Z` from the release commit:
+
+```bash
+git switch main
+git fetch --prune
+git pull --ff-only
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
+
+The `release` workflow validates the tag with non-Docker checks, package
+artifact validation, and fast Docker E2E before publishing. Successful tag
+releases publish the wheel and sdist to PyPI through Trusted Publishing, then
+create a GitHub Release with the wheel, sdist, and `SHA256SUMS`.
+
+Maintainers must configure pending Trusted Publishers on PyPI and TestPyPI for
+repository `develNor/ros2docker`, workflow `.github/workflows/release.yml`, and
+environments `pypi` and `testpypi`. No PyPI API token should be stored in GitHub
+secrets for the normal release path.
+
+Use the manual `release` workflow dispatch for TestPyPI rehearsals. Manual runs
+publish only to TestPyPI and do not create GitHub Releases.
+
 ## Pull Request Description
 
 Include local command results in the PR summary. Call out whether the PR is a

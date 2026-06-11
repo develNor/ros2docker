@@ -10,19 +10,19 @@
 Stable release:
 
 ```bash
-pipx install --force git+ssh://git@github.com/develNor/ros2docker.git@v0.1.0
+pipx install ros2docker
 ```
 
 Latest development version:
 
 ```bash
-pipx install --force git+ssh://git@github.com/develNor/ros2docker.git@main
+pipx install --force git+https://github.com/develNor/ros2docker.git@main
 ```
 
 Non-pipx fallback:
 
 ```bash
-python3 -m pip install --user --force-reinstall git+ssh://git@github.com/develNor/ros2docker.git@v0.1.0
+python3 -m pip install --user ros2docker
 ```
 
 ## Development Install
@@ -58,6 +58,7 @@ ros2docker run -f ros2docker.json --no-build -- -v /host/data:/data
 ros2docker stop -f ros2docker.json
 ros2docker exec -f ros2docker.json -- bash -lc 'ros2 --help'
 ros2docker --version
+python -m ros2docker --version
 ```
 
 Every Docker action accepts `--dry-run`, which prints the Docker argv and exits without running Docker.
