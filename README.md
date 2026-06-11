@@ -105,35 +105,10 @@ Host paths in `-v/--volume` and bind `--mount` args expand `~` and environment v
 
 ## Development
 
-For the full contributor workflow, local check matrix, PR process, and merge
-policy, see [CONTRIBUTING.md](CONTRIBUTING.md). CI behavior is summarized in
+For contributor setup, local checks, PR modes, merge policy, and release
+workflow, see [CONTRIBUTING.md](CONTRIBUTING.md). CI behavior is summarized in
 [docs/ci.md](docs/ci.md), and release publishing is summarized in
 [docs/release.md](docs/release.md).
-
-Run the basic local test suites:
-
-```bash
-just test-unit
-just test-contract
-```
-
-Run all required local checks:
-
-```bash
-just check
-```
-
-Run fast Docker end-to-end fixtures when Docker/runtime behavior changed:
-
-```bash
-just test-e2e-fast
-```
-
-Run all Docker end-to-end fixtures, including slow image and ROS launch checks:
-
-```bash
-just test-e2e-slow
-```
 
 ## Python API
 

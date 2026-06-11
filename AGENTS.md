@@ -9,10 +9,8 @@ Read first:
 
 Operational rules:
 
+- Follow `CONTRIBUTING.md` for branch setup, local setup, check selection, CI, PR workflow, merge policy, and releases.
 - Start every change from an up-to-date `origin/main` topic branch. Do not push directly to `main`.
-- Use `just setup` for local setup.
-- Before a draft review PR, run the lightweight checks from `CONTRIBUTING.md`; before a ready/autonomous PR, run `just check`.
-- Run `just test-e2e-fast` when Docker/runtime behavior changed or before a ready/autonomous PR.
 - Update README, docs, examples, schemas, and tests when CLI, config, API, Docker, or public behavior changes.
 - Do not skip, weaken, or delete tests/CI to make a change pass.
 - Default to a draft review PR with no auto-merge. Use autonomous auto-merge only when explicitly requested.

@@ -52,8 +52,3 @@ by manual dispatch. Nightly E2E does not replace the required PR merge gate.
 ## Local Checks
 
 Use [CONTRIBUTING.md](../CONTRIBUTING.md) as the canonical contributor workflow.
-Before opening or updating a ready PR, run:
-
-```bash
-just check
-```
