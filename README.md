@@ -1,6 +1,7 @@
 # ros2docker
 
-[![CI](https://github.com/develNor/ros2docker/actions/workflows/ci.yml/badge.svg)](https://github.com/develNor/ros2docker/actions/workflows/ci.yml)
+[![pr-lightweight](https://github.com/develNor/ros2docker/actions/workflows/pr-lightweight.yml/badge.svg)](https://github.com/develNor/ros2docker/actions/workflows/pr-lightweight.yml)
+[![nightly-e2e](https://github.com/develNor/ros2docker/actions/workflows/nightly-e2e.yml/badge.svg)](https://github.com/develNor/ros2docker/actions/workflows/nightly-e2e.yml)
 
 `ros2docker` is a versioned Python CLI and API for building and running ROS 2 Docker workspaces from JSON-with-comments config files.
 
@@ -103,25 +104,33 @@ Host paths in `-v/--volume` and bind `--mount` args expand `~` and environment v
 
 ## Testing
 
-Run unit and contract tests:
+For the full contributor workflow, local check matrix, PR process, and merge
+policy, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Run the basic local test suites:
 
 ```bash
-python3 -m pytest -q tests/unit tests/contract
+just test-unit
+just test-contract
 ```
 
-Run fast Docker end-to-end fixtures:
+Run all required local checks:
 
 ```bash
-ROS2DOCKER_RUN_E2E=1 python3 -m pytest -q tests/e2e -m "e2e and not slow"
+just check
+```
+
+Run fast Docker end-to-end fixtures when Docker/runtime behavior changed:
+
+```bash
+just test-e2e-fast
 ```
 
 Run all Docker end-to-end fixtures, including slow image and ROS launch checks:
 
 ```bash
-ROS2DOCKER_RUN_E2E=1 ROS2DOCKER_RUN_SLOW_E2E=1 python3 -m pytest -q tests/e2e -m e2e
+just test-e2e-slow
 ```
-
-See `docs/ci.md` for GitHub Actions setup and branch protection guidance.
 
 ## Python API
 

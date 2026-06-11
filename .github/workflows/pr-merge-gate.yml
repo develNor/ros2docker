@@ -1,0 +1,127 @@
+name: pr-merge-gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  merge-lightweight:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'merge_group' || github.event.pull_request.draft == false
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install just
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y just
+
+      - name: Set up local environment
+        run: just setup
+
+      - name: Required lightweight checks
+        run: |
+          just lint
+          just typecheck
+          just test-unit
+          just test-contract
+          just docs
+
+  package:
+    name: package
+    runs-on: ubuntu-latest
+    if: github.event_name == 'merge_group' || github.event.pull_request.draft == false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install just
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y just
+
+      - name: Set up local environment
+        run: just setup
+
+      - name: Validate package
+        run: just package
+
+  fast-e2e:
+    name: fast-e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    if: github.event_name == 'merge_group' || github.event.pull_request.draft == false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install just
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y just
+
+      - name: Set up local environment
+        run: just setup
+
+      - name: Show Docker environment
+        run: docker info
+
+      - name: Run fast E2E
+        run: just test-e2e-fast
+
+  ci-success:
+    name: ci-success
+    runs-on: ubuntu-latest
+    needs: [merge-lightweight, package, fast-e2e]
+    if: always() && (github.event_name == 'merge_group' || github.event.pull_request.draft == false)
+
+    steps:
+      - name: Check required jobs
+        run: |
+          if [[ "${{ needs.merge-lightweight.result }}" != "success" ]]; then
+            echo "merge-lightweight failed or was skipped: ${{ needs.merge-lightweight.result }}"
+            exit 1
+          fi
+          if [[ "${{ needs.package.result }}" != "success" ]]; then
+            echo "package failed or was skipped: ${{ needs.package.result }}"
+            exit 1
+          fi
+          if [[ "${{ needs.fast-e2e.result }}" != "success" ]]; then
+            echo "fast-e2e failed or was skipped: ${{ needs.fast-e2e.result }}"
+            exit 1
+          fi
+          echo "ci-success passed"
