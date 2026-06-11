@@ -13,4 +13,3 @@ build/apt-packages.txt
 build/requirements.txt
 build/bake_packages/*
 !build/bake_packages/.gitkeep
-.devcontainer/devcontainer.json
