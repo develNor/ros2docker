@@ -74,19 +74,36 @@ echo E2E_FOXGLOVE_OK
     assert "E2E_FOXGLOVE_OK" in result.stdout
 
 
-def test_alternate_base_image_builds_and_runs(docker_harness, tmp_path: Path) -> None:
-    image = docker_harness.image_tag("alt-base")
-    container = docker_harness.container_name("alt_base")
+@pytest.mark.parametrize(
+    ("ros_distro", "base_image"),
+    [
+        ("lyrical", "osrf/ros:lyrical-desktop-resolute"),
+        ("kilted", "osrf/ros:kilted-desktop-noble"),
+        ("rolling", "osrf/ros:rolling-desktop-noble"),
+    ],
+)
+def test_latest_base_image_matrix_builds_and_runs(
+    docker_harness,
+    tmp_path: Path,
+    ros_distro: str,
+    base_image: str,
+) -> None:
+    image = docker_harness.image_tag(f"alt-base-{ros_distro}")
+    container = docker_harness.container_name(f"alt_base_{ros_distro}")
     config_path = write_config(
-        tmp_path / "alt-base.ros2docker.json",
+        tmp_path / f"alt-base-{ros_distro}.ros2docker.json",
         {
             "container_name": container,
             "image_name": image,
             "run_type": "command",
-            "command": ["bash", "-lc", "ros2 --help >/tmp/ros2_help && echo E2E_ALT_BASE_OK"],
+            "command": [
+                "bash",
+                "-lc",
+                f'test "$ROS_DISTRO" = {ros_distro} && ros2 --help >/tmp/ros2_help && echo E2E_ALT_BASE_OK',
+            ],
             "bake_ros_packages": [str(FIXTURES_ROOT / "bake" / "e2e_msgs")],
             "build_args": {
-                "BASE_IMAGE": "osrf/ros:lyrical-desktop-resolute",
+                "BASE_IMAGE": base_image,
                 "DIGEST": "",
             },
         },
