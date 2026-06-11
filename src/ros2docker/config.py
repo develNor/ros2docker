@@ -282,8 +282,6 @@ def normalize_mount_spec(spec: str, base_dir: Path) -> str:
 def resolve_host_path(
     raw_path: str | os.PathLike[str],
     base_dir: str | os.PathLike[str],
-    *,
-    must_exist: bool = True,
 ) -> Path:
     text = os.fspath(raw_path)
     expanded = os.path.expanduser(os.path.expandvars(text))
@@ -297,7 +295,7 @@ def resolve_host_path(
         path = Path.cwd() / expanded
 
     resolved = path.resolve()
-    if must_exist and not resolved.exists():
+    if not resolved.exists():
         raise FileNotFoundError(f"Host path does not exist: {text!r} (resolved to {resolved})")
     return resolved
 
