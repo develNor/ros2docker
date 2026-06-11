@@ -31,7 +31,7 @@ When developing `ros2docker`, install this checkout in editable mode so the
 host `ros2docker` command imports the local source:
 
 ```bash
-pipx install --force --editable /path/to/fleet_mgmt/ros_communication_devcontainer/ros2docker
+pipx install --force --editable /path/to/ros2docker
 ```
 
 Normal Python source changes are picked up immediately by new `ros2docker`
@@ -87,7 +87,7 @@ Config files are JSON with `//` and `/* ... */` comments. Supported keys include
 ```
 
 The machine-readable schema lives at `src/ros2docker/resources/schema/ros2docker.schema.json`.
-See `docs/configuration.md` for the full configuration contract. Unknown top-level config keys are rejected.
+See [docs/configuration.md](docs/configuration.md) for the full configuration contract. Unknown top-level config keys are rejected.
 
 Supported `run_type` values are:
 
@@ -103,10 +103,12 @@ Host paths in `-v/--volume` and bind `--mount` args expand `~` and environment v
 `enable_gui_forwarding` forwards the X11 socket at `/tmp/.X11-unix`.
 `forward_ssh_agent` forwards the host `SSH_AUTH_SOCK` path when the variable is set and points to an existing socket or file.
 
-## Testing
+## Development
 
 For the full contributor workflow, local check matrix, PR process, and merge
-policy, see [CONTRIBUTING.md](CONTRIBUTING.md).
+policy, see [CONTRIBUTING.md](CONTRIBUTING.md). CI behavior is summarized in
+[docs/ci.md](docs/ci.md), and release publishing is summarized in
+[docs/release.md](docs/release.md).
 
 Run the basic local test suites:
 

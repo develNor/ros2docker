@@ -42,7 +42,7 @@ test-e2e-slow:
 	ROS2DOCKER_RUN_E2E=1 ROS2DOCKER_RUN_SLOW_E2E=1 {{python}} -m pytest -q tests/e2e -m e2e
 
 docs:
-	{{python}} -m pytest -q tests/contract/test_public_config_surface.py tests/contract/test_readme_examples.py
+	{{python}} -m pytest -q tests/contract/test_public_config_surface.py tests/contract/test_readme_examples.py tests/contract/test_markdown_links.py
 
 package: _package-build _package-smoke
 

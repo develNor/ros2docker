@@ -1,0 +1,58 @@
+name: Agent Task
+description: Request a scoped repository change for an automated coding agent.
+title: "[Agent] "
+labels:
+  - agent-task
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should change?
+      placeholder: Describe the desired outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What must be true when the task is complete?
+      placeholder: List observable behavior, tests, docs, or PR expectations.
+    validations:
+      required: true
+  - type: textarea
+    id: likely_files
+    attributes:
+      label: Files Likely Involved
+      description: Mention known files, directories, workflows, or docs.
+      placeholder: src/ros2docker/..., tests/..., docs/...
+    validations:
+      required: false
+  - type: textarea
+    id: required_checks
+    attributes:
+      label: Required Checks
+      description: List local checks or CI gates that must run.
+      value: |
+        - just check
+        - just test-e2e-fast, if Docker/runtime behavior changes
+    validations:
+      required: true
+  - type: dropdown
+    id: docs_impact
+    attributes:
+      label: Documentation Impact
+      options:
+        - Docs update required
+        - Docs update not expected
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out Of Scope
+      description: What should the agent avoid changing?
+      placeholder: List files, behaviors, migrations, or follow-up ideas that should stay out of this task.
+    validations:
+      required: false

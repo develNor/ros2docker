@@ -170,6 +170,8 @@ Avoid path filters or branch filters for required workflows. If a required
 workflow is skipped by filtering, GitHub can leave the check pending and block
 merging.
 
+See [docs/ci.md](docs/ci.md) for the contributor-facing CI workflow summary.
+
 ## Release Workflow
 
 Releases are built from version tags. After the release PR has merged, create
@@ -195,6 +197,8 @@ secrets for the normal release path.
 
 Use the manual `release` workflow dispatch for TestPyPI rehearsals. Manual runs
 publish only to TestPyPI and do not create GitHub Releases.
+
+See [docs/release.md](docs/release.md) for the focused release workflow summary.
 
 ## Pull Request Description
 
