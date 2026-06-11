@@ -44,11 +44,43 @@ test-e2e-slow:
 docs:
 	{{python}} -m pytest -q tests/contract/test_public_config_surface.py tests/contract/test_readme_examples.py
 
-package:
+package: _package-build _package-smoke
+
+_package-build:
 	rm -rf build dist src/*.egg-info
 	{{python}} -m build
 	{{python}} -m twine check dist/*
 	{{bin}}/check-wheel-contents dist/*.whl
+
+_package-smoke:
+	#!/usr/bin/env bash
+	set -euo pipefail
+
+	tmpdir="$(mktemp -d)"
+	trap 'rm -rf "$tmpdir"' EXIT
+
+	"{{python}}" -m venv "$tmpdir/venv"
+	"$tmpdir/venv/bin/python" -m pip install --no-deps dist/*.whl
+	"$tmpdir/venv/bin/ros2docker" --version
+	"$tmpdir/venv/bin/python" -m ros2docker --version
+	"$tmpdir/venv/bin/ros2docker" run --no-build --dry-run -m .
+	"$tmpdir/venv/bin/python" - <<'PY'
+	from importlib import resources
+
+	expected = (
+	    "resources/build/Dockerfile",
+	    "resources/build/entrypoint.sh",
+	    "resources/examples/ros2docker.json",
+	    "resources/schema/ros2docker.schema.json",
+	)
+	missing = [
+	    path
+	    for path in expected
+	    if not resources.files("ros2docker").joinpath(path).is_file()
+	]
+	if missing:
+	    raise SystemExit(f"missing packaged resources: {', '.join(missing)}")
+	PY
 
 docker-build:
 	{{bin}}/ros2docker build --dry-run

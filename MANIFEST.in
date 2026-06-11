@@ -1,0 +1,11 @@
+prune .devcontainer
+prune .github
+prune tests
+
+exclude .pre-commit-config.yaml
+exclude .gitignore
+exclude AGENTS.md
+exclude DEVELOPMENT_PRINCIPLES.md
+exclude justfile
+
+global-exclude __pycache__ *.py[cod] .DS_Store
