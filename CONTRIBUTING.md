@@ -1,6 +1,6 @@
 # Contributing
 
-This is the canonical development workflow for humans and coding agents.
+This is the canonical development workflow for contributors.
 
 ## Development Setup
 
