@@ -39,6 +39,11 @@ entrypoints, or ROS workspace behavior change.
 `just test-e2e-slow` runs the complete Docker E2E suite. It is intended for
 slow image and ROS launch coverage.
 
+When changing GUI forwarding or SSH agent forwarding behavior, also do one
+manual runtime check on a host with a real X11 display or SSH agent. CI validates
+the command contracts, but hosted runners may not expose those host integrations
+as live services.
+
 ## Nightly
 
 `.github/workflows/nightly-e2e.yml` runs the slow E2E suite on a schedule and
