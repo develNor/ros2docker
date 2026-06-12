@@ -62,7 +62,7 @@ _package-smoke:
 	trap 'rm -rf "$tmpdir"' EXIT
 
 	"{{python}}" -m venv "$tmpdir/venv"
-	"$tmpdir/venv/bin/python" -m pip install --no-deps dist/*.whl
+	"$tmpdir/venv/bin/python" -m pip install dist/*.whl
 	"$tmpdir/venv/bin/ros2docker" --version
 	"$tmpdir/venv/bin/python" -m ros2docker --version
 	"$tmpdir/venv/bin/ros2docker" run --no-build --dry-run -m .

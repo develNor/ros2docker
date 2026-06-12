@@ -150,7 +150,21 @@ def test_missing_host_volume_path_fails_clearly(tmp_path: Path) -> None:
 def test_run_type_validation(tmp_path: Path) -> None:
     config_path = write_config(tmp_path / "ros2docker.json", '{"run_type": "compose"}')
 
-    with pytest.raises(ConfigError, match="Unsupported run_type"):
+    with pytest.raises(ConfigError, match="Invalid ros2docker config: run_type"):
+        load_config(config_path)
+
+
+def test_schema_validation_rejects_wrong_types(tmp_path: Path) -> None:
+    config_path = write_config(tmp_path / "ros2docker.json", '{"mount_ws": "yes"}')
+
+    with pytest.raises(ConfigError, match="mount_ws"):
+        load_config(config_path)
+
+
+def test_schema_validation_rejects_missing_command_for_command_run_type(tmp_path: Path) -> None:
+    config_path = write_config(tmp_path / "ros2docker.json", '{"run_type": "command"}')
+
+    with pytest.raises(ConfigError, match="command"):
         load_config(config_path)
 
 
@@ -176,7 +190,7 @@ def test_command_list_rejects_non_scalar_values(tmp_path: Path) -> None:
         '{"run_type": "command", "command": ["echo", {"bad": "value"}]}',
     )
 
-    with pytest.raises(ConfigError, match="'command' list items"):
+    with pytest.raises(ConfigError, match="command"):
         load_config(config_path)
 
 

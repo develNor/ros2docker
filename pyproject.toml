@@ -12,13 +12,19 @@ authors = [
   { name = "develNor" },
 ]
 keywords = ["docker", "ros2", "cli"]
+dependencies = [
+  "jsonschema>=4.21",
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: 3 :: Only",
   "Topic :: Software Development :: Build Tools",
   "Topic :: System :: Installation/Setup",
@@ -40,6 +46,7 @@ dev = [
   "pytest-cov>=6.0",
   "ruff==0.15.17",
   "twine>=6.0",
+  "types-jsonschema>=4.21",
 ]
 
 [project.scripts]

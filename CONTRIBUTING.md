@@ -6,7 +6,7 @@ This is the canonical development workflow for contributors.
 
 Prerequisites:
 
-- Python 3.10 or 3.12 when mirroring CI.
+- Python 3.10 through 3.14 when mirroring CI.
 - Docker for runtime and E2E checks.
 - `just` for local workflow commands.
 - `pipx` for user-style installs.
@@ -166,10 +166,10 @@ just check
 just test-e2e-fast
 ```
 
-The ready-PR non-Docker gate runs unit and contract tests through
-`just test-nondocker-cov`, enforcing the configured coverage threshold and
-uploading `coverage.xml` as a workflow artifact. Docker E2E remains behavioral
-validation only.
+The ready-PR non-Docker gate runs unit and contract tests on Python 3.10 through
+3.14 through `just test-nondocker-cov`, enforcing the configured coverage
+threshold and uploading `coverage.xml` as a workflow artifact. Docker E2E
+remains behavioral validation only.
 
 A PR cannot merge into `main` unless `ci-success` passes. Prefer requiring only
 this stable aggregate check in branch protection so individual job names can

@@ -13,14 +13,15 @@ just typecheck
 just test-unit
 ```
 
-Ready PRs and merge queue entries run `.github/workflows/pr-merge-gate.yml`.
-The required aggregate branch protection check is:
+Ready PRs, merge queue entries, and pushes to `main` run
+`.github/workflows/pr-merge-gate.yml`. The required aggregate branch protection
+check is:
 
 ```text
 ci-success
 ```
 
-`ci-success` depends on Python 3.10 and 3.12 non-Docker checks, package
+`ci-success` depends on Python 3.10 through 3.14 non-Docker checks, package
 validation, and fast Docker E2E:
 
 ```bash
