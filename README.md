@@ -108,8 +108,9 @@ Host paths in `-v/--volume` and bind `--mount` args expand `~` and environment v
 For contributor setup, local checks, PR modes, merge policy, and release
 workflow, see [CONTRIBUTING.md](CONTRIBUTING.md). CI behavior is summarized in
 [docs/ci.md](docs/ci.md), release publishing is summarized in
-[docs/release.md](docs/release.md), and reusable task playbooks live in
-[docs/playbooks/](docs/playbooks/).
+[docs/release.md](docs/release.md), issue-driven work tracking is summarized in
+[docs/work-items.md](docs/work-items.md), and reusable task recipes live in
+[.github/ISSUE_TEMPLATE/](.github/ISSUE_TEMPLATE/).
 
 ## Python API
 

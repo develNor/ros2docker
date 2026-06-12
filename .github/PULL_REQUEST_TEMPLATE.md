@@ -2,6 +2,10 @@
 
 -
 
+## Linked Issue
+
+- Fixes #
+
 ## Release Notes
 
 - [ ] Release PR: includes `docs/release-notes/vX.Y.Z.md`
