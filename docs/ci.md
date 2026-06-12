@@ -54,6 +54,15 @@ as live services.
 `.github/workflows/nightly-e2e.yml` runs the slow E2E suite on a schedule and
 by manual dispatch. Nightly E2E does not replace the required PR merge gate.
 
+`.github/workflows/image-scan.yml` runs an advisory container image scan on a
+nightly schedule and by manual dispatch. It builds the default ros2docker image
+through the CLI, scans HIGH and CRITICAL fixed vulnerabilities with Trivy, and
+uploads the report as an artifact. Vulnerability findings are advisory and do
+not fail the workflow or participate in the required PR merge gate.
+
+Dependabot is configured in `.github/dependabot.yml` for weekly grouped GitHub
+Actions and Python dependency updates.
+
 ## Local Checks
 
 Use [CONTRIBUTING.md](../CONTRIBUTING.md) as the canonical contributor workflow.
