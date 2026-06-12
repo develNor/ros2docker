@@ -57,6 +57,17 @@ jobs:
           name: coverage-${{ matrix.python-version }}
           path: coverage.xml
 
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v7
+        with:
+          files: ./coverage.xml
+          disable_search: true
+          fail_ci_if_error: true
+          flags: nondocker
+          name: python-3.12
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   package:
     name: package
     runs-on: ubuntu-latest

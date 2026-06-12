@@ -1,6 +1,7 @@
 # ros2docker
 
 [![CI](https://github.com/develNor/ros2docker/actions/workflows/pr-merge-gate.yml/badge.svg?branch=main&event=push)](https://github.com/develNor/ros2docker/actions/workflows/pr-merge-gate.yml)
+[![Coverage](https://codecov.io/gh/develNor/ros2docker/branch/main/graph/badge.svg)](https://codecov.io/gh/develNor/ros2docker)
 [![PyPI](https://img.shields.io/pypi/v/ros2docker.svg)](https://pypi.org/project/ros2docker/)
 [![Python](https://img.shields.io/pypi/pyversions/ros2docker.svg)](https://pypi.org/project/ros2docker/)
 [![License](https://img.shields.io/pypi/l/ros2docker.svg)](https://pypi.org/project/ros2docker/)
