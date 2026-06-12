@@ -203,7 +203,7 @@ def test_load_config_rejects_unknown_config_file_keys(tmp_path: Path) -> None:
 
     with pytest.raises(
         ConfigError,
-        match=r"Unknown config key 'session_configs_dir'\. This key is not part of ros2docker core\.",
+        match=r"Invalid ros2docker config: root: Additional properties are not allowed",
     ):
         load_config(config_path)
 
@@ -211,6 +211,6 @@ def test_load_config_rejects_unknown_config_file_keys(tmp_path: Path) -> None:
 def test_load_config_rejects_unknown_override_keys() -> None:
     with pytest.raises(
         ConfigError,
-        match=r"Unknown config key 'session_configs_dir'\. This key is not part of ros2docker core\.",
+        match=r"Invalid ros2docker config: root: Additional properties are not allowed",
     ):
         load_config(override={"session_configs_dir": "./sessions"})

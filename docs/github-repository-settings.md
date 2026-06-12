@@ -57,6 +57,30 @@ Verify:
 gh api repos/develNor/ros2docker/code-scanning/default-setup
 ```
 
+## Repository Metadata
+
+Expected state:
+
+- Description: `Build and run ROS 2 Docker workspaces from versioned config files.`
+- Homepage: `https://pypi.org/project/ros2docker/`
+- Topics include `ros2`, `docker`, `robotics`, `colcon`, `ros`,
+  `devcontainer`, and `docker-compose`.
+
+Verify:
+
+```bash
+gh repo view develNor/ros2docker --json description,homepageUrl,repositoryTopics
+```
+
+Update:
+
+```bash
+gh repo edit develNor/ros2docker \
+  --description "Build and run ROS 2 Docker workspaces from versioned config files." \
+  --homepage "https://pypi.org/project/ros2docker/" \
+  --add-topic ros2,docker,robotics,colcon,ros,devcontainer,docker-compose
+```
+
 ## Labels
 
 Expected labels for issue-driven work:

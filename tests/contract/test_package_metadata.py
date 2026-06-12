@@ -13,3 +13,17 @@ def test_package_version_is_derived_from_scm_metadata() -> None:
     assert 'dynamic = ["version"]' in pyproject
     assert "setuptools-scm" in pyproject
     assert '__version__ = "0.1.0"' not in package_init
+
+
+def test_python_support_contract_is_consistent() -> None:
+    pyproject = (PACKAGE_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    contributing = (PACKAGE_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    ci_workflow = (PACKAGE_ROOT / ".github" / "workflows" / "pr-merge-gate.yml").read_text(encoding="utf-8")
+    release_workflow = (PACKAGE_ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+
+    assert 'requires-python = ">=3.10"' in pyproject
+    assert "3.10 through 3.14" in contributing
+    for version in ("3.10", "3.11", "3.12", "3.13", "3.14"):
+        assert f"Programming Language :: Python :: {version}" in pyproject
+        assert version in ci_workflow
+        assert version in release_workflow

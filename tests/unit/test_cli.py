@@ -143,7 +143,66 @@ def test_invalid_config_returns_exit_code_1_and_formats_error(tmp_path: Path, ca
     captured = capsys.readouterr()
     assert result == 1
     assert captured.out == ""
-    assert captured.err.startswith("ros2docker: error: Unsupported run_type")
+    assert captured.err.startswith("ros2docker: error: Invalid ros2docker config")
+
+
+def test_validate_cli_reports_valid_config(tmp_path: Path, capsys) -> None:
+    config_path = _write_cli_config(tmp_path)
+
+    result = main(["validate", "-f", str(config_path)])
+
+    captured = capsys.readouterr()
+    assert result == 0
+    assert captured.err == ""
+    assert captured.out == "Config OK\n"
+
+
+def test_validate_cli_prints_resolved_config(tmp_path: Path, capsys) -> None:
+    config_path = _write_cli_config(tmp_path)
+
+    result = main(["validate", "-f", str(config_path), "--print-resolved"])
+
+    captured = capsys.readouterr()
+    resolved = json.loads(captured.out)
+    assert result == 0
+    assert captured.err == ""
+    assert resolved["container_name"] == "cli_container"
+    assert resolved["command"] == ["bash", "-lc", "echo cli-ok"]
+
+
+def test_doctor_cli_reports_readiness_without_docker_side_effects(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys,
+) -> None:
+    config_path = _write_cli_config(tmp_path)
+    monkeypatch.setattr("ros2docker.diagnostics.shutil.which", lambda name: None)
+
+    result = main(["doctor", "-f", str(config_path)])
+
+    captured = capsys.readouterr()
+    assert result == 0
+    assert captured.err == ""
+    assert "OK: config:" in captured.out
+    assert "WARN: docker:" in captured.out
+    assert "INFO: gpu/device:" in captured.out
+
+
+def test_doctor_cli_returns_nonzero_for_requested_missing_workspace(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys,
+) -> None:
+    config_path = tmp_path / "ros2docker.json"
+    config_path.write_text('{"mount_ws": true}', encoding="utf-8")
+    monkeypatch.setattr("ros2docker.diagnostics.shutil.which", lambda name: None)
+
+    result = main(["doctor", "-f", str(config_path)])
+
+    captured = capsys.readouterr()
+    assert result == 1
+    assert captured.err == ""
+    assert "ERROR: workspace:" in captured.out
 
 
 def test_stop_cli_dry_run_prints_docker_stop_command(tmp_path: Path, capsys) -> None:

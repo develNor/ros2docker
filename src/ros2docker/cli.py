@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 
 from . import __version__
 from .api import build, build_run, exec_shell, run, stop
+from .config import load_config
+from .diagnostics import collect_diagnostics, diagnostics_exit_code, format_diagnostics
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -18,11 +21,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     try:
-        args.func(args)
+        result = args.func(args)
     except Exception as exc:  # noqa: BLE001 - CLI should report concise user errors.
         print(f"ros2docker: error: {exc}", file=sys.stderr)
         return 1
-    return 0
+    return result if isinstance(result, int) else 0
 
 
 def _make_parser() -> argparse.ArgumentParser:
@@ -53,6 +56,19 @@ def _make_parser() -> argparse.ArgumentParser:
     _add_dry_run(exec_parser)
     exec_parser.add_argument("command", nargs=argparse.REMAINDER, help="Command after --, defaults to bash.")
     exec_parser.set_defaults(func=_exec)
+
+    validate_parser = subparsers.add_parser("validate", help="Validate a ros2docker config.")
+    _add_config_options(validate_parser)
+    validate_parser.add_argument(
+        "--print-resolved",
+        action="store_true",
+        help="Print the normalized config after validation.",
+    )
+    validate_parser.set_defaults(func=_validate)
+
+    doctor_parser = subparsers.add_parser("doctor", help="Report host readiness diagnostics.")
+    _add_config_options(doctor_parser)
+    doctor_parser.set_defaults(func=_doctor)
 
     return parser
 
@@ -109,6 +125,20 @@ def _exec(args: argparse.Namespace) -> None:
         interactive=not command,
         dry_run=args.dry_run,
     )
+
+
+def _validate(args: argparse.Namespace) -> None:
+    config = load_config(args.config, args.override)
+    if args.print_resolved:
+        print(json.dumps(config, indent=2, sort_keys=True))
+    else:
+        print("Config OK")
+
+
+def _doctor(args: argparse.Namespace) -> int:
+    diagnostics = collect_diagnostics(args.config, args.override)
+    print(format_diagnostics(diagnostics))
+    return diagnostics_exit_code(diagnostics)
 
 
 if __name__ == "__main__":

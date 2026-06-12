@@ -1,4 +1,4 @@
-name: nightly-e2e
+name: Nightly E2E
 
 on:
   schedule:

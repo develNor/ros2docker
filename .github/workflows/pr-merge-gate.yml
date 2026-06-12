@@ -1,6 +1,8 @@
-name: pr-merge-gate
+name: CI
 
 on:
+  push:
+    branches: [main]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   merge_group:
@@ -15,11 +17,11 @@ concurrency:
 jobs:
   merge-lightweight:
     runs-on: ubuntu-latest
-    if: github.event_name == 'merge_group' || github.event.pull_request.draft == false
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Check out repository
@@ -58,7 +60,7 @@ jobs:
   package:
     name: package
     runs-on: ubuntu-latest
-    if: github.event_name == 'merge_group' || github.event.pull_request.draft == false
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
 
     steps:
       - name: Check out repository
@@ -87,7 +89,7 @@ jobs:
     name: fast-e2e
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    if: github.event_name == 'merge_group' || github.event.pull_request.draft == false
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
 
     steps:
       - name: Check out repository
@@ -119,7 +121,7 @@ jobs:
     name: ci-success
     runs-on: ubuntu-latest
     needs: [merge-lightweight, package, fast-e2e]
-    if: always() && (github.event_name == 'merge_group' || github.event.pull_request.draft == false)
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
 
     steps:
       - name: Check required jobs
