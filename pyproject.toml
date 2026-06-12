@@ -53,6 +53,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 ros2docker = [
+  "py.typed",
   "resources/build/*",
   "resources/examples/*",
   "resources/schema/*",

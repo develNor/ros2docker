@@ -70,6 +70,7 @@ _package-smoke:
 	from importlib import resources
 
 	expected = (
+	    "py.typed",
 	    "resources/build/Dockerfile",
 	    "resources/build/entrypoint.sh",
 	    "resources/examples/ros2docker.json",
