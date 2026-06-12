@@ -1,6 +1,8 @@
 prune .github
 prune tests
 
+include src/ros2docker/py.typed
+
 exclude .pre-commit-config.yaml
 exclude .gitignore
 exclude AGENTS.md

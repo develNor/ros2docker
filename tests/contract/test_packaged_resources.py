@@ -12,7 +12,9 @@ DOCKERFILE_PATH = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "build" / 
 ENTRYPOINT_PATH = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "build" / "entrypoint.sh"
 
 
-def test_packaged_resources_include_build_schema_example_and_bake_context(tmp_path: Path) -> None:
+def test_packaged_resources_include_typed_marker_build_schema_example_and_bake_context(tmp_path: Path) -> None:
+    assert resources.files("ros2docker").joinpath("py.typed").is_file()
+
     package_resources = resources.files("ros2docker").joinpath("resources")
 
     assert package_resources.joinpath("build", "Dockerfile").is_file()
