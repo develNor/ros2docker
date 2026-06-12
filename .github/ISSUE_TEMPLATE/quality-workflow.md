@@ -2,7 +2,7 @@
 name: Quality workflow
 about: Run the multi-PR repository quality workflow.
 title: "Run repository quality workflow"
-labels: agent-ready
+labels: ready
 assignees: ""
 ---
 
@@ -21,7 +21,7 @@ after each PR is ready for human review.
 
 - Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
   [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [AGENTS.md](../../AGENTS.md).
+  [docs/work-items.md](../../docs/work-items.md).
 - Create one focused PR per goal.
 - Do not combine unrelated goals into one PR.
 - Start every goal from latest `origin/main`.

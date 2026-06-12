@@ -2,7 +2,7 @@
 name: Maintainer review
 about: Review a pull request from a strict maintainer perspective.
 title: "Review PR #"
-labels: agent-ready
+labels: ready
 assignees: ""
 ---
 
@@ -18,7 +18,7 @@ Review the referenced PR as a strict maintainer.
 
 - Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
   [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [AGENTS.md](../../AGENTS.md).
+  [docs/work-items.md](../../docs/work-items.md).
 - Do not modify files unless explicitly asked.
 - Focus on bugs, regressions, missing tests, and process risks before style.
 

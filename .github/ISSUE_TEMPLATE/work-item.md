@@ -2,7 +2,7 @@
 name: Work item
 about: Track actionable project work that should be handled through an issue and PR.
 title: ""
-labels: agent-ready
+labels: ready
 assignees: ""
 ---
 
@@ -21,7 +21,8 @@ Describe the outcome this issue should achieve.
   PR workflow, merge policy, and releases.
 - Follow [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md) for
   quality rules and definition of done.
-- Follow [AGENTS.md](../../AGENTS.md) for agent-specific operating rules.
+- Follow [docs/work-items.md](../../docs/work-items.md) for issue ownership,
+  comments, labels, and PR linkage.
 - Keep the change small and coherent.
 - Do not skip, weaken, or delete tests/CI to make this pass.
 

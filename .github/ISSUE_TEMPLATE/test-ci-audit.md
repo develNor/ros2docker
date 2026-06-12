@@ -2,7 +2,7 @@
 name: Test and CI audit
 about: Audit tests, CI wiring, and coverage of documented behavior.
 title: "Audit test and CI coverage"
-labels: agent-ready
+labels: ready
 assignees: ""
 ---
 
@@ -23,7 +23,7 @@ Audit and improve test coverage and test execution wiring.
 
 - Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
   [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [AGENTS.md](../../AGENTS.md).
+  [docs/work-items.md](../../docs/work-items.md).
 - Do not refactor implementation except where needed to make tests possible.
 - Do not skip, weaken, or delete tests/CI to make this pass.
 
