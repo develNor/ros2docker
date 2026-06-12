@@ -33,7 +33,20 @@ The ready-PR non-Docker checks run unit and contract tests through
 `just test-nondocker-cov`, enforcing the configured coverage threshold and
 uploading `coverage.xml` as an artifact. The Python 3.12 leg also publishes
 that coverage report to Codecov with `CODECOV_TOKEN` for the README coverage
-badge. Docker E2E tests are not collected for coverage.
+badge and Codecov PR coverage statuses. Docker E2E tests are not collected for
+coverage.
+
+Codecov is configured in [`codecov.yml`](../codecov.yml) to report two PR
+coverage statuses from the uploaded `nondocker` report:
+
+- `codecov/patch` is strict for changed lines: target `100%`, threshold `0%`.
+- `codecov/project` is a looser whole-project backstop: target `auto` against
+  the PR base, threshold `1%`.
+
+Patch coverage is the primary signal for new or changed code because it only
+measures lines adjusted in the PR. Project coverage stays looser so it catches
+gradual overall coverage erosion without turning existing uncovered code into
+the focus of every small change.
 
 Use `ci-success` as the required check instead of individual job names.
 
