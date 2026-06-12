@@ -1,7 +1,7 @@
-# Use the official image for ROS2 Lyrical under Ubuntu 26.04
+# Use the official image for ROS 2 Lyrical under Ubuntu 26.04.
 ARG BASE_IMAGE=osrf/ros:lyrical-desktop-full-resolute
 # Pin digests for reproducibility. Leave empty to use the latest image. The digest can be found on Docker Hub for the respective tag, e.g. for osrf/ros:lyrical-desktop-full-resolute
-# Default: Latest Digist as of 2026-06-10 for https://hub.docker.com/layers/osrf/ros/lyrical-desktop-full-resolute
+# Default: latest digest as of 2026-06-10 for https://hub.docker.com/layers/osrf/ros/lyrical-desktop-full-resolute
 ARG DIGEST=@sha256:ac6471b5c13e57674d9660630d0cb140f518cb5ea6add7169e5dd91e16bf0b50
 
 FROM ${BASE_IMAGE}${DIGEST}
@@ -58,11 +58,14 @@ RUN apt-get update && apt-get install -y \
 ##############################################################################
 ENV CUSTOM_WS=/opt/custom_ws
 
-# novatel_oem7_msgs: no binary deb for Kilted yet, build from source
-RUN mkdir -p ${CUSTOM_WS}/src \
-    && git clone --depth 1 --branch kilted \
-       https://github.com/novatel/novatel_oem7_driver.git \
-       ${CUSTOM_WS}/src/novatel_oem7_driver
+# novatel_oem7_msgs: build from a pinned source commit.
+ARG NOVATEL_OEM7_REF=237d6b752c4f90a30bdf94dfb60a734e41d68697
+RUN mkdir -p ${CUSTOM_WS}/src/novatel_oem7_driver \
+    && git init ${CUSTOM_WS}/src/novatel_oem7_driver \
+    && cd ${CUSTOM_WS}/src/novatel_oem7_driver \
+    && git remote add origin https://github.com/novatel/novatel_oem7_driver.git \
+    && git fetch --depth 1 origin "${NOVATEL_OEM7_REF}" \
+    && git checkout --detach FETCH_HEAD
 
 # bake_packages: project-specific ROS packages staged by build.py
 # from paths listed in config "bake_ros_packages"
@@ -78,26 +81,33 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
 # install zenoh and zenoh-plugin-ros2dds
 ARG ZENOH_VERSION=1.9.0
 ARG ZENOH_ROS2DDS_VERSION=${ZENOH_VERSION}
+ARG ZENOH_SHA256=f18081184b089e79e605f2c0cb3f7790fbf101ae94942988f716e19e1810a46e
+ARG ZENOH_ROS2DDS_SHA256=91aa0d569fffd57e7ebb1a591b97789891c543b1ff0a1658413ce6cbbba34a9e
 ENV ZENOH_PLATFORM=x86_64-unknown-linux-gnu
 # Zenoh router
-# - see: https://download.eclipse.org/zenoh/zenoh/latest/
+# - see: https://download.eclipse.org/zenoh/zenoh/
 RUN mkdir -p /opt/zenoh \
-    && wget -qO /tmp/zenoh.zip \
+    && curl -fsSL -o /tmp/zenoh.zip \
          "https://download.eclipse.org/zenoh/zenoh/${ZENOH_VERSION}/zenoh-${ZENOH_VERSION}-${ZENOH_PLATFORM}-standalone.zip" \
+    && echo "${ZENOH_SHA256}  /tmp/zenoh.zip" | sha256sum -c - \
     && unzip -q /tmp/zenoh.zip -d /opt/zenoh \
     && rm /tmp/zenoh.zip
-# ROS2 bridge plugin
-# - see: https://download.eclipse.org/zenoh/zenoh-plugin-ros2dds/latest/
+# ROS 2 bridge plugin
+# - see: https://download.eclipse.org/zenoh/zenoh-plugin-ros2dds/
 RUN mkdir -p /opt/zenoh/lib \
-    && wget -qO /tmp/zenoh-plugin-ros2dds.zip \
+    && curl -fsSL -o /tmp/zenoh-plugin-ros2dds.zip \
          "https://download.eclipse.org/zenoh/zenoh-plugin-ros2dds/${ZENOH_ROS2DDS_VERSION}/zenoh-plugin-ros2dds-${ZENOH_ROS2DDS_VERSION}-${ZENOH_PLATFORM}-standalone.zip" \
+    && echo "${ZENOH_ROS2DDS_SHA256}  /tmp/zenoh-plugin-ros2dds.zip" | sha256sum -c - \
     && unzip -q /tmp/zenoh-plugin-ros2dds.zip -d /opt/zenoh \
     && rm /tmp/zenoh-plugin-ros2dds.zip
 ENV PATH="/opt/zenoh:${PATH}"
 
 # mcap CLI for fast filtering of rosbags
 ARG MCAP_CLI_VERSION=0.0.62
-RUN curl -L https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv${MCAP_CLI_VERSION}/mcap-linux-amd64 -o /usr/local/bin/mcap \
+ARG MCAP_CLI_SHA256=0ed31e9ea39e94672900de3aff472074976cbf1977742d65bd9159b293c5bcbe
+RUN curl -fsSL -o /usr/local/bin/mcap \
+      "https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv${MCAP_CLI_VERSION}/mcap-linux-amd64" \
+    && echo "${MCAP_CLI_SHA256}  /usr/local/bin/mcap" | sha256sum -c - \
     && chmod +x /usr/local/bin/mcap
 
 # ##############################################################################
@@ -131,7 +141,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
         rosbags
 
 ##############################################################################
-# 7) Hotfix: Replace deprecated rosdep version shipped with ROS 2 Jazzy image
+# 7) Hotfix: Replace deprecated rosdep version shipped with the ROS 2 base image
 ##############################################################################
 # The base image includes an outdated rosdep installed via APT,
 # which uses the deprecated 'pkg_resources' API and causes a DeprecationWarning.

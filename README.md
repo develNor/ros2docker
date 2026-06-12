@@ -1,7 +1,10 @@
 # ros2docker
 
-[![pr-lightweight](https://github.com/develNor/ros2docker/actions/workflows/pr-lightweight.yml/badge.svg)](https://github.com/develNor/ros2docker/actions/workflows/pr-lightweight.yml)
-[![nightly-e2e](https://github.com/develNor/ros2docker/actions/workflows/nightly-e2e.yml/badge.svg)](https://github.com/develNor/ros2docker/actions/workflows/nightly-e2e.yml)
+[![CI](https://github.com/develNor/ros2docker/actions/workflows/pr-merge-gate.yml/badge.svg?branch=main&event=push)](https://github.com/develNor/ros2docker/actions/workflows/pr-merge-gate.yml)
+[![PyPI](https://img.shields.io/pypi/v/ros2docker.svg)](https://pypi.org/project/ros2docker/)
+[![Python](https://img.shields.io/pypi/pyversions/ros2docker.svg)](https://pypi.org/project/ros2docker/)
+[![License](https://img.shields.io/pypi/l/ros2docker.svg)](https://pypi.org/project/ros2docker/)
+[![Nightly E2E](https://github.com/develNor/ros2docker/actions/workflows/nightly-e2e.yml/badge.svg?branch=main)](https://github.com/develNor/ros2docker/actions/workflows/nightly-e2e.yml)
 
 `ros2docker` is a versioned Python CLI and API for building and running ROS 2 Docker workspaces from JSON-with-comments config files.
 
@@ -57,12 +60,16 @@ ros2docker run -f ros2docker.json
 ros2docker run -f ros2docker.json --no-build -- -v /host/data:/data
 ros2docker stop -f ros2docker.json
 ros2docker exec -f ros2docker.json -- bash -lc 'ros2 --help'
+ros2docker validate -f ros2docker.json
+ros2docker validate -f ros2docker.json --print-resolved
+ros2docker doctor -f ros2docker.json
 ros2docker --version
 python -m ros2docker --version
 ```
 
 Every Docker action accepts `--dry-run`, which prints the Docker argv and exits without running Docker.
 The `-f`/`--config` option is optional; without it, `ros2docker` uses the default config, which starts an interactive Bash shell.
+`validate` checks config syntax and schema without Docker side effects. `doctor` reports host readiness diagnostics before a build or run.
 
 ## Config
 
@@ -102,6 +109,10 @@ Host paths in `-v/--volume` and bind `--mount` args expand `~` and environment v
 
 `enable_gui_forwarding` forwards the X11 socket at `/tmp/.X11-unix`.
 `forward_ssh_agent` forwards the host `SSH_AUTH_SOCK` path when the variable is set and points to an existing socket or file.
+
+## Security / Trust Boundary
+
+`ros2docker` is intended for trusted developer workspaces, configs, and ROS packages. It can mount host paths, forward X11, forward the SSH agent, build arbitrary packages, and execute Docker containers. Treat project configs and workspace contents as code that can affect the host through those features, and do not run untrusted inputs with this tool.
 
 ## Development
 

@@ -11,6 +11,9 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import ValidationError
+
 
 class ConfigError(ValueError):
     """Raised when a ros2docker config is invalid."""
@@ -33,8 +36,8 @@ VALID_RUN_TYPES = {"bash", "catmux", "up", "command"}
 
 
 @lru_cache
-def public_config_keys() -> frozenset[str]:
-    """Return the supported top-level ros2docker config keys."""
+def config_schema() -> dict[str, Any]:
+    """Return the packaged ros2docker JSON Schema."""
 
     schema_text = (
         resources.files("ros2docker")
@@ -44,6 +47,16 @@ def public_config_keys() -> frozenset[str]:
         .read_text(encoding="utf-8")
     )
     schema = json.loads(schema_text)
+    if not isinstance(schema, dict):
+        raise ConfigError("ros2docker config schema must be a JSON object.")
+    return schema
+
+
+@lru_cache
+def public_config_keys() -> frozenset[str]:
+    """Return the supported top-level ros2docker config keys."""
+
+    schema = config_schema()
     properties = schema.get("properties", {})
     if not isinstance(properties, dict):
         raise ConfigError("ros2docker config schema must define object properties.")
@@ -144,14 +157,12 @@ def load_config(
             raise ConfigError(f"Invalid JSON in {config_path}: {exc}") from exc
         if not isinstance(loaded, dict):
             raise ConfigError(f"Config file must contain a JSON object: {config_path}")
-        _validate_public_config_keys(loaded)
         config.update(loaded)
 
     override_config = parse_override(override)
-    _validate_public_config_keys(override_config)
     config.update(override_config)
-    _normalize_config_paths(config, config_dir, resolve_run_args=resolve_run_args)
     _validate_config(config)
+    _normalize_config_paths(config, config_dir, resolve_run_args=resolve_run_args)
     return config
 
 
@@ -169,29 +180,30 @@ def _validate_public_config_keys(config: Mapping[str, Any]) -> None:
         raise ConfigError(f"Unknown config key {key!r}. This key is not part of ros2docker core.")
 
 
+@lru_cache
+def _schema_validator() -> Draft202012Validator:
+    schema = config_schema()
+    Draft202012Validator.check_schema(schema)
+    return Draft202012Validator(schema)
+
+
 def _validate_config(config: Mapping[str, Any]) -> None:
-    run_type = config.get("run_type", "bash")
-    if run_type not in VALID_RUN_TYPES:
-        raise ConfigError(f"Unsupported run_type {run_type!r}. Expected one of: {', '.join(sorted(VALID_RUN_TYPES))}.")
+    errors = sorted(_schema_validator().iter_errors(config), key=_validation_error_sort_key)
+    if errors:
+        shown = "; ".join(_format_validation_error(error) for error in errors[:3])
+        if len(errors) > 3:
+            shown = f"{shown}; and {len(errors) - 3} more error(s)"
+        raise ConfigError(f"Invalid ros2docker config: {shown}")
 
-    for list_key in ("run_args", "extra_run_args", "bake_ros_packages"):
-        if not isinstance(config.get(list_key, []), list):
-            raise ConfigError(f"{list_key!r} must be a list.")
 
-    if not isinstance(config.get("build_args", {}), dict):
-        raise ConfigError("'build_args' must be a JSON object.")
+def _validation_error_sort_key(error: ValidationError) -> tuple[list[str], str]:
+    return ([str(part) for part in error.absolute_path], error.message)
 
-    if run_type == "catmux" and not config.get("catmux_file"):
-        raise ConfigError("'catmux_file' is required when run_type is 'catmux'.")
 
-    if run_type == "command":
-        command = config.get("command")
-        if not isinstance(command, str | list):
-            raise ConfigError("'command' must be a string or list when run_type is 'command'.")
-        if isinstance(command, list):
-            for part in command:
-                if not isinstance(part, str | int | float | bool):
-                    raise ConfigError("'command' list items must be strings, numbers, or booleans.")
+def _format_validation_error(error: ValidationError) -> str:
+    path = ".".join(str(part) for part in error.absolute_path)
+    location = path or "root"
+    return f"{location}: {error.message}"
 
 
 def _normalize_config_paths(config: dict[str, Any], config_dir: Path, *, resolve_run_args: bool) -> None:
