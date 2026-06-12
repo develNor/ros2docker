@@ -62,6 +62,7 @@ gh api repos/develNor/ros2docker/code-scanning/default-setup
 Expected labels for issue-driven work:
 
 - `agent-ready`: issue is ready for an agent or contributor to pick up.
+- `backlog`: issue is tracked for later and is not currently scheduled.
 - `documentation`: documentation-only or documentation-heavy work.
 - `bug`: incorrect behavior.
 - `enhancement`: new feature or request.
@@ -82,6 +83,15 @@ gh label create agent-ready \
   --repo develNor/ros2docker \
   --description "Ready for an agent or contributor to pick up" \
   --color 5319e7
+```
+
+Create the `backlog` label if it is missing:
+
+```bash
+gh label create backlog \
+  --repo develNor/ros2docker \
+  --description "Tracked for later and not currently scheduled" \
+  --color cfd3d7
 ```
 
 ## Drift Handling
