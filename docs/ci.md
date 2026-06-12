@@ -31,8 +31,9 @@ just test-e2e-fast
 
 The ready-PR non-Docker checks run unit and contract tests through
 `just test-nondocker-cov`, enforcing the configured coverage threshold and
-uploading `coverage.xml` as an artifact. Docker E2E tests are not collected for
-coverage.
+uploading `coverage.xml` as an artifact. The Python 3.12 leg also publishes
+that coverage report to Codecov with `CODECOV_TOKEN` for the README coverage
+badge. Docker E2E tests are not collected for coverage.
 
 Use `ci-success` as the required check instead of individual job names.
 
