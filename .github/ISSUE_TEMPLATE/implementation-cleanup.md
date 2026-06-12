@@ -2,7 +2,7 @@
 name: Implementation cleanup
 about: Simplify implementation while preserving the public contract.
 title: "Clean up implementation"
-labels: agent-ready
+labels: ready
 assignees: ""
 ---
 
@@ -20,7 +20,7 @@ Improve implementation quality while preserving the current public contract.
 
 - Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
   [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [AGENTS.md](../../AGENTS.md).
+  [docs/work-items.md](../../docs/work-items.md).
 - Do not change documented CLI/API behavior unless tests and docs prove the old
   behavior was stale or broken.
 - Do not remove tests or weaken assertions.
