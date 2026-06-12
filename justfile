@@ -32,8 +32,10 @@ test-unit:
 test-contract:
 	{{python}} -m pytest -q tests/contract
 
-coverage:
-	{{python}} -m pytest -q tests/unit tests/contract --cov=ros2docker --cov-report=term-missing
+coverage: test-nondocker-cov
+
+test-nondocker-cov:
+	{{python}} -m pytest -q tests/unit tests/contract --cov=ros2docker --cov-report=term-missing --cov-report=xml:coverage.xml
 
 test-e2e-fast:
 	ROS2DOCKER_RUN_E2E=1 {{python}} -m pytest -q tests/e2e -m "e2e and not slow"
@@ -88,4 +90,4 @@ docker-build:
 pre-commit:
 	{{python}} -m pre_commit run --all-files
 
-check: lint typecheck test-unit test-contract docs package
+check: lint typecheck test-nondocker-cov docs package

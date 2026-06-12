@@ -29,6 +29,7 @@ just lint
 just typecheck
 just test-unit
 just test-contract
+just test-nondocker-cov
 just docs
 just package
 ```
@@ -47,8 +48,9 @@ Before opening or updating a ready PR, run:
 just check
 ```
 
-`just check` runs linting, type checking, unit tests, contract tests, docs checks,
-and package validation. It does not run Docker E2E checks.
+`just check` runs linting, type checking, unit and contract tests under
+coverage, docs checks, and package validation. It does not run Docker E2E
+checks.
 
 Use Docker E2E checks when Docker/runtime behavior changed:
 
@@ -157,6 +159,11 @@ that workflow requires:
 just check
 just test-e2e-fast
 ```
+
+The ready-PR non-Docker gate runs unit and contract tests through
+`just test-nondocker-cov`, enforcing the configured coverage threshold and
+uploading `coverage.xml` as a workflow artifact. Docker E2E remains behavioral
+validation only.
 
 A PR cannot merge into `main` unless `ci-success` passes. Prefer requiring only
 this stable aggregate check in branch protection so individual job names can

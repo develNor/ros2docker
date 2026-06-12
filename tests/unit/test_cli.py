@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+import ros2docker.cli as cli
 from ros2docker import __version__
 from ros2docker.cli import main
 
@@ -97,6 +98,54 @@ def test_run_cli_dry_run_forwards_extra_docker_args_after_separator(tmp_path: Pa
     assert captured.out.rstrip().endswith("cli_image bash -lc 'echo cli-ok'")
 
 
+def test_run_no_build_dispatches_to_run(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[object, ...]] = []
+
+    def fake_run(config, override, *, mount, extra_run_args, dry_run):
+        calls.append((config, override, mount, extra_run_args, dry_run))
+
+    def fake_build_run(*args, **kwargs):
+        pytest.fail("run --no-build should not call build_run")
+
+    monkeypatch.setattr(cli, "run", fake_run)
+    monkeypatch.setattr(cli, "build_run", fake_build_run)
+
+    result = main(["run", "--no-build", "--dry-run", "-m", ".", "--", "--network", "host"])
+
+    assert result == 0
+    assert calls == [(None, None, ".", ["--network", "host"], True)]
+
+
+def test_run_without_no_build_dispatches_to_build_run(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[object, ...]] = []
+
+    def fake_run(*args, **kwargs):
+        pytest.fail("run without --no-build should not call run")
+
+    def fake_build_run(config, override, *, mount, extra_run_args, dry_run):
+        calls.append((config, override, mount, extra_run_args, dry_run))
+
+    monkeypatch.setattr(cli, "run", fake_run)
+    monkeypatch.setattr(cli, "build_run", fake_build_run)
+
+    result = main(["run", "--dry-run", "-m", ".", "--", "--network", "host"])
+
+    assert result == 0
+    assert calls == [(None, None, ".", ["--network", "host"], True)]
+
+
+def test_invalid_config_returns_exit_code_1_and_formats_error(tmp_path: Path, capsys) -> None:
+    config_path = tmp_path / "ros2docker.json"
+    config_path.write_text('{"run_type": "compose"}', encoding="utf-8")
+
+    result = main(["run", "--no-build", "--dry-run", "-f", str(config_path)])
+
+    captured = capsys.readouterr()
+    assert result == 1
+    assert captured.out == ""
+    assert captured.err.startswith("ros2docker: error: Unsupported run_type")
+
+
 def test_stop_cli_dry_run_prints_docker_stop_command(tmp_path: Path, capsys) -> None:
     config_path = _write_cli_config(tmp_path)
 
@@ -117,6 +166,47 @@ def test_exec_cli_dry_run_prints_docker_exec_command(tmp_path: Path, capsys) -> 
     assert result == 0
     assert captured.err == ""
     assert captured.out == "docker exec cli_container bash -lc 'ros2 --help'\n"
+
+
+def test_exec_without_command_dispatches_interactive_default_shell(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[object, ...]] = []
+
+    def fake_exec_shell(config, override, *, command, interactive, dry_run):
+        calls.append((config, override, command, interactive, dry_run))
+
+    monkeypatch.setattr(cli, "exec_shell", fake_exec_shell)
+
+    result = main(["exec", "--dry-run"])
+
+    assert result == 0
+    assert calls == [(None, None, None, True, True)]
+
+
+def test_exec_with_command_dispatches_without_interactive_shell(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[object, ...]] = []
+
+    def fake_exec_shell(config, override, *, command, interactive, dry_run):
+        calls.append((config, override, command, interactive, dry_run))
+
+    monkeypatch.setattr(cli, "exec_shell", fake_exec_shell)
+
+    result = main(["exec", "--dry-run", "--", "bash", "-lc", "true"])
+
+    assert result == 0
+    assert calls == [(None, None, ["bash", "-lc", "true"], False, True)]
+
+
+def test_dry_run_does_not_execute_subprocess(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config_path = _write_cli_config(tmp_path)
+
+    def fail_subprocess_run(*args, **kwargs):
+        pytest.fail("dry-run should not execute subprocess.run")
+
+    monkeypatch.setattr("ros2docker.api.subprocess.run", fail_subprocess_run)
+
+    result = main(["run", "--no-build", "--dry-run", "-f", str(config_path)])
+
+    assert result == 0
 
 
 def test_cli_version_reports_package_metadata(capsys) -> None:

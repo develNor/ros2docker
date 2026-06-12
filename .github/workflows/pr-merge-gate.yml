@@ -45,9 +45,15 @@ jobs:
         run: |
           just lint
           just typecheck
-          just test-unit
-          just test-contract
+          just test-nondocker-cov
           just docs
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: coverage.xml
 
   package:
     name: package

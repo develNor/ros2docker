@@ -20,13 +20,18 @@ The required aggregate branch protection check is:
 ci-success
 ```
 
-`ci-success` depends on Python 3.10 and 3.12 lightweight checks, package
+`ci-success` depends on Python 3.10 and 3.12 non-Docker checks, package
 validation, and fast Docker E2E:
 
 ```bash
 just check
 just test-e2e-fast
 ```
+
+The ready-PR non-Docker checks run unit and contract tests through
+`just test-nondocker-cov`, enforcing the configured coverage threshold and
+uploading `coverage.xml` as an artifact. Docker E2E tests are not collected for
+coverage.
 
 Use `ci-success` as the required check instead of individual job names.
 
