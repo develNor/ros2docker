@@ -107,8 +107,9 @@ Host paths in `-v/--volume` and bind `--mount` args expand `~` and environment v
 
 For contributor setup, local checks, PR modes, merge policy, and release
 workflow, see [CONTRIBUTING.md](CONTRIBUTING.md). CI behavior is summarized in
-[docs/ci.md](docs/ci.md), and release publishing is summarized in
-[docs/release.md](docs/release.md).
+[docs/ci.md](docs/ci.md), release publishing is summarized in
+[docs/release.md](docs/release.md), and reusable task playbooks live in
+[docs/playbooks/](docs/playbooks/).
 
 ## Python API
 

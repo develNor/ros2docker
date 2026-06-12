@@ -2,7 +2,7 @@ You are executing a multi-goal repository quality workflow.
 
 Repository rules:
 - Follow AGENTS.md.
-- Use the goal templates in docs/agent-goals/.
+- Use the playbooks in docs/playbooks/.
 - Create one focused autonomous PR per goal.
 - Do not combine unrelated goals into one PR.
 - Start every goal from latest main.
@@ -13,7 +13,7 @@ Repository rules:
 - Keep each PR small and reviewable.
 
 Execution plan:
-1. Run docs/agent-goals/test-ci-audit.md and create a PR.
-2. Run docs/agent-goals/documentation-audit.md and create a PR.
-3. After both are merged into main, run docs/agent-goals/implementation-cleanup.md and create a PR.
-4. After the cleanup PR is created, run docs/agent-goals/maintainer-review.md as a review-only task.
+1. Run docs/playbooks/test-ci-audit.md and create a PR.
+2. Run docs/playbooks/documentation-audit.md and create a PR.
+3. After both are merged into main, run docs/playbooks/implementation-cleanup.md and create a PR.
+4. After the cleanup PR is created, run docs/playbooks/maintainer-review.md as a review-only task.

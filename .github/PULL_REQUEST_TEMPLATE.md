@@ -2,6 +2,13 @@
 
 -
 
+## Release Notes
+
+- [ ] Release PR: includes `docs/release-notes/vX.Y.Z.md`
+- [ ] Release PR: summarizes user-facing changes since the previous release
+- [ ] Release PR: documents compatibility, migration, and validation notes
+- [ ] Not a release PR
+
 ## Public Behavior
 
 - [ ] Changes public CLI/config/API/Docker behavior

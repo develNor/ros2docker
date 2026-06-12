@@ -177,6 +177,12 @@ See [docs/ci.md](docs/ci.md) for the contributor-facing CI workflow summary.
 Releases are built from version tags. After the release PR has merged, create
 and push a tag in the form `vX.Y.Z` from the release commit:
 
+Release PRs must include `docs/release-notes/vX.Y.Z.md`, copied from
+`docs/release-notes/TEMPLATE.md` and filled with a summary of user-facing
+changes since the previous release tag. Include compatibility, migration,
+Docker/dependency, packaging, and validation notes. If there are no breaking
+changes or migration steps, say that explicitly.
+
 ```bash
 git switch main
 git fetch --prune
@@ -186,9 +192,10 @@ git push origin vX.Y.Z
 ```
 
 The `release` workflow validates the tag with non-Docker checks, package
-artifact validation, and fast Docker E2E before publishing. Successful tag
-releases publish the wheel and sdist to PyPI through Trusted Publishing, then
-create a GitHub Release with the wheel, sdist, and `SHA256SUMS`.
+artifact validation, tag-specific release notes, and fast Docker E2E before
+publishing. Successful tag releases publish the wheel and sdist to PyPI through
+Trusted Publishing, then create a GitHub Release with the release notes, wheel,
+sdist, and `SHA256SUMS`.
 
 Maintainers must configure pending Trusted Publishers on PyPI and TestPyPI for
 repository `develNor/ros2docker`, workflow `.github/workflows/release.yml`, and
@@ -204,4 +211,5 @@ See [docs/release.md](docs/release.md) for the focused release workflow summary.
 
 Include local command results in the PR summary. Call out whether the PR is a
 review PR or an autonomous PR, which checks were run, and whether Docker/runtime
-behavior changed.
+behavior changed. Release PRs should also include a release notes draft or point
+to the completed `docs/release-notes/vX.Y.Z.md` file.
