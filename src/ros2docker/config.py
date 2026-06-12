@@ -89,6 +89,8 @@ def strip_json_comments(text: str) -> str:
             i += 2
             while i + 1 < len(text) and not (text[i] == "*" and text[i + 1] == "/"):
                 i += 1
+            if i + 1 >= len(text):
+                raise ConfigError("Unterminated block comment in JSON input.")
             i += 2
             continue
 
@@ -186,6 +188,10 @@ def _validate_config(config: Mapping[str, Any]) -> None:
         command = config.get("command")
         if not isinstance(command, str | list):
             raise ConfigError("'command' must be a string or list when run_type is 'command'.")
+        if isinstance(command, list):
+            for part in command:
+                if not isinstance(part, str | int | float | bool):
+                    raise ConfigError("'command' list items must be strings, numbers, or booleans.")
 
 
 def _normalize_config_paths(config: dict[str, Any], config_dir: Path, *, resolve_run_args: bool) -> None:
