@@ -119,6 +119,15 @@ gh label create backlog \
   --color cfd3d7
 ```
 
+Create the `maybe` label if it is missing:
+
+```bash
+gh label create maybe \
+  --repo develNor/ros2docker \
+  --description "Saved for later consideration; not yet accepted or agent-ready" \
+  --color fbca04
+```
+
 ## Drift Handling
 
 If GitHub state differs from this document, treat it as drift. Either update the
