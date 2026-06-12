@@ -85,8 +85,9 @@ gh repo edit develNor/ros2docker \
 
 Expected labels for issue-driven work:
 
-- `agent-ready`: issue is ready for an agent or contributor to pick up.
+- `ready`: issue is accepted and ready for a contributor to pick up.
 - `backlog`: issue is tracked for later and is not currently scheduled.
+- `maybe`: issue is saved for later consideration; not yet accepted or ready.
 - `documentation`: documentation-only or documentation-heavy work.
 - `bug`: incorrect behavior.
 - `enhancement`: new feature or request.
@@ -100,12 +101,12 @@ Verify:
 gh label list --repo develNor/ros2docker --limit 200
 ```
 
-Create the `agent-ready` label if it is missing:
+Create the `ready` label if it is missing:
 
 ```bash
-gh label create agent-ready \
+gh label create ready \
   --repo develNor/ros2docker \
-  --description "Ready for an agent or contributor to pick up" \
+  --description "Ready for a contributor to pick up" \
   --color 5319e7
 ```
 

@@ -12,7 +12,6 @@ Canonical rules live in:
   merge policy, and releases.
 - [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md) for quality
   rules and definition of done.
-- [AGENTS.md](../../AGENTS.md) for agent-specific operating rules.
 
 Available issue templates:
 

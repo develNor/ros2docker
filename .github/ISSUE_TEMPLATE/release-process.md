@@ -2,7 +2,7 @@
 name: Release process
 about: Prepare, validate, describe, and publish a ros2docker release.
 title: "Prepare release vX.Y.Z"
-labels: agent-ready, documentation
+labels: ready, documentation
 assignees: ""
 ---
 
@@ -22,7 +22,7 @@ A maintainer is preparing a new version tag and GitHub/PyPI release.
 
 - Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
   [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [AGENTS.md](../../AGENTS.md).
+  [docs/work-items.md](../../docs/work-items.md).
 - Start from a fresh `origin/main` topic branch.
 - Do not tag or publish until the release PR has merged.
 - Open a draft review PR by default.

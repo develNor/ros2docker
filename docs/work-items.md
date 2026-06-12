@@ -58,11 +58,22 @@ the matching issue template, then create the issue manually or with a scheduled
 workflow after the cadence is proven.
 
 This repository does not use scheduled issue creation yet. If scheduled issues
-are added later, the workflow should create issues only; local agents and
-contributors still own editing, testing, and opening PRs.
+are added later, the workflow should create issues only; contributors still own
+editing, testing, and opening PRs.
 
-## Agent Use
+## Working An Issue
 
-Agents should read [AGENTS.md](../AGENTS.md), choose the matching issue
-template, work on one issue at a time, link the PR to the issue, and report the
-PR URL and CI status after opening or updating the PR.
+Before implementation starts, create or choose a well-scoped issue with the
+matching template when one applies.
+
+While working:
+
+- Assign yourself to the issue.
+- Keep one coherent change per issue and PR.
+- Link the PR with `Fixes #<number>`, `Closes #<number>`, or `Refs #<number>`.
+- If implementation shows that the issue assumptions are wrong or incomplete,
+  add an issue comment describing the discovery and the chosen scope.
+- If the work is not possible or not sensible, add an issue comment explaining
+  why and apply a fitting triage label such as `question`, `invalid`, or
+  `help wanted`.
+- Report the PR URL and CI status after opening or updating the PR.
