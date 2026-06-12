@@ -69,6 +69,12 @@ runs the full Docker E2E suite, including slow image and ROS launch checks.
 All changes must go through a pull request. Local `main` should be treated as a
 clean mirror of `origin/main`.
 
+Actionable work should be tracked in GitHub Issues. Use the templates in
+[.github/ISSUE_TEMPLATE/](.github/ISSUE_TEMPLATE/) for reusable task recipes,
+link PRs to issues with `Fixes #<number>`, `Closes #<number>`, or
+`Refs #<number>`, and keep temporary PR checklists in the PR body. See
+[docs/work-items.md](docs/work-items.md) for the work-item policy.
+
 Start each change from an up-to-date `origin/main`:
 
 ```bash
@@ -168,6 +174,9 @@ validation only.
 A PR cannot merge into `main` unless `ci-success` passes. Prefer requiring only
 this stable aggregate check in branch protection so individual job names can
 change without rewriting repository policy.
+
+Expected GitHub repository settings that live outside git are documented in
+[docs/github-repository-settings.md](docs/github-repository-settings.md).
 
 Full Docker E2E runs in the scheduled `nightly-e2e` workflow and may also be
 triggered manually. Nightly full E2E is not a replacement for the required PR

@@ -5,7 +5,9 @@ Read first:
 - `README.md` for user-facing behavior.
 - `CONTRIBUTING.md` for setup, checks, CI, PR workflow, merge policy, and releases.
 - `DEVELOPMENT_PRINCIPLES.md` for quality rules.
-- `docs/playbooks/` for reusable task recipes when a request matches one.
+- `.github/ISSUE_TEMPLATE/` for reusable task recipes when a request matches one.
+- `docs/work-items.md` for issue-driven work tracking.
+- `docs/github-repository-settings.md` before changing GitHub repository policy or workflows.
 - `tests/contract/test_public_config_surface.py` before changing README config examples, packaged examples, schemas, or config keys.
 
 Operational rules:
