@@ -51,6 +51,18 @@ Use `Fixes #123` or `Closes #123` when the PR should close the issue after
 merge. Use `Refs #123` when the PR relates to the issue but does not complete
 it.
 
+## Triage Labels
+
+Use `agent-ready` only when an issue is accepted and ready for an agent or
+contributor to pick up.
+
+Use `backlog` for work that is tracked for later and not currently scheduled.
+
+Use `maybe` with `backlog` for concerns, ideas, or proposals that should be
+saved for later consideration but are not yet accepted. A `maybe` issue should
+describe the decision to make before implementation, and should not be treated
+as ready to start until the label is removed or replaced with `agent-ready`.
+
 ## Recurring Issues
 
 Recurring maintenance should start as issues too. Keep the recurring recipe in
