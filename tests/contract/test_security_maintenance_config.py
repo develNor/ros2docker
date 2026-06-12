@@ -32,6 +32,6 @@ def test_image_scan_is_advisory_and_not_a_pr_check() -> None:
     assert ".venv/bin/ros2docker build" in image_scan
     assert "aquasecurity/trivy-action@v0.36.0" in image_scan
     assert 'exit-code: "0"' in image_scan
-    assert "actions/upload-artifact@v4" in image_scan
+    assert "actions/upload-artifact@v7" in image_scan
     assert "image-scan" not in merge_gate
     assert "trivy" not in merge_gate.lower()
