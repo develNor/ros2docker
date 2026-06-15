@@ -161,9 +161,16 @@ def load_config(
 
     override_config = parse_override(override)
     config.update(override_config)
+    _apply_interactivity_defaults(config)
     _validate_config(config)
     _normalize_config_paths(config, config_dir, resolve_run_args=resolve_run_args)
     return config
+
+
+def _apply_interactivity_defaults(config: dict[str, Any]) -> None:
+    interactive = config.get("run_type") in {"bash", "catmux"}
+    config.setdefault("tty", interactive)
+    config.setdefault("stdin_open", interactive)
 
 
 def _resolve_config_file(config_file: str | os.PathLike[str]) -> Path:

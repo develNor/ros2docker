@@ -32,6 +32,8 @@ def test_command_rendering_for_command_run_type(tmp_path: Path) -> None:
     assert ["bash", "-lc", "echo ok"] == command[-3:]
     assert f"{ws.resolve()}:/ws" in command
     assert "ROS_DOMAIN_ID=47" in command
+    assert "-i" not in command
+    assert "-t" not in command
 
 
 def test_cli_mount_and_extra_args_are_rendered(tmp_path: Path) -> None:
@@ -56,7 +58,53 @@ def test_default_config_can_open_mounted_bash_shell(tmp_path: Path) -> None:
     assert "--name" in command
     assert "ros2docker" in command
     assert f"{mounted_dir.resolve()}:/ws" in command
+    assert "-i" in command
+    assert "-t" in command
     assert command[-2:] == ["ros2docker", "bash"]
+
+
+def test_catmux_run_type_defaults_to_interactive_docker_run(tmp_path: Path) -> None:
+    config_path = tmp_path / "ros2docker.json"
+    config_path.write_text('{"run_type": "catmux", "catmux_file": "/ws/catmux.yaml"}', encoding="utf-8")
+
+    command = make_run_command(config_path)
+
+    assert "-i" in command
+    assert "-t" in command
+    assert command[-4:] == ["catmux_create_session", "/ws/catmux.yaml", "--session_name", "ros2docker"]
+
+
+def test_up_run_type_defaults_to_detached_without_interactive_flags(tmp_path: Path) -> None:
+    config_path = tmp_path / "ros2docker.json"
+    config_path.write_text('{"run_type": "up"}', encoding="utf-8")
+
+    command = make_run_command(config_path)
+
+    assert "-d" in command
+    assert "-i" not in command
+    assert "-t" not in command
+    assert command[-4:] == ["ros2docker", "tail", "-f", "/dev/null"]
+
+
+def test_command_run_type_can_be_made_explicitly_interactive(tmp_path: Path) -> None:
+    config_path = tmp_path / "ros2docker.json"
+    config_path.write_text(
+        """
+        {
+          "run_type": "command",
+          "command": ["bash", "-lc", "read -r line && echo $line"],
+          "tty": true,
+          "stdin_open": true
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    command = make_run_command(config_path)
+
+    assert "-i" in command
+    assert "-t" in command
+    assert command[-3:] == ["bash", "-lc", "read -r line && echo $line"]
 
 
 def test_build_stop_and_exec_commands(tmp_path: Path) -> None:

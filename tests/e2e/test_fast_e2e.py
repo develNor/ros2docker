@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 
@@ -130,6 +131,31 @@ def test_bash_run_type_starts_interactive_shell_under_pty(
     finally:
         docker_harness.docker("stop", container, timeout=30, check=False)
         command.wait(timeout=60, check=False)
+
+
+def test_command_run_type_can_be_explicitly_interactive_under_pty(
+    docker_harness,
+    shared_image: str,
+    tmp_path: Path,
+) -> None:
+    config_path = write_config(
+        tmp_path / "interactive-command.ros2docker.json",
+        {
+            "container_name": docker_harness.container_name("interactive_command"),
+            "image_name": shared_image,
+            "run_type": "command",
+            "command": ["bash", "-lc", "read -r line && printf 'E2E_INTERACTIVE:%s\\n' \"$line\""],
+            "tty": True,
+            "stdin_open": True,
+        },
+    )
+
+    command = docker_harness.start_cli_pty("run", "--no-build", "-f", str(config_path))
+    os.write(command.master_fd, b"command-ok\n")
+
+    command.wait(timeout=180)
+
+    assert "E2E_INTERACTIVE:command-ok" in command.output
 
 
 def test_command_string_mount_and_extra_args(docker_harness, shared_image: str, tmp_path: Path) -> None:

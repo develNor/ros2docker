@@ -28,6 +28,8 @@ ros2docker doctor -f ros2docker.json
   "container_name": "example_ros2container",
   "image_name": "ros2docker",
   "run_type": "bash",
+  "tty": true,
+  "stdin_open": true,
   "mount_ws": true,
   "enable_gui_forwarding": false,
   "forward_ssh_agent": false,
@@ -47,10 +49,20 @@ ros2docker doctor -f ros2docker.json
 
 `image_name`: Docker image tag used by build and run commands.
 
-`run_type`: Container entry behavior. Supported values are `bash`, `command`,
-`catmux`, and `up`.
+`run_type`: Container entry behavior. `bash` starts an interactive shell.
+`command` runs the configured `command` as a one-shot container. `catmux`
+starts a catmux session from `catmux_file`. `up` starts a detached, long-lived
+keepalive container for later `ros2docker exec` commands.
 
-`mount_ws`: Mount a config-adjacent `ws` directory into `/ws`.
+`tty`: Allocate a Docker TTY for `docker run`. When omitted, this defaults to
+`true` for `bash` and `catmux`, and `false` for `command` and `up`.
+
+`stdin_open`: Keep STDIN open for `docker run`. When omitted, this defaults to
+`true` for `bash` and `catmux`, and `false` for `command` and `up`.
+
+`mount_ws`: Mount a config-adjacent `ws` directory into `/ws`. This is the
+canonical way to mount a repo-local workspace; normal configs do not need to
+duplicate that mount in `run_args`.
 
 `enable_gui_forwarding`: Forward the host X11 socket at `/tmp/.X11-unix`. See
 [Security / Trust Boundary](#security--trust-boundary) before enabling this for

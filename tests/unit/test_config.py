@@ -43,6 +43,48 @@ def test_override_replaces_top_level_config_values(tmp_path: Path) -> None:
     assert config["image_name"] == "image"
 
 
+@pytest.mark.parametrize(
+    ("run_type", "expected"),
+    [
+        ("bash", True),
+        ("catmux", True),
+        ("command", False),
+        ("up", False),
+    ],
+)
+def test_interactivity_defaults_follow_run_type(tmp_path: Path, run_type: str, expected: bool) -> None:
+    config = {"run_type": run_type}
+    if run_type == "command":
+        config["command"] = "true"
+    if run_type == "catmux":
+        config["catmux_file"] = "/ws/catmux.yaml"
+    config_path = write_config(tmp_path / "ros2docker.json", json.dumps(config))
+
+    loaded = load_config(config_path)
+
+    assert loaded["tty"] is expected
+    assert loaded["stdin_open"] is expected
+
+
+def test_explicit_interactivity_overrides_run_type_defaults(tmp_path: Path) -> None:
+    config_path = write_config(
+        tmp_path / "ros2docker.json",
+        json.dumps(
+            {
+                "run_type": "command",
+                "command": "true",
+                "tty": True,
+                "stdin_open": True,
+            }
+        ),
+    )
+
+    config = load_config(config_path)
+
+    assert config["tty"] is True
+    assert config["stdin_open"] is True
+
+
 def test_volume_and_bake_paths_resolve_from_config_dir(tmp_path: Path) -> None:
     data_dir = tmp_path / "data"
     data_dir.mkdir()
@@ -158,6 +200,14 @@ def test_schema_validation_rejects_wrong_types(tmp_path: Path) -> None:
     config_path = write_config(tmp_path / "ros2docker.json", '{"mount_ws": "yes"}')
 
     with pytest.raises(ConfigError, match="mount_ws"):
+        load_config(config_path)
+
+
+@pytest.mark.parametrize("key", ["tty", "stdin_open"])
+def test_schema_validation_rejects_wrong_interactivity_types(tmp_path: Path, key: str) -> None:
+    config_path = write_config(tmp_path / "ros2docker.json", json.dumps({key: "yes"}))
+
+    with pytest.raises(ConfigError, match=key):
         load_config(config_path)
 
 
