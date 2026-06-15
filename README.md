@@ -70,6 +70,7 @@ python -m ros2docker --version
 
 Every Docker action accepts `--dry-run`, which prints the Docker argv and exits without running Docker.
 The `-f`/`--config` option is optional; without it, `ros2docker` uses the default config, which starts an interactive Bash shell.
+Use `ros2docker exec` to run a command inside an already-running container, such as one started with `run_type: "up"`.
 `validate` checks config syntax and schema without Docker side effects. `doctor` reports host readiness diagnostics before a build or run.
 
 ## Config
@@ -81,6 +82,8 @@ Config files are JSON with `//` and `/* ... */` comments. Supported keys include
   "container_name": "example_ros2container",
   "image_name": "ros2docker",
   "run_type": "bash",
+  "tty": true,
+  "stdin_open": true,
   "mount_ws": true,
   "enable_gui_forwarding": false,
   "forward_ssh_agent": false,
@@ -100,9 +103,13 @@ See [docs/configuration.md](docs/configuration.md) for the full configuration co
 Supported `run_type` values are:
 
 - `bash`: start an interactive shell.
-- `command`: run the configured `command`.
+- `command`: run the configured `command` as a one-shot container.
 - `catmux`: start a catmux session from `catmux_file`.
-- `up`: start a detached keepalive container.
+- `up`: start a detached, long-lived keepalive container for later `exec` commands.
+
+`tty` and `stdin_open` control Docker run interactivity. When omitted, `bash` and `catmux` default both to `true`; `command` and `up` default both to `false`. Set them explicitly for an interactive command run.
+
+`mount_ws` mounts the config-adjacent `ws` directory into `/ws`; normal project configs do not need to duplicate that mount in `run_args`.
 
 Host paths in `-v/--volume` and bind `--mount` args expand `~` and environment variables. Relative `./` and `../` host paths are resolved from the config file directory.
 

@@ -5,10 +5,15 @@
 
   // Supported run types:
   //   "bash"    - interactive shell
-  //   "command" - run the configured command
+  //   "command" - one-shot configured command
   //   "catmux"  - start a catmux session
-  //   "up"      - detached keepalive container
+  //   "up"      - detached keepalive container for later exec commands
   "run_type": "catmux",
+
+  // Docker run interactivity. If omitted, bash/catmux default to true and
+  // command/up default to false.
+  "tty": true,
+  "stdin_open": true,
 
   // Used when run_type = "catmux".
   "catmux_file": "/ws/catmux.yaml",

@@ -47,7 +47,7 @@ def make_run_command(
         *_local_run_args(config),
         *_workspace_mount_args(config_file, config, mount),
         *normalize_docker_host_paths(extra_run_args or [], Path.cwd()),
-        *_run_type_args(config),
+        *_docker_run_mode_args(config),
         _image_name(config),
         *_run_command(config),
     ]
@@ -139,14 +139,18 @@ def _workspace_mount_args(
     return []
 
 
-def _run_type_args(config: Mapping[str, object]) -> list[str]:
+def _docker_run_mode_args(config: Mapping[str, object]) -> list[str]:
+    args: list[str] = []
+    if config.get("stdin_open"):
+        args.append("-i")
+    if config.get("tty"):
+        args.append("-t")
+
     run_type = str(config.get("run_type") or "bash")
-    if run_type in {"bash", "catmux"}:
-        return ["-it"]
-    if run_type == "command":
-        return []
     if run_type == "up":
-        return ["-d"]
+        args.append("-d")
+    if run_type in {"bash", "catmux", "command", "up"}:
+        return args
     raise ConfigError(f"Unsupported run_type: {run_type!r}")
 
 

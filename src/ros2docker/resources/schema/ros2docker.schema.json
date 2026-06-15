@@ -21,6 +21,14 @@
       "enum": ["bash", "catmux", "command", "up"],
       "description": "Container entry behavior."
     },
+    "tty": {
+      "type": "boolean",
+      "description": "Allocate a Docker TTY for docker run. Defaults from run_type when omitted."
+    },
+    "stdin_open": {
+      "type": "boolean",
+      "description": "Keep STDIN open for docker run. Defaults from run_type when omitted."
+    },
     "mount_ws": {
       "type": "boolean",
       "description": "Mount a config-adjacent ws directory into /ws."
