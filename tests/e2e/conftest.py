@@ -278,6 +278,7 @@ def shared_image(docker_harness: DockerHarness, tmp_path_factory: pytest.TempPat
     config_path = write_config(
         project / "ros2docker.json",
         {
+            "profile": "project-develnor",
             "container_name": docker_harness.container_name("shared_image_build"),
             "image_name": image,
             "run_type": "command",

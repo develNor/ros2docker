@@ -268,3 +268,30 @@ def test_json_comment_stripper_preserves_escaped_quotes_and_backslashes() -> Non
 
     assert parsed["container_name"] == 'demo " // still a string'
     assert parsed["run_args"] == ["-e", r"WIN_PATH=C:\tmp\/*not-comment*/"]
+
+
+def test_load_config_with_profile(tmp_path: Path) -> None:
+    config_path = write_config(
+        tmp_path / "ros2docker.json",
+        '{"profile": "minimal", "build_args": {"APT_PACKAGES": "git"}}',
+    )
+
+    config = load_config(config_path)
+
+    # Check that minimal profile loaded values are present
+    assert config["profile"] == "minimal"
+    assert config["dockerfile"] == "Dockerfile.generic"
+    assert config["image_name"] == "ros2docker-minimal"
+    # Check that build_args deep merge worked (BASE_IMAGE from profile, APT_PACKAGES from user config)
+    assert config["build_args"]["BASE_IMAGE"] == "ros:lyrical-ros-base-resolute"
+    assert config["build_args"]["APT_PACKAGES"] == "git"
+
+
+def test_load_config_profile_not_found(tmp_path: Path) -> None:
+    config_path = write_config(
+        tmp_path / "ros2docker.json",
+        '{"profile": "nonexistent"}',
+    )
+
+    with pytest.raises(ConfigError, match="Profile 'nonexistent' not found"):
+        load_config(config_path)

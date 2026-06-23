@@ -1,0 +1,8 @@
+{
+  "image_name": "ros2docker-minimal",
+  "dockerfile": "Dockerfile.generic",
+  "build_args": {
+    "BASE_IMAGE": "ros:lyrical-ros-base-resolute",
+    "DIGEST": ""
+  }
+}

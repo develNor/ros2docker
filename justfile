@@ -71,10 +71,16 @@ _package-smoke:
 
 	expected = (
 	    "py.typed",
-	    "resources/build/Dockerfile",
+	    "resources/build/Dockerfile.generic",
+	    "resources/build/Dockerfile.full-example",
 	    "resources/build/entrypoint.sh",
 	    "resources/examples/ros2docker.json",
 	    "resources/schema/ros2docker.schema.json",
+	    "resources/profiles/minimal.json",
+	    "resources/profiles/desktop.json",
+	    "resources/profiles/foxglove.json",
+	    "resources/profiles/zenoh.json",
+	    "resources/profiles/project-develnor.json",
 	)
 	missing = [
 	    path

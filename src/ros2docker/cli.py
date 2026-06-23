@@ -7,7 +7,7 @@ import json
 import sys
 
 from . import __version__
-from .api import build, build_run, exec_shell, run, stop
+from .api import build, build_run, exec_shell, init, run, stop
 from .config import load_config
 from .diagnostics import collect_diagnostics, diagnostics_exit_code, format_diagnostics
 
@@ -69,6 +69,21 @@ def _make_parser() -> argparse.ArgumentParser:
     doctor_parser = subparsers.add_parser("doctor", help="Report host readiness diagnostics.")
     _add_config_options(doctor_parser)
     doctor_parser.set_defaults(func=_doctor)
+
+    init_parser = subparsers.add_parser("init", help="Initialize a ros2docker workspace.")
+    init_parser.add_argument(
+        "--profile",
+        default="minimal",
+        help="The profile to use (minimal, desktop, foxglove, zenoh, project-develnor).",
+    )
+    init_parser.add_argument(
+        "--ros-distro",
+        default="lyrical",
+        help="The ROS 2 distribution to use (e.g. lyrical, jazzy, humble, iron, rolling).",
+    )
+    init_parser.add_argument("--devcontainer", action="store_true", help="Generate .devcontainer/devcontainer.json.")
+    init_parser.add_argument("--overwrite", action="store_true", help="Overwrite existing files.")
+    init_parser.set_defaults(func=_init)
 
     return parser
 
@@ -139,6 +154,15 @@ def _doctor(args: argparse.Namespace) -> int:
     diagnostics = collect_diagnostics(args.config, args.override)
     print(format_diagnostics(diagnostics))
     return diagnostics_exit_code(diagnostics)
+
+
+def _init(args: argparse.Namespace) -> None:
+    init(
+        profile=args.profile,
+        ros_distro=args.ros_distro,
+        devcontainer=args.devcontainer,
+        overwrite=args.overwrite,
+    )
 
 
 if __name__ == "__main__":

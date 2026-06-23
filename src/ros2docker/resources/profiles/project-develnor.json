@@ -1,0 +1,4 @@
+{
+  "image_name": "ros2docker-develnor",
+  "dockerfile": "Dockerfile.full-example"
+}
