@@ -75,14 +75,17 @@ def _docker_diagnostics() -> list[Diagnostic]:
 
 def _build_context_diagnostics(config: Mapping[str, object]) -> list[Diagnostic]:
     build_resources = resources.files("ros2docker").joinpath("resources").joinpath("build")
-    dockerfile = build_resources.joinpath("Dockerfile")
+    dockerfile_name = str(config.get("dockerfile") or "Dockerfile.generic")
+    dockerfile = build_resources.joinpath(dockerfile_name)
     entrypoint = build_resources.joinpath("entrypoint.sh")
     diagnostics = [Diagnostic("OK", "image", f"Image name is {config.get('image_name', 'ros2docker')!r}.")]
 
     if dockerfile.is_file() and entrypoint.is_file():
-        diagnostics.append(Diagnostic("OK", "build context", "Packaged Dockerfile and entrypoint are available."))
+        msg = f"Packaged {dockerfile_name} and entrypoint are available."
+        diagnostics.append(Diagnostic("OK", "build context", msg))
     else:
-        diagnostics.append(Diagnostic("ERROR", "build context", "Packaged Dockerfile or entrypoint is missing."))
+        msg = f"Packaged {dockerfile_name} or entrypoint is missing."
+        diagnostics.append(Diagnostic("ERROR", "build context", msg))
 
     return diagnostics
 

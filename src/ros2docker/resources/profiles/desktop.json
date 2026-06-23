@@ -1,0 +1,8 @@
+{
+  "image_name": "ros2docker-desktop",
+  "dockerfile": "Dockerfile.generic",
+  "build_args": {
+    "BASE_IMAGE": "osrf/ros:lyrical-desktop-full-resolute",
+    "DIGEST": "@sha256:ac6471b5c13e57674d9660630d0cb140f518cb5ea6add7169e5dd91e16bf0b50"
+  }
+}

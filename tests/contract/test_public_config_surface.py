@@ -148,6 +148,8 @@ def test_schema_types_match_runtime_validation_expectations() -> None:
     assert properties["mount_ws"]["type"] == "boolean"
     assert properties["tty"]["type"] == "boolean"
     assert properties["stdin_open"]["type"] == "boolean"
+    assert properties["profile"]["type"] == ["string", "null"]
+    assert properties["dockerfile"]["type"] == "string"
     assert properties["build_args"]["type"] == "object"
     assert properties["build_args"]["additionalProperties"]["type"] == ["string", "number", "boolean", "null"]
     assert properties["catmux_params"]["type"] == "object"

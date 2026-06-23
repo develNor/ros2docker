@@ -8,7 +8,8 @@ from pathlib import Path
 from ros2docker.api import build_context
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
-DOCKERFILE_PATH = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "build" / "Dockerfile"
+DOCKERFILE_GENERIC_PATH = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "build" / "Dockerfile.generic"
+DOCKERFILE_FULL_PATH = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "build" / "Dockerfile.full-example"
 ENTRYPOINT_PATH = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "build" / "entrypoint.sh"
 
 
@@ -17,10 +18,14 @@ def test_packaged_resources_include_typed_marker_build_schema_example_and_bake_c
 
     package_resources = resources.files("ros2docker").joinpath("resources")
 
-    assert package_resources.joinpath("build", "Dockerfile").is_file()
+    assert package_resources.joinpath("build", "Dockerfile.generic").is_file()
+    assert package_resources.joinpath("build", "Dockerfile.full-example").is_file()
     assert package_resources.joinpath("build", "entrypoint.sh").is_file()
     assert package_resources.joinpath("examples", "ros2docker.json").is_file()
     assert package_resources.joinpath("schema", "ros2docker.schema.json").is_file()
+
+    for p in ("minimal", "desktop", "foxglove", "zenoh", "project-develnor"):
+        assert package_resources.joinpath("profiles", f"{p}.json").is_file()
 
     config_path = tmp_path / "ros2docker.json"
     config_path.write_text("{}", encoding="utf-8")
@@ -31,17 +36,18 @@ def test_packaged_resources_include_typed_marker_build_schema_example_and_bake_c
 
 
 def test_dockerfile_default_base_image_and_digest_are_explicit() -> None:
-    dockerfile = DOCKERFILE_PATH.read_text(encoding="utf-8")
-    base_image = re.search(r"^ARG BASE_IMAGE=(?P<value>\S+)$", dockerfile, flags=re.MULTILINE)
-    digest = re.search(r"^ARG DIGEST=(?P<value>@sha256:[0-9a-f]{64})$", dockerfile, flags=re.MULTILINE)
+    for path in (DOCKERFILE_GENERIC_PATH, DOCKERFILE_FULL_PATH):
+        dockerfile = path.read_text(encoding="utf-8")
+        base_image = re.search(r"^ARG BASE_IMAGE=(?P<value>\S+)$", dockerfile, flags=re.MULTILINE)
+        digest = re.search(r"^ARG DIGEST=(?P<value>@sha256:[0-9a-f]{64})$", dockerfile, flags=re.MULTILINE)
 
-    assert base_image is not None
-    assert base_image.group("value")
-    assert digest is not None
+        assert base_image is not None
+        assert base_image.group("value")
+        assert digest is not None
 
 
 def test_dockerfile_external_downloads_use_versioned_urls() -> None:
-    dockerfile = DOCKERFILE_PATH.read_text(encoding="utf-8")
+    dockerfile = DOCKERFILE_FULL_PATH.read_text(encoding="utf-8")
     active_lines = "\n".join(line for line in dockerfile.splitlines() if not line.lstrip().startswith("#"))
     urls = re.findall(r"https?://[^\s\"']+", active_lines)
 
@@ -60,7 +66,7 @@ def test_dockerfile_external_downloads_use_versioned_urls() -> None:
 
 
 def test_dockerfile_git_sources_are_pinned_to_commit_refs() -> None:
-    dockerfile = DOCKERFILE_PATH.read_text(encoding="utf-8")
+    dockerfile = DOCKERFILE_FULL_PATH.read_text(encoding="utf-8")
     active_lines = "\n".join(line for line in dockerfile.splitlines() if not line.lstrip().startswith("#"))
 
     assert re.search(r"^ARG NOVATEL_OEM7_REF=[0-9a-f]{40}$", dockerfile, flags=re.MULTILINE)

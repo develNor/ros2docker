@@ -64,6 +64,7 @@ ros2docker = [
   "resources/build/*",
   "resources/examples/*",
   "resources/schema/*",
+  "resources/profiles/*",
 ]
 
 [tool.setuptools_scm]

@@ -16,6 +16,15 @@
       "minLength": 1,
       "description": "Docker image tag used for build and run commands."
     },
+    "profile": {
+      "type": ["string", "null"],
+      "description": "Predefined image profile to load as base configuration."
+    },
+    "dockerfile": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The Dockerfile resource filename to build."
+    },
     "run_type": {
       "type": "string",
       "enum": ["bash", "catmux", "command", "up"],

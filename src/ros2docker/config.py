@@ -22,6 +22,8 @@ class ConfigError(ValueError):
 DEFAULT_CONFIG: dict[str, Any] = {
     "container_name": "ros2docker",
     "image_name": "ros2docker",
+    "profile": None,
+    "dockerfile": "Dockerfile.generic",
     "run_type": "bash",
     "mount_ws": False,
     "enable_gui_forwarding": False,
@@ -137,6 +139,39 @@ def get_config_dir(config_file: str | os.PathLike[str] | None = None) -> str:
     return str(_resolve_config_file(config_file).parent)
 
 
+def load_profile(profile_name: str) -> dict[str, Any]:
+    """Load a predefined ros2docker profile from resources."""
+    try:
+        profile_text = (
+            resources.files("ros2docker")
+            .joinpath("resources")
+            .joinpath("profiles")
+            .joinpath(f"{profile_name}.json")
+            .read_text(encoding="utf-8")
+        )
+    except FileNotFoundError as exc:
+        raise ConfigError(f"Profile {profile_name!r} not found.") from exc
+
+    try:
+        profile_json = json.loads(strip_json_comments(profile_text))
+    except json.JSONDecodeError as exc:
+        raise ConfigError(f"Invalid JSON in profile {profile_name!r}: {exc}") from exc
+
+    if not isinstance(profile_json, dict):
+        raise ConfigError(f"Profile {profile_name!r} must be a JSON object.")
+
+    return profile_json
+
+
+def merge_configs(base: dict[str, Any], overlay: dict[str, Any]) -> None:
+    """Deep merge dictionary values from overlay into base while replacing lists/scalars."""
+    for key, val in overlay.items():
+        if key in base and isinstance(base[key], dict) and isinstance(val, dict):
+            base[key] = {**base[key], **val}
+        else:
+            base[key] = copy.deepcopy(val)
+
+
 def load_config(
     config_file: str | os.PathLike[str] | None = None,
     override: str | Mapping[str, Any] | None = None,
@@ -146,21 +181,36 @@ def load_config(
     config = copy.deepcopy(DEFAULT_CONFIG)
     config_dir = Path.cwd()
 
+    override_config = parse_override(override)
+
+    file_config: dict[str, Any] = {}
     if config_file is not None:
         config_path = _resolve_config_file(config_file)
         if not config_path.is_file():
             raise FileNotFoundError(f"Config file not found: {config_path}")
         config_dir = config_path.parent
         try:
-            loaded = json.loads(strip_json_comments(config_path.read_text(encoding="utf-8")))
+            file_config = json.loads(strip_json_comments(config_path.read_text(encoding="utf-8")))
         except json.JSONDecodeError as exc:
             raise ConfigError(f"Invalid JSON in {config_path}: {exc}") from exc
-        if not isinstance(loaded, dict):
+        if not isinstance(file_config, dict):
             raise ConfigError(f"Config file must contain a JSON object: {config_path}")
-        config.update(loaded)
 
-    override_config = parse_override(override)
-    config.update(override_config)
+    # Determine which profile to load (override takes precedence over file config)
+    profile_name = override_config.get("profile")
+    if profile_name is None:
+        profile_name = file_config.get("profile")
+
+    if profile_name is not None:
+        if not isinstance(profile_name, str):
+            raise ConfigError("Profile name must be a string.")
+        profile_config = load_profile(profile_name)
+        merge_configs(config, profile_config)
+
+    # Merge file config and overrides
+    merge_configs(config, file_config)
+    merge_configs(config, override_config)
+
     _apply_interactivity_defaults(config)
     _validate_config(config)
     _normalize_config_paths(config, config_dir, resolve_run_args=resolve_run_args)
