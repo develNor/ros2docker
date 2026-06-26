@@ -548,3 +548,77 @@ def test_multi_container_native_chatter(docker_harness, shared_image: str, tmp_p
     finally:
         docker_harness.docker("stop", publisher_container, timeout=30, check=False)
         publisher.wait(timeout=60, check=False)
+
+
+def test_mounted_files_are_native_and_no_sudo_editable_both_directions(
+    docker_harness,
+    shared_image: str,
+    tmp_path: Path,
+) -> None:
+    # The core promise of the repo: mounted files behave like native files in
+    # both directions, with no ownership/permission friction and no sudo. This
+    # exercises the workspace mount (mount_ws -> /ws) and a generic -v mount.
+    project = tmp_path / "ownership"
+    ws_dir = project / "ws"
+    ws_dir.mkdir(parents=True)
+    extra_dir = tmp_path / "extra"
+    extra_dir.mkdir()
+
+    host_made = ws_dir / "host_made.txt"
+    host_made.write_text("host-line\n", encoding="utf-8")
+
+    command = r"""
+set -euo pipefail
+uid="$(id -u)"
+gid="$(id -g)"
+
+# A clean, sourced ROS 2 state is available even on a non-interactive command.
+command -v ros2 >/dev/null
+
+# Host-created file in the workspace mount: owned by the run user, readable, and
+# writable without sudo.
+test "$(stat -c '%u:%g' /ws/host_made.txt)" = "${uid}:${gid}"
+grep -qx host-line /ws/host_made.txt
+echo container-line >> /ws/host_made.txt
+
+# Files the container creates in mounted dirs must be owned by the run user, so
+# they stay native + no-sudo editable on the host afterwards.
+echo made-in-container > /ws/container_made.txt
+echo made-in-extra > /mnt/extra/extra_made.txt
+
+echo E2E_OWNERSHIP_OK
+"""
+    config = _base_config(shared_image, docker_harness.container_name("ownership"))
+    config.update(
+        {
+            "mount_ws": True,
+            "command": ["bash", "-lc", command],
+            "run_args": ["-v", f"{extra_dir}:/mnt/extra"],
+        }
+    )
+    config_path = write_config(project / "ros2docker.json", config)
+
+    result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=180)
+    assert "E2E_OWNERSHIP_OK" in result.stdout
+
+    run_uid = os.getuid()
+    run_gid = os.getgid()
+
+    # Container -> host: container-created files are owned by the invoking user
+    # and editable natively, without sudo.
+    container_made = ws_dir / "container_made.txt"
+    assert container_made.is_file()
+    assert (container_made.stat().st_uid, container_made.stat().st_gid) == (run_uid, run_gid)
+    with container_made.open("a", encoding="utf-8") as handle:
+        handle.write("host-edit\n")
+    assert container_made.read_text(encoding="utf-8") == "made-in-container\nhost-edit\n"
+
+    extra_made = extra_dir / "extra_made.txt"
+    assert extra_made.is_file()
+    assert (extra_made.stat().st_uid, extra_made.stat().st_gid) == (run_uid, run_gid)
+
+    # Host <-> container round trip on a single file: both lines are present and
+    # the file is still owned natively by the host user.
+    contents = host_made.read_text(encoding="utf-8")
+    assert contents == "host-line\ncontainer-line\n"
+    assert host_made.stat().st_uid == run_uid
