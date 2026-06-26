@@ -80,6 +80,27 @@ The `-f`/`--config` option is optional; without it, `ros2docker` uses the defaul
 Use `ros2docker exec` to run a command inside an already-running container, such as one started with `run_type: "up"`.
 `validate` checks config syntax and schema without Docker side effects. `doctor` reports host readiness diagnostics before a build or run.
 
+## Shell Completion
+
+`ros2docker` ships tab completion for subcommands, options, and dynamic values
+(profiles for `init --profile`, ROS distros for `init --ros-distro`, and file
+paths for `-f`/`--config` and `-m`/`--mount`). Enable it with a one-liner.
+
+Bash — add to `~/.bashrc`:
+
+```bash
+eval "$(ros2docker completion bash)"
+```
+
+Zsh — add to `~/.zshrc`:
+
+```bash
+eval "$(ros2docker completion zsh)"
+```
+
+Open a new shell (or re-source the rc file), then press `<TAB>` after
+`ros2docker`. No extra dependency is required.
+
 ## Config
 
 Config files are JSON with `//` and `/* ... */` comments. Supported keys include:
