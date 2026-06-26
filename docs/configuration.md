@@ -145,6 +145,38 @@ Compose add-ons with a list; `APT_PACKAGES`/`PIP_PACKAGES` are unioned:
 `--ros-distro <distro>` overrides the base image for non-lyrical distros. Add-on
 apt package names currently target the `lyrical` distro.
 
+## File Ownership And The Container User
+
+A central promise of `ros2docker` is that mounted files behave like native
+files: you can create and edit them on the host and inside the container
+interchangeably, with no ownership or permission friction and **without sudo**.
+
+How it works: the image is built with the host user's `USER_UID`/`USER_GID`, and
+`docker run` uses `--user <uid>:<gid>` with the same values. Because the
+container process runs as the host user's numeric IDs, files under any bind
+mount (the `mount_ws` `/ws` mount and any `-v` mount) are owned by that user on
+both sides. A file the host creates is writable in the container without sudo; a
+file the container creates is owned by the invoking user on the host and editable
+there without sudo.
+
+This contract is locked by end-to-end tests so it cannot silently regress:
+
+- `tests/e2e/test_fast_e2e.py::test_mounted_files_are_native_and_no_sudo_editable_both_directions`
+  proves bidirectional, no-sudo ownership for the workspace mount and a generic
+  `-v` mount.
+- The clean, pre-sourced ROS 2 state on every entry path is covered by the
+  workspace (`command`), `catmux`, and interactive `bash` E2E tests, each of
+  which runs a workspace node directly.
+
+**User-model decision.** The current build-time-UID + runtime `--user` model is
+kept: the ownership contract above passes against it, so the alternatives
+considered earlier (runtime `gosu` UID remap, build-time-only user, or a numeric
+user without entrypoint sudo) are not needed for the supported single-user
+workflow. The entrypoint's `sudo` use only prepares the in-container `/ros2ws`
+build directory; it never touches mounted files. Images shared across users with
+different host UIDs are out of scope for this contract and would require a
+runtime-remap model if that becomes a goal.
+
 ## Security / Trust Boundary
 
 Use `ros2docker` only with trusted workspaces, configs, and ROS packages. The
