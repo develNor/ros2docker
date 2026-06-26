@@ -74,7 +74,10 @@ def _make_parser() -> argparse.ArgumentParser:
     init_parser.add_argument(
         "--profile",
         default="minimal",
-        help="The profile to use (minimal, desktop, foxglove, zenoh, project-develnor).",
+        help=(
+            "The profile to use. Base profiles: minimal, desktop. Add-on profiles: "
+            "foxglove, zenoh, mcap, novatel. Convenience: project-develnor."
+        ),
     )
     init_parser.add_argument(
         "--ros-distro",

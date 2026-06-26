@@ -54,6 +54,8 @@ directory as `/ws` and starts `bash`, without requiring `-f/--config`.
 ## CLI
 
 ```bash
+ros2docker init
+ros2docker init --profile desktop --devcontainer
 ros2docker run -m /host/project
 ros2docker run --no-build -m /host/project
 ros2docker build -f ros2docker.json
@@ -68,6 +70,11 @@ ros2docker --version
 python -m ros2docker --version
 ```
 
+`ros2docker init` scaffolds a starter workspace (`ros2docker.json`, `ws/src/`,
+`catmux.yaml`, and optionally `.devcontainer/devcontainer.json`). It will not
+overwrite existing files unless `--overwrite` is passed. See
+[Profiles](#profiles) for `--profile`/`--ros-distro`.
+
 Every Docker action accepts `--dry-run`, which prints the Docker argv and exits without running Docker.
 The `-f`/`--config` option is optional; without it, `ros2docker` uses the default config, which starts an interactive Bash shell.
 Use `ros2docker exec` to run a command inside an already-running container, such as one started with `run_type: "up"`.
@@ -81,6 +88,8 @@ Config files are JSON with `//` and `/* ... */` comments. Supported keys include
 {
   "container_name": "example_ros2container",
   "image_name": "ros2docker",
+  "profile": null,
+  "dockerfile": "Dockerfile.generic",
   "run_type": "bash",
   "tty": true,
   "stdin_open": true,
@@ -117,6 +126,50 @@ Host paths in `-v/--volume` and bind `--mount` args expand `~` and environment v
 
 `enable_gui_forwarding` forwards the X11 socket at `/tmp/.X11-unix`.
 `forward_ssh_agent` forwards the host `SSH_AUTH_SOCK` path when the variable is set and points to an existing socket or file.
+
+## Profiles
+
+The default image is intentionally boring: an official ROS base image plus
+colcon, rosdep, a Python venv, and a small set of base apt packages. Everything
+opinionated or project-specific lives in opt-in **profiles** that are merged
+into your config via the `profile` key.
+
+Two kinds of profiles ship with `ros2docker`:
+
+- **Base profiles** pick a base image: `minimal` (`ros:*-ros-base`) and
+  `desktop` (`osrf/ros:*-desktop-full`).
+- **Add-on profiles** layer optional tooling onto a base, toggling
+  `Dockerfile.generic` feature flags and adding apt/pip packages: `foxglove`
+  (Foxglove bridge/messages, transports, ament linters), `zenoh` (Zenoh router +
+  `zenoh-plugin-ros2dds` binaries and the Cyclone/Zenoh RMW packages), `mcap`
+  (the `mcap` CLI), and `novatel` (`novatel_oem7_msgs` built from a pinned
+  commit).
+
+`profile` accepts a single name or an ordered list of add-ons applied left to
+right. `build_args.APT_PACKAGES` and `build_args.PIP_PACKAGES` from profiles and
+your own config are unioned, so you can extend a profile without losing its
+packages:
+
+```json
+{
+  "image_name": "my-robot",
+  "profile": ["desktop", "foxglove", "zenoh", "mcap"],
+  "build_args": { "APT_PACKAGES": "ros-lyrical-rviz2" }
+}
+```
+
+`project-develnor` is a convenience profile that reproduces the historical full
+image (every add-on enabled, Cyclone DDS as the default RMW) on
+`Dockerfile.generic`.
+
+Scaffold a workspace pre-wired to a profile and ROS distro:
+
+```bash
+ros2docker init --profile desktop
+ros2docker init --profile minimal --ros-distro jazzy
+```
+
+The add-on apt package names currently target the `lyrical` distro.
 
 ## Security / Trust Boundary
 

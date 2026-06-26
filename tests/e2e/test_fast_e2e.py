@@ -51,6 +51,30 @@ def test_minimal_cli_command_list_runs_ros_tools(docker_harness, shared_image: s
     assert "E2E_MINIMAL_OK" in result.stdout
 
 
+def test_project_develnor_addons_are_installed(docker_harness, shared_image: str, tmp_path: Path) -> None:
+    # The shared image builds the project-develnor profile, i.e. Dockerfile.generic
+    # with every add-on flag enabled. Guard that the characteristic binaries and
+    # ROS packages from the historical full image are actually present.
+    config = _base_config(shared_image, docker_harness.container_name("develnor_addons"))
+    config["command"] = [
+        "bash",
+        "-lc",
+        "set -e; "
+        "command -v mcap; "
+        "command -v zenohd; "
+        "find /opt/zenoh -name 'libzenoh_plugin_ros2dds*.so' | grep -q .; "
+        "ros2 pkg prefix novatel_oem7_msgs >/dev/null; "
+        "ros2 pkg prefix gps_msgs >/dev/null; "
+        "ros2 pkg prefix foxglove_bridge >/dev/null; "
+        "echo E2E_ADDONS_OK",
+    ]
+    config_path = write_config(tmp_path / "ros2docker.json", config)
+
+    result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=180)
+
+    assert "E2E_ADDONS_OK" in result.stdout
+
+
 def test_ros_runtime_env_defaults_can_be_overridden(
     docker_harness,
     shared_image: str,

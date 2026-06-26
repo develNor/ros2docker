@@ -148,7 +148,10 @@ def test_schema_types_match_runtime_validation_expectations() -> None:
     assert properties["mount_ws"]["type"] == "boolean"
     assert properties["tty"]["type"] == "boolean"
     assert properties["stdin_open"]["type"] == "boolean"
-    assert properties["profile"]["type"] == ["string", "null"]
+    profile_options = properties["profile"]["oneOf"]
+    assert {option.get("type") for option in profile_options} == {"null", "string", "array"}
+    profile_array = next(option for option in profile_options if option.get("type") == "array")
+    assert profile_array["items"]["type"] == "string"
     assert properties["dockerfile"]["type"] == "string"
     assert properties["build_args"]["type"] == "object"
     assert properties["build_args"]["additionalProperties"]["type"] == ["string", "number", "boolean", "null"]
