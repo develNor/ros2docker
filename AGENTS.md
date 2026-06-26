@@ -43,7 +43,12 @@ Worktrees:
 Local GitHub credentials:
 
 - Agents act as the dedicated bot account `develNor-agent`, not as the human
-  owner, using a fine-grained personal access token scoped to this repository.
+  owner. Because this repository is owned by another personal account
+  (`develNor`) and the bot only collaborates on it, the bot authenticates with a
+  **classic** personal access token with the `repo` and `workflow` scopes. (A
+  fine-grained PAT cannot grant write to a repo owned by a different personal
+  account; a GitHub App is the granular alternative — see
+  `docs/agentic-workflow.md`.)
 - Store the token only in `.agents/github.env`, which is gitignored and must
   stay local to this checkout. Do not print it, commit it, copy it into logs, or
   persist it anywhere else; source it only for the command that needs it.
@@ -52,14 +57,16 @@ Local GitHub credentials:
 
   ```bash
   GITHUB_REPO=develNor/ros2docker
-  GH_TOKEN=github_pat_...
+  GH_TOKEN=ghp_...
   GIT_AUTHOR_NAME=develNor-agent
   GIT_AUTHOR_EMAIL=<bot-id>+develNor-agent@users.noreply.github.com
   ```
 
-- The token deliberately excludes Administration, Secrets, and Environments, so
-  agents cannot change repository settings, rulesets, secrets, or releases. Those
-  are owner-only by design — see `docs/agentic-workflow.md`.
+- Least privilege still holds without per-repo token scoping: the bot is a
+  non-admin collaborator, so it cannot change repository settings, rulesets, or
+  secrets, cannot create `v*` release tags, and cannot approve the `pypi`
+  deployment — those are owner-only by design. The token's blast radius is only
+  the repositories the bot collaborates on. See `docs/agentic-workflow.md`.
 
 Identity and attribution:
 

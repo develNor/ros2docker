@@ -10,8 +10,14 @@ operating rules in [../AGENTS.md](../AGENTS.md).
 
 Agents act as a dedicated bot account, **`develNor-agent`**, which is separate
 from the human owner (`develNor`). The bot is a non-admin **collaborator** and
-authenticates with a fine-grained, repository-scoped token kept locally in
-`.agents/github.env` (gitignored).
+authenticates with a token kept locally in `.agents/github.env` (gitignored).
+
+Because this repository is owned by a different personal account, the bot uses a
+**classic PAT** with the `repo` and `workflow` scopes — a fine-grained PAT cannot
+grant write to another personal account's repository. If finer, per-repo scoping
+becomes a goal, a **GitHub App** installed on the repo (or moving the repo into
+an organization, where fine-grained PATs work) is the upgrade path. Either way,
+least privilege is preserved by the bot being a non-admin collaborator.
 
 Two benefits follow:
 

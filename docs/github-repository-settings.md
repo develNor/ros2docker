@@ -58,10 +58,13 @@ Expected state:
   (`push`) role and no admin. On a personal (user-owned) repository a non-admin
   collaborator cannot change settings, rulesets, secrets, or delete/transfer the
   repository, so the entire admin tier is reserved to the owner automatically.
-- **Bot token.** A fine-grained PAT scoped to `develNor/ros2docker` only, with
-  Contents, Issues, Pull requests, Actions, and Workflows read/write, and
-  Metadata/Commit statuses/Checks read. It must **not** grant Administration,
-  Secrets, or Environments.
+- **Bot token.** A **classic** PAT on `develNor-agent` with the `repo` and
+  `workflow` scopes. A fine-grained PAT cannot authorize write on a repository
+  owned by a different personal account, so it does not work here; a GitHub App
+  installed on this repo is the granular, per-repo alternative if finer scoping
+  is wanted later. Least privilege still holds because the bot is a non-admin
+  collaborator: the token cannot reach repository settings, secrets, rulesets,
+  `v*` tags, or the `pypi` environment regardless of its scopes.
 - **Code Owners.** `.github/CODEOWNERS` assigns `@develNor` to the CI/test/deps
   and release policy surface (`.github/**`, `.pre-commit-config.yaml`,
   `pyproject.toml`, `justfile`, `codecov.yml`, `tests/contract/**`,
