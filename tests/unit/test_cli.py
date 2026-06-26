@@ -268,6 +268,52 @@ def test_dry_run_does_not_execute_subprocess(tmp_path: Path, monkeypatch: pytest
     assert result == 0
 
 
+def test_completion_command_prints_bash_script(capsys) -> None:
+    result = main(["completion", "bash"])
+
+    captured = capsys.readouterr()
+    assert result == 0
+    assert captured.err == ""
+    assert "complete -F _ros2docker_completion ros2docker" in captured.out
+
+
+def test_completion_command_rejects_unknown_shell(capsys) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        main(["completion", "fish"])
+
+    assert exc_info.value.code == 2
+    captured = capsys.readouterr()
+    assert "invalid choice" in captured.err
+
+
+def test_hidden_complete_command_lists_subcommands(capsys) -> None:
+    result = main(["__complete", "--", ""])
+
+    captured = capsys.readouterr()
+    lines = captured.out.splitlines()
+    assert result == 0
+    assert "init" in lines
+    assert lines[-1] == ":list"
+
+
+def test_hidden_complete_command_lists_profiles_for_init(capsys) -> None:
+    result = main(["__complete", "--", "init", "--profile", ""])
+
+    captured = capsys.readouterr()
+    lines = captured.out.splitlines()
+    assert result == 0
+    assert "minimal" in lines
+    assert lines[-1] == ":list"
+
+
+def test_hidden_complete_command_requests_file_completion_for_config(capsys) -> None:
+    result = main(["__complete", "--", "run", "--config", ""])
+
+    captured = capsys.readouterr()
+    assert result == 0
+    assert captured.out.strip() == ":files"
+
+
 def test_cli_version_reports_package_metadata(capsys) -> None:
     with pytest.raises(SystemExit) as exc_info:
         main(["--version"])

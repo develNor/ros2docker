@@ -8,6 +8,7 @@ import sys
 
 from . import __version__
 from .api import build, build_run, exec_shell, init, run, stop
+from .completion import complete_lines, completion_script
 from .config import load_config
 from .diagnostics import collect_diagnostics, diagnostics_exit_code, format_diagnostics
 
@@ -29,7 +30,11 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _make_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="ros2docker")
+    parser = argparse.ArgumentParser(
+        prog="ros2docker",
+        description="Build and run ROS 2 Docker workspaces from versioned config files.",
+        epilog="Run 'ros2docker completion bash' or '... zsh' to enable shell tab completion.",
+    )
     parser.add_argument("--version", action="version", version=f"ros2docker {__version__}")
     subparsers = parser.add_subparsers(dest="command_name")
 
@@ -87,6 +92,18 @@ def _make_parser() -> argparse.ArgumentParser:
     init_parser.add_argument("--devcontainer", action="store_true", help="Generate .devcontainer/devcontainer.json.")
     init_parser.add_argument("--overwrite", action="store_true", help="Overwrite existing files.")
     init_parser.set_defaults(func=_init)
+
+    completion_parser = subparsers.add_parser(
+        "completion",
+        help="Print a shell completion script (eval it from your shell rc).",
+    )
+    completion_parser.add_argument("shell", choices=("bash", "zsh"), help="Shell to generate completion for.")
+    completion_parser.set_defaults(func=_completion)
+
+    # Hidden command used by the generated completion scripts to render candidates.
+    complete_parser = subparsers.add_parser("__complete", help=argparse.SUPPRESS)
+    complete_parser.add_argument("words", nargs=argparse.REMAINDER)
+    complete_parser.set_defaults(func=_complete)
 
     return parser
 
@@ -166,6 +183,15 @@ def _init(args: argparse.Namespace) -> None:
         devcontainer=args.devcontainer,
         overwrite=args.overwrite,
     )
+
+
+def _completion(args: argparse.Namespace) -> None:
+    print(completion_script(args.shell), end="")
+
+
+def _complete(args: argparse.Namespace) -> None:
+    for line in complete_lines(_strip_separator(args.words)):
+        print(line)
 
 
 if __name__ == "__main__":
