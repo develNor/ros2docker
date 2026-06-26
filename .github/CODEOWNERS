@@ -6,9 +6,22 @@
 # contributor boundary for the project's automation: a contributor (or an
 # agent) cannot silently weaken or rewire CI without explicit owner approval.
 #
-# See docs/github-repository-settings.md for the ruleset that enforces this.
+# Agents (the develNor-agent bot account) work with full autonomy elsewhere, but
+# a PR that touches the paths below needs the owner's Code Owner approval before
+# it can merge. This is the only human gate on the otherwise-autonomous flow,
+# plus repo admin and releases. See docs/agentic-workflow.md and
+# docs/github-repository-settings.md.
 
-/.github/        @develNor
-/pyproject.toml  @develNor
-/justfile        @develNor
-/codecov.yml     @develNor
+# CI, build tooling, packaging, and policy config.
+/.github/                 @develNor
+/.pre-commit-config.yaml  @develNor
+/pyproject.toml           @develNor
+/justfile                 @develNor
+/codecov.yml              @develNor
+
+# The contract/policy tests that encode CI and repository invariants.
+/tests/contract/          @develNor
+
+# Release pipeline and notes.
+/docs/release.md          @develNor
+/docs/release-notes/      @develNor

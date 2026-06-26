@@ -18,6 +18,10 @@ Expected state:
 - The ruleset requires the `ci-success` status check.
 - The ruleset requires CodeQL code scanning.
 - The ruleset requires review from Code Owners (see Code Owners below).
+- The ruleset keeps `required_approving_review_count` at `0` (Code Owner review
+  only gates PRs that touch owned paths; everything else can auto-merge on green).
+- The ruleset bypass list contains the **Repository admin** role, so the owner is
+  never blocked by these rules; the `develNor-agent` bot is not a bypass actor.
 
 Verify:
 
@@ -42,39 +46,55 @@ ci-success
 
 See [docs/ci.md](ci.md) for the workflow contract behind that aggregate check.
 
-## Code Owners And Contributor Rights
+## Agent Identity And Human-Only Gates
 
-The owner-vs-contributor boundary for this repository is enforced by GitHub
-access control, not by a CI job. The relevant settings:
+Agents operate as the dedicated bot account `develNor-agent`, separate from the
+human owner. See [docs/agentic-workflow.md](agentic-workflow.md) for the model
+and the rationale; this section records the settings that enforce it.
 
-- **Code Owners.** `.github/CODEOWNERS` (in git) assigns `@develNor` as the
-  required reviewer for the files that define automation: `.github/**`,
-  `pyproject.toml`, `justfile`, and `codecov.yml`. For this to be enforced, the
-  `Protect main` ruleset must have **require review from Code Owners** enabled.
-  Together they mean a contributor — or an agent — cannot change CI, build
-  tooling, packaging, or the release pipeline without explicit owner approval,
-  even though `ci-success` would otherwise be green.
+Expected state:
 
-- **Fork pull requests on a public repository.** Outside collaborators' fork PRs
-  already run with a **read-only `GITHUB_TOKEN`** and **no access to repository
-  secrets**, so contributor PRs cannot exfiltrate secrets or self-approve. The
-  Actions setting *"Require approval for all external contributors"* (or
-  first-time contributors) controls whether their workflows run at all.
-
-- **No write access for contributors.** `main` is protected (PRs required,
-  `ci-success` + CodeQL required, squash-only, no force-push, no deletion), so
-  contributors cannot push to `main` or merge without passing the gate and any
-  required Code Owner review.
+- **Bot collaborator.** `develNor-agent` is a collaborator with the **write**
+  (`push`) role and no admin. On a personal (user-owned) repository a non-admin
+  collaborator cannot change settings, rulesets, secrets, or delete/transfer the
+  repository, so the entire admin tier is reserved to the owner automatically.
+- **Bot token.** A fine-grained PAT scoped to `develNor/ros2docker` only, with
+  Contents, Issues, Pull requests, Actions, and Workflows read/write, and
+  Metadata/Commit statuses/Checks read. It must **not** grant Administration,
+  Secrets, or Environments.
+- **Code Owners.** `.github/CODEOWNERS` assigns `@develNor` to the CI/test/deps
+  and release policy surface (`.github/**`, `.pre-commit-config.yaml`,
+  `pyproject.toml`, `justfile`, `codecov.yml`, `tests/contract/**`,
+  `docs/release.md`, `docs/release-notes/**`). With **require review from Code
+  Owners** on the ruleset, a bot PR touching those paths needs the owner's
+  approval — which works only because the bot is a different account and cannot
+  self-approve. PRs that touch nothing owned auto-merge with zero approvals.
+- **Releases are owner-only.** A tag ruleset restricts creation of `v*` tags to
+  the Repository admin role, and the `pypi` deployment environment lists
+  `develNor` as a **required reviewer**, so the irreversible Trusted Publishing
+  step waits for an explicit human approval even if a tag is created.
+- **Fork pull requests on a public repository** still run with a read-only
+  `GITHUB_TOKEN` and no secrets; the Actions *"require approval for outside/
+  first-time contributors"* setting governs whether their workflows run.
 
 Verify:
 
 ```bash
+# Bot collaborator has push (not admin).
+gh api repos/develNor/ros2docker/collaborators/develNor-agent/permission
+
 # CODEOWNERS is valid and has no unknown owners.
 gh api repos/develNor/ros2docker/codeowners/errors
 
-# Ruleset requires Code Owner review (look for required_review with
-# require_code_owner_review: true under the pull_request rule).
+# Ruleset: require_code_owner_review true, required_approving_review_count 0,
+# bypass list includes the Repository admin role.
 gh api repos/develNor/ros2docker/rulesets/17518226
+
+# Tag protection ruleset for v* exists.
+gh ruleset list --repo develNor/ros2docker --parents
+
+# pypi environment has develNor as a required reviewer.
+gh api repos/develNor/ros2docker/environments/pypi
 
 # Actions approval policy for outside contributors.
 gh api repos/develNor/ros2docker/actions/permissions/workflow
