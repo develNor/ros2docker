@@ -169,10 +169,22 @@ just test-e2e-fast
 The ready-PR non-Docker gate runs unit and contract tests on Python 3.10 through
 3.14 through `just test-nondocker-cov`, enforcing the configured coverage
 threshold, uploading `coverage.xml` as a workflow artifact, and publishing the
-Python 3.12 coverage report to Codecov with `CODECOV_TOKEN`. Codecov then
-reports a strict `codecov/patch` status for changed lines and a looser
-`codecov/project` status as a whole-repo erosion backstop, as configured in
-`codecov.yml`. Docker E2E remains behavioral validation only.
+Python 3.12 coverage report to Codecov with `CODECOV_TOKEN`. Docker E2E remains
+behavioral validation only.
+
+Coverage uses two gates with different roles:
+
+- The **hard gate** is `tool.coverage.report.fail_under` in `pyproject.toml`
+  (currently `80`), enforced by `just test-nondocker-cov` inside `ci-success`.
+  This is the only coverage number that can block a merge. It sits a few points
+  below actual coverage so it catches real regressions without forcing churn.
+- The **advisory Codecov statuses** (`codecov/patch` target `90%`,
+  `codecov/project` auto-with-threshold backstop) are signals on the PR, not
+  required checks. They encourage covering new code without "ghost hunting"
+  every single uncovered changed line. See `codecov.yml`.
+
+Raise `fail_under` only when actual coverage rises through real behavior tests;
+never weaken, skip, or delete tests to hit a number.
 
 A PR cannot merge into `main` unless `ci-success` passes. Prefer requiring only
 this stable aggregate check in branch protection so individual job names can
