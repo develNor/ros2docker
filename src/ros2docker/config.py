@@ -163,13 +163,54 @@ def load_profile(profile_name: str) -> dict[str, Any]:
     return profile_json
 
 
+# Build args whose values are space-separated package lists. When several
+# profiles (or a profile and a config) contribute these, the lists are unioned
+# instead of replaced so add-on profiles compose.
+ADDITIVE_BUILD_ARGS = ("APT_PACKAGES", "PIP_PACKAGES")
+
+
 def merge_configs(base: dict[str, Any], overlay: dict[str, Any]) -> None:
     """Deep merge dictionary values from overlay into base while replacing lists/scalars."""
     for key, val in overlay.items():
         if key in base and isinstance(base[key], dict) and isinstance(val, dict):
-            base[key] = {**base[key], **val}
+            base[key] = _merge_mapping(base[key], val)
         else:
             base[key] = copy.deepcopy(val)
+
+
+def _merge_mapping(base: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(base)
+    for key, val in overlay.items():
+        if key in ADDITIVE_BUILD_ARGS and isinstance(merged.get(key), str) and isinstance(val, str):
+            merged[key] = _merge_package_list(merged[key], val)
+        else:
+            merged[key] = copy.deepcopy(val)
+    return merged
+
+
+def _merge_package_list(existing: str, addition: str) -> str:
+    """Union two space-separated package lists, preserving first-seen order."""
+    tokens: list[str] = []
+    for token in (*existing.split(), *addition.split()):
+        if token not in tokens:
+            tokens.append(token)
+    return " ".join(tokens)
+
+
+def _normalize_profile_names(profile_value: Any) -> list[str]:
+    """Normalize a profile config value to an ordered list of profile names."""
+    if profile_value is None:
+        return []
+    if isinstance(profile_value, str):
+        return [profile_value]
+    if isinstance(profile_value, list):
+        names: list[str] = []
+        for item in profile_value:
+            if not isinstance(item, str):
+                raise ConfigError("Profile names must be strings.")
+            names.append(item)
+        return names
+    raise ConfigError("Profile must be a string, a list of strings, or null.")
 
 
 def load_config(
@@ -196,14 +237,13 @@ def load_config(
         if not isinstance(file_config, dict):
             raise ConfigError(f"Config file must contain a JSON object: {config_path}")
 
-    # Determine which profile to load (override takes precedence over file config)
-    profile_name = override_config.get("profile")
-    if profile_name is None:
-        profile_name = file_config.get("profile")
+    # Determine which profile(s) to load (override takes precedence over file config).
+    # A profile may be a single name or an ordered list of add-on profiles.
+    profile_value = override_config.get("profile")
+    if profile_value is None:
+        profile_value = file_config.get("profile")
 
-    if profile_name is not None:
-        if not isinstance(profile_name, str):
-            raise ConfigError("Profile name must be a string.")
+    for profile_name in _normalize_profile_names(profile_value):
         profile_config = load_profile(profile_name)
         merge_configs(config, profile_config)
 

@@ -1,10 +1,5 @@
 {
-  "image_name": "ros2docker-foxglove",
-  "dockerfile": "Dockerfile.generic",
   "build_args": {
-    "BASE_IMAGE": "osrf/ros:lyrical-desktop-full-resolute",
-    "DIGEST": "@sha256:ac6471b5c13e57674d9660630d0cb140f518cb5ea6add7169e5dd91e16bf0b50",
-    "APT_PACKAGES": "ros-lyrical-foxglove-bridge ros-lyrical-foxglove-msgs ros-lyrical-topic-tools ros-lyrical-ffmpeg-image-transport ros-lyrical-foxglove-compressed-video-transport ros-lyrical-gps-msgs ros-lyrical-ament-copyright ros-lyrical-ament-flake8 ros-lyrical-ament-pep257",
-    "PIP_PACKAGES": "rosbags"
+    "APT_PACKAGES": "ros-lyrical-foxglove-bridge ros-lyrical-foxglove-msgs ros-lyrical-topic-tools ros-lyrical-ffmpeg-image-transport ros-lyrical-foxglove-compressed-video-transport ros-lyrical-gps-msgs ros-lyrical-ament-copyright ros-lyrical-ament-flake8 ros-lyrical-ament-pep257"
   }
 }

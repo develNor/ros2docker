@@ -27,6 +27,7 @@ ros2docker doctor -f ros2docker.json
 {
   "container_name": "example_ros2container",
   "image_name": "ros2docker",
+  "profile": ["desktop", "foxglove"],
   "run_type": "bash",
   "tty": true,
   "stdin_open": true,
@@ -48,6 +49,13 @@ ros2docker doctor -f ros2docker.json
 `container_name`: Docker container name.
 
 `image_name`: Docker image tag used by build and run commands.
+
+`profile`: Predefined image profile(s) merged in as base configuration before
+the config file and overrides. A single profile name or an ordered list of
+add-on profiles applied left to right. See [Profiles](#profiles).
+
+`dockerfile`: The packaged Dockerfile resource to build. Defaults to
+`Dockerfile.generic`; profiles normally set this and you rarely need to.
 
 `run_type`: Container entry behavior. `bash` starts an interactive shell.
 `command` runs the configured `command` as a one-shot container. `catmux`
@@ -79,11 +87,15 @@ trusted inputs.
 
 `extra_run_args`: Additional Docker run arguments appended after `run_args`.
 
-`build_args`: Docker build arguments passed as `--build-arg` values. The default
-Dockerfile pins external source and binary inputs with build args such as
+`build_args`: Docker build arguments passed as `--build-arg` values.
+`Dockerfile.generic` gates its optional add-ons behind `INSTALL_ZENOH`,
+`INSTALL_MCAP`, and `INSTALL_NOVATEL` flags (set by the matching profiles) and
+pins external source and binary inputs with build args such as
 `NOVATEL_OEM7_REF`, `ZENOH_SHA256`, `ZENOH_ROS2DDS_SHA256`, and
-`MCAP_CLI_SHA256`; only override those values as an intentional maintenance
-change.
+`MCAP_CLI_SHA256`; only override those pins as an intentional maintenance
+change. The `APT_PACKAGES` and `PIP_PACKAGES` values are unioned across profiles
+and the config file rather than replaced, so a config can extend a profile's
+package list.
 
 `bake_ros_packages`: ROS package directories copied into the temporary Docker
 build context. Relative paths resolve from the config file directory.
@@ -93,6 +105,45 @@ build context. Relative paths resolve from the config file directory.
 `catmux_params`: Catmux overwrite parameters passed as `key=value` pairs.
 
 `command`: Command string or argv list used when `run_type` is `command`.
+
+## Profiles
+
+Profiles are packaged config fragments under
+`src/ros2docker/resources/profiles/`. The `profile` key merges one or more of
+them in before the config file and overrides, so the default image stays generic
+while opinionated tooling is opt-in.
+
+Base profiles select a base image:
+
+- `minimal`: `ros:lyrical-ros-base-resolute`.
+- `desktop`: `osrf/ros:lyrical-desktop-full-resolute` (digest-pinned).
+
+Add-on profiles layer optional tooling on top of a base by toggling
+`Dockerfile.generic` feature flags and adding packages. They do not pin a base
+image, so they compose:
+
+- `foxglove`: Foxglove bridge/messages, common transports, ament linters.
+- `zenoh`: Zenoh router + `zenoh-plugin-ros2dds` binaries (`INSTALL_ZENOH`) and
+  the Cyclone/Zenoh RMW apt packages.
+- `mcap`: the `mcap` CLI (`INSTALL_MCAP`).
+- `novatel`: `novatel_oem7_msgs` built from a pinned commit (`INSTALL_NOVATEL`).
+
+`project-develnor` is a convenience profile that reproduces the historical full
+image (all add-ons enabled, Cyclone DDS default RMW) on `Dockerfile.generic`.
+
+Compose add-ons with a list; `APT_PACKAGES`/`PIP_PACKAGES` are unioned:
+
+```json
+{
+  "image_name": "my-robot",
+  "profile": ["desktop", "foxglove", "zenoh"],
+  "build_args": { "APT_PACKAGES": "ros-lyrical-rviz2" }
+}
+```
+
+`ros2docker init --profile <name>` scaffolds a config wired to a profile, and
+`--ros-distro <distro>` overrides the base image for non-lyrical distros. Add-on
+apt package names currently target the `lyrical` distro.
 
 ## Security / Trust Boundary
 

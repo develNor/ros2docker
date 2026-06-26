@@ -295,3 +295,57 @@ def test_load_config_profile_not_found(tmp_path: Path) -> None:
 
     with pytest.raises(ConfigError, match="Profile 'nonexistent' not found"):
         load_config(config_path)
+
+
+def test_profile_and_user_apt_packages_merge_additively(tmp_path: Path) -> None:
+    config_path = write_config(
+        tmp_path / "ros2docker.json",
+        '{"profile": "foxglove", "build_args": {"APT_PACKAGES": "htop"}}',
+    )
+
+    config = load_config(config_path)
+    apt = config["build_args"]["APT_PACKAGES"].split()
+
+    # The user's package is added without dropping the profile's packages.
+    assert "htop" in apt
+    assert "ros-lyrical-foxglove-bridge" in apt
+
+
+def test_profile_list_composes_addons_and_unions_packages(tmp_path: Path) -> None:
+    config_path = write_config(
+        tmp_path / "ros2docker.json",
+        '{"profile": ["desktop", "foxglove", "zenoh", "mcap"]}',
+    )
+
+    config = load_config(config_path)
+    build_args = config["build_args"]
+    apt = build_args["APT_PACKAGES"].split()
+
+    # Base image comes from the desktop base profile.
+    assert build_args["BASE_IMAGE"] == "osrf/ros:lyrical-desktop-full-resolute"
+    # Add-on flags accumulate.
+    assert build_args["INSTALL_ZENOH"] == "1"
+    assert build_args["INSTALL_MCAP"] == "1"
+    # Apt package lists from both add-ons are unioned.
+    assert "ros-lyrical-foxglove-bridge" in apt
+    assert "ros-lyrical-rmw-zenoh-cpp" in apt
+
+
+def test_profile_package_union_deduplicates(tmp_path: Path) -> None:
+    config_path = write_config(
+        tmp_path / "ros2docker.json",
+        '{"profile": "foxglove", "build_args": {"APT_PACKAGES": "ros-lyrical-foxglove-bridge vim"}}',
+    )
+
+    config = load_config(config_path)
+    apt = config["build_args"]["APT_PACKAGES"].split()
+
+    assert apt.count("ros-lyrical-foxglove-bridge") == 1
+    assert "vim" in apt
+
+
+def test_profile_list_rejects_non_string_entries(tmp_path: Path) -> None:
+    config_path = write_config(tmp_path / "ros2docker.json", '{"profile": ["minimal", 7]}')
+
+    with pytest.raises(ConfigError, match="Profile names must be strings"):
+        load_config(config_path)

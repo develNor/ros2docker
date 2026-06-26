@@ -197,56 +197,7 @@ def init(
             "Use --overwrite to overwrite them."
         )
 
-    # Base image lookup/generation based on distro and profile
-    distro_images = {
-        "lyrical": {
-            "minimal": "ros:lyrical-ros-base-resolute",
-            "desktop": "osrf/ros:lyrical-desktop-full-resolute",
-            "foxglove": "osrf/ros:lyrical-desktop-full-resolute",
-            "zenoh": "osrf/ros:lyrical-desktop-full-resolute",
-            "project-develnor": "osrf/ros:lyrical-desktop-full-resolute",
-        },
-        "jazzy": {
-            "minimal": "ros:jazzy-ros-base",
-            "desktop": "osrf/ros:jazzy-desktop",
-            "foxglove": "osrf/ros:jazzy-desktop",
-            "zenoh": "osrf/ros:jazzy-desktop",
-            "project-develnor": "osrf/ros:jazzy-desktop",
-        },
-        "iron": {
-            "minimal": "ros:iron-ros-base",
-            "desktop": "osrf/ros:iron-desktop",
-            "foxglove": "osrf/ros:iron-desktop",
-            "zenoh": "osrf/ros:iron-desktop",
-            "project-develnor": "osrf/ros:iron-desktop",
-        },
-        "humble": {
-            "minimal": "ros:humble-ros-base",
-            "desktop": "osrf/ros:humble-desktop",
-            "foxglove": "osrf/ros:humble-desktop",
-            "zenoh": "osrf/ros:humble-desktop",
-            "project-develnor": "osrf/ros:humble-desktop",
-        },
-        "rolling": {
-            "minimal": "ros:rolling-ros-base",
-            "desktop": "osrf/ros:rolling-desktop",
-            "foxglove": "osrf/ros:rolling-desktop",
-            "zenoh": "osrf/ros:rolling-desktop",
-            "project-develnor": "osrf/ros:rolling-desktop",
-        },
-    }
-
-    base_image = None
-    if ros_distro in distro_images:
-        base_image = distro_images[ros_distro].get(profile)
-
-    if base_image is None:
-        if profile == "minimal":
-            base_image = f"ros:{ros_distro}-ros-base"
-        else:
-            base_image = f"osrf/ros:{ros_distro}-desktop"
-
-    config_data = {
+    config_data: dict[str, object] = {
         "container_name": f"ros2container_{ros_distro}_{profile}",
         "image_name": f"ros2docker-{profile}",
         "profile": profile,
@@ -254,13 +205,15 @@ def init(
         "mount_ws": True,
     }
 
-    build_args = {}
+    # The packaged profiles already pin the lyrical base image (single source of
+    # truth). For other distros, derive a base image and let it override the
+    # profile default via build args.
     if ros_distro != "lyrical":
-        build_args["BASE_IMAGE"] = base_image
-        build_args["DIGEST"] = ""
-
-    if build_args:
-        config_data["build_args"] = build_args
+        if profile == "minimal":
+            base_image = f"ros:{ros_distro}-ros-base"
+        else:
+            base_image = f"osrf/ros:{ros_distro}-desktop"
+        config_data["build_args"] = {"BASE_IMAGE": base_image, "DIGEST": ""}
 
     # Generate workspace directories and files
     (base_dir / "ws" / "src").mkdir(parents=True, exist_ok=True)

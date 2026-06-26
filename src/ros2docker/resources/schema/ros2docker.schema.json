@@ -17,8 +17,12 @@
       "description": "Docker image tag used for build and run commands."
     },
     "profile": {
-      "type": ["string", "null"],
-      "description": "Predefined image profile to load as base configuration."
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ],
+      "description": "Predefined image profile(s) to load as base configuration. A single profile name or an ordered list of add-on profiles applied left to right."
     },
     "dockerfile": {
       "type": "string",

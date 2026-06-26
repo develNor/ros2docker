@@ -1,0 +1,5 @@
+{
+  "build_args": {
+    "INSTALL_NOVATEL": "1"
+  }
+}
