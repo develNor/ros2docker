@@ -1,0 +1,14 @@
+# Code owners for ros2docker.
+#
+# Changes to the files that define CI, build tooling, packaging, and the
+# release pipeline require review from the maintainer. Combined with the
+# "require review from Code Owners" ruleset option, this is the owner-vs-
+# contributor boundary for the project's automation: a contributor (or an
+# agent) cannot silently weaken or rewire CI without explicit owner approval.
+#
+# See docs/github-repository-settings.md for the ruleset that enforces this.
+
+/.github/        @develNor
+/pyproject.toml  @develNor
+/justfile        @develNor
+/codecov.yml     @develNor

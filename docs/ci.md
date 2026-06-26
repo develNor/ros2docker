@@ -70,6 +70,34 @@ This complements rather than duplicates the other security tooling:
 - The advisory nightly **Trivy image scan** scans the built image's OS packages,
   not the declared Python dependencies in `pyproject.toml`.
 
+### Workflow Lint
+
+`pr-merge-gate.yml` includes a `workflow-lint` job that runs
+[actionlint](https://github.com/rhysd/actionlint) (pinned by version and SHA256)
+against the workflow files. `ubuntu-latest` ships `shellcheck`, which actionlint
+invokes on `run:` blocks. The job is part of the required `ci-success` aggregate,
+so a workflow that becomes invalid — wrong contexts, bad expressions or matrix
+usage, shell issues — blocks the merge instead of silently changing what CI
+means.
+
+Run the same check locally:
+
+```bash
+just lint-workflows
+```
+
+This uses the pinned `actionlint-docker` pre-commit hook (the actionlint image
+bundles `shellcheck`), so it matches the CI job without a local Go or binary
+install. Keep the pre-commit `rev` and the CI `ACTIONLINT_VERSION` in sync.
+
+The workflow-lint job is intentionally the only workflow-security automation
+added here. GitHub Actions **security** scanning is already covered by CodeQL
+default setup (languages `actions` + `python`, threat model `remote`), which is a
+required check via the `Protect main` ruleset. The owner-vs-contributor boundary
+for CI changes is enforced by branch protection plus `CODEOWNERS`, not by a
+separate policy job — see
+[docs/github-repository-settings.md](github-repository-settings.md).
+
 ## Docker E2E
 
 `just test-e2e-fast` runs the Docker smoke fixtures used by the merge gate.

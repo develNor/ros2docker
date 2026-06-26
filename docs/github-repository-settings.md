@@ -17,6 +17,7 @@ Expected state:
 - The ruleset prevents non-fast-forward updates.
 - The ruleset requires the `ci-success` status check.
 - The ruleset requires CodeQL code scanning.
+- The ruleset requires review from Code Owners (see Code Owners below).
 
 Verify:
 
@@ -40,6 +41,44 @@ ci-success
 ```
 
 See [docs/ci.md](ci.md) for the workflow contract behind that aggregate check.
+
+## Code Owners And Contributor Rights
+
+The owner-vs-contributor boundary for this repository is enforced by GitHub
+access control, not by a CI job. The relevant settings:
+
+- **Code Owners.** `.github/CODEOWNERS` (in git) assigns `@develNor` as the
+  required reviewer for the files that define automation: `.github/**`,
+  `pyproject.toml`, `justfile`, and `codecov.yml`. For this to be enforced, the
+  `Protect main` ruleset must have **require review from Code Owners** enabled.
+  Together they mean a contributor — or an agent — cannot change CI, build
+  tooling, packaging, or the release pipeline without explicit owner approval,
+  even though `ci-success` would otherwise be green.
+
+- **Fork pull requests on a public repository.** Outside collaborators' fork PRs
+  already run with a **read-only `GITHUB_TOKEN`** and **no access to repository
+  secrets**, so contributor PRs cannot exfiltrate secrets or self-approve. The
+  Actions setting *"Require approval for all external contributors"* (or
+  first-time contributors) controls whether their workflows run at all.
+
+- **No write access for contributors.** `main` is protected (PRs required,
+  `ci-success` + CodeQL required, squash-only, no force-push, no deletion), so
+  contributors cannot push to `main` or merge without passing the gate and any
+  required Code Owner review.
+
+Verify:
+
+```bash
+# CODEOWNERS is valid and has no unknown owners.
+gh api repos/develNor/ros2docker/codeowners/errors
+
+# Ruleset requires Code Owner review (look for required_review with
+# require_code_owner_review: true under the pull_request rule).
+gh api repos/develNor/ros2docker/rulesets/17518226
+
+# Actions approval policy for outside contributors.
+gh api repos/develNor/ros2docker/actions/permissions/workflow
+```
 
 ## CodeQL Default Setup
 

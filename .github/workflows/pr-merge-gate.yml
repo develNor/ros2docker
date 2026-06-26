@@ -128,6 +128,33 @@ jobs:
       - name: Run fast E2E
         run: just test-e2e-fast
 
+  workflow-lint:
+    name: workflow-lint
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    permissions:
+      contents: read
+    env:
+      ACTIONLINT_VERSION: 1.7.12
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install actionlint
+        run: |
+          curl -fsSL -o /tmp/actionlint.tar.gz \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          echo "${ACTIONLINT_SHA256}  /tmp/actionlint.tar.gz" | sha256sum -c -
+          sudo tar -xzf /tmp/actionlint.tar.gz -C /usr/local/bin actionlint
+
+      - name: Lint GitHub Actions workflows
+        # shellcheck is preinstalled on ubuntu-latest; actionlint runs it on run blocks.
+        run: actionlint -color
+
   dependency-review:
     name: dependency-review
     runs-on: ubuntu-latest
@@ -151,7 +178,7 @@ jobs:
   ci-success:
     name: ci-success
     runs-on: ubuntu-latest
-    needs: [merge-lightweight, package, fast-e2e, dependency-review]
+    needs: [merge-lightweight, package, fast-e2e, workflow-lint, dependency-review]
     if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
 
     steps:
@@ -159,6 +186,10 @@ jobs:
         run: |
           if [[ "${{ needs.merge-lightweight.result }}" != "success" ]]; then
             echo "merge-lightweight failed or was skipped: ${{ needs.merge-lightweight.result }}"
+            exit 1
+          fi
+          if [[ "${{ needs.workflow-lint.result }}" != "success" ]]; then
+            echo "workflow-lint failed or was skipped: ${{ needs.workflow-lint.result }}"
             exit 1
           fi
           if [[ "${{ needs.package.result }}" != "success" ]]; then

@@ -24,6 +24,11 @@ lint:
 typecheck:
 	{{python}} -m mypy
 
+# Lint GitHub Actions workflows with actionlint (via the pinned pre-commit
+# docker hook, which bundles shellcheck). Mirrors the workflow-lint CI job.
+lint-workflows:
+	{{python}} -m pre_commit run actionlint-docker --all-files
+
 test: test-unit test-contract
 
 test-unit:

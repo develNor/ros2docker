@@ -17,3 +17,11 @@ repos:
       - id: ruff
         args: ["--fix"]
       - id: ruff-format
+
+  # actionlint lints GitHub Actions workflows. The docker hook bundles
+  # shellcheck/pyflakes, matching the workflow-lint CI job, and needs no local
+  # Go or binary install. Keep the rev in sync with the pinned CI version.
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint-docker
