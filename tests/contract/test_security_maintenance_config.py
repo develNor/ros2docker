@@ -35,3 +35,14 @@ def test_image_scan_is_advisory_and_not_a_pr_check() -> None:
     assert "actions/upload-artifact@v7" in image_scan
     assert "image-scan" not in merge_gate
     assert "trivy" not in merge_gate.lower()
+
+
+def test_pr_merge_gate_runs_required_dependency_review() -> None:
+    merge_gate = MERGE_GATE_PATH.read_text(encoding="utf-8")
+
+    assert "dependency-review:" in merge_gate
+    assert "actions/dependency-review-action@v5" in merge_gate
+    assert "fail-on-severity: high" in merge_gate
+    assert "fail-on-scopes: runtime, development" in merge_gate
+    # Wired into the required aggregate gate, not a standalone advisory check.
+    assert "needs: [merge-lightweight, package, fast-e2e, dependency-review]" in merge_gate

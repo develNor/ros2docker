@@ -54,6 +54,22 @@ never weaken, skip, or delete tests to hit a number.
 
 Use `ci-success` as the required check instead of individual job names.
 
+### Dependency Review
+
+`pr-merge-gate.yml` includes a `dependency-review` job that runs on pull
+requests and merge queue entries. It uses `actions/dependency-review-action` to
+**block** any PR that introduces a dependency with a known **high or above**
+severity vulnerability, across both `runtime` and `development` scopes. The job
+is part of the required `ci-success` aggregate; it is tolerated as skipped on
+direct pushes to `main`, where there is no PR diff to review.
+
+This complements rather than duplicates the other security tooling:
+
+- **Dependabot** alerts on dependencies that are already merged.
+- **Dependency Review** blocks the PR that is introducing one.
+- The advisory nightly **Trivy image scan** scans the built image's OS packages,
+  not the declared Python dependencies in `pyproject.toml`.
+
 ## Docker E2E
 
 `just test-e2e-fast` runs the Docker smoke fixtures used by the merge gate.
