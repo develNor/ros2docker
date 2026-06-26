@@ -36,17 +36,21 @@ that coverage report to Codecov with `CODECOV_TOKEN` for the README coverage
 badge and Codecov PR coverage statuses. Docker E2E tests are not collected for
 coverage.
 
-Codecov is configured in [`codecov.yml`](../codecov.yml) to report two PR
-coverage statuses from the uploaded `nondocker` report:
+Coverage uses two gates with different roles:
 
-- `codecov/patch` is strict for changed lines: target `100%`, threshold `0%`.
-- `codecov/project` is a looser whole-project backstop: target `auto` against
-  the PR base, threshold `1%`.
+- The **hard gate** is `tool.coverage.report.fail_under` in `pyproject.toml`
+  (currently `80`), enforced by `just test-nondocker-cov` inside `ci-success`.
+  It is the only coverage number that can block a merge and is kept a few points
+  below actual coverage to catch real regressions without forcing churn.
+- The **advisory Codecov statuses** are configured in
+  [`codecov.yml`](../codecov.yml) and are **not** required checks:
+  - `codecov/patch` targets `90%` of changed lines — meaningful coverage of new
+    code without "ghost hunting" a single uncovered defensive line.
+  - `codecov/project` is a looser whole-project backstop: target `auto` against
+    the PR base, threshold `1%`, to catch gradual overall erosion.
 
-Patch coverage is the primary signal for new or changed code because it only
-measures lines adjusted in the PR. Project coverage stays looser so it catches
-gradual overall coverage erosion without turning existing uncovered code into
-the focus of every small change.
+Raise `fail_under` only when actual coverage rises through real behavior tests;
+never weaken, skip, or delete tests to hit a number.
 
 Use `ci-success` as the required check instead of individual job names.
 

@@ -1,7 +1,13 @@
+# Codecov reports two ADVISORY PR coverage statuses from the uploaded `nondocker`
+# report. Neither is part of branch protection: the only required merge check is
+# `ci-success`, which enforces the hard coverage gate (`fail_under` in
+# pyproject.toml). These statuses are signals, not blockers.
 coverage:
   status:
     project:
       default:
+        # Whole-repo erosion backstop: fail only if overall coverage drops more
+        # than the threshold below the PR base.
         target: auto
         threshold: 1%
         if_ci_failed: error
@@ -10,7 +16,10 @@ coverage:
           - nondocker
     patch:
       default:
-        target: 100%
+        # Changed lines should be meaningfully covered, but a stray defensive
+        # line should not red the status. 90% avoids "ghost hunting" every
+        # single uncovered changed line while still pushing for tested new code.
+        target: 90%
         threshold: 0%
         if_ci_failed: error
         only_pulls: true
