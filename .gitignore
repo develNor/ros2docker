@@ -9,6 +9,7 @@ __pycache__
 /coverage.xml
 /dist/
 /*.egg-info/
+/src/*.egg-info/
 config/local.json
 /build/apt-packages.txt
 /build/requirements.txt
