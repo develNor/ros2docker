@@ -186,7 +186,7 @@ Create the `maybe` label if it is missing:
 ```bash
 gh label create maybe \
   --repo develNor/ros2docker \
-  --description "Saved for later consideration; not yet accepted or agent-ready" \
+  --description "Saved for later consideration; not yet accepted or ready" \
   --color fbca04
 ```
 

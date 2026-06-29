@@ -175,7 +175,7 @@ behavioral validation only.
 Coverage uses two gates with different roles:
 
 - The **hard gate** is `tool.coverage.report.fail_under` in `pyproject.toml`
-  (currently `80`), enforced by `just test-nondocker-cov` inside `ci-success`.
+  (currently `90`), enforced by `just test-nondocker-cov` inside `ci-success`.
   This is the only coverage number that can block a merge. It sits a few points
   below actual coverage so it catches real regressions without forcing churn.
 - The **advisory Codecov statuses** (`codecov/patch` target `90%`,
