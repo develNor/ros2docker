@@ -53,7 +53,7 @@ it.
 
 ## Triage Labels
 
-Use `agent-ready` only when an issue is accepted and ready for an agent or
+Use `ready` only when an issue is accepted and ready for an agent or
 contributor to pick up.
 
 Use `backlog` for work that is tracked for later and not currently scheduled.
@@ -61,7 +61,7 @@ Use `backlog` for work that is tracked for later and not currently scheduled.
 Use `maybe` with `backlog` for concerns, ideas, or proposals that should be
 saved for later consideration but are not yet accepted. A `maybe` issue should
 describe the decision to make before implementation, and should not be treated
-as ready to start until the label is removed or replaced with `agent-ready`.
+as ready to start until the label is removed or replaced with `ready`.
 
 ## Recurring Issues
 
