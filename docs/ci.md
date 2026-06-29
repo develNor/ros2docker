@@ -158,8 +158,16 @@ through the CLI, scans HIGH and CRITICAL fixed vulnerabilities with Trivy, and
 uploads the report as an artifact. Vulnerability findings are advisory and do
 not fail the workflow or participate in the required PR merge gate.
 
+Both scheduled workflows are timed for the middle of the Berlin night
+(~03:00 local). GitHub Actions evaluates `schedule` `cron` in **UTC only** and
+cannot follow DST, so each `cron:` line carries an inline comment with its
+Europe/Berlin equivalent and the fixed UTC time drifts ±1h across DST while
+staying in the deep night.
+
 Dependabot is configured in `.github/dependabot.yml` for weekly grouped GitHub
-Actions and Python dependency updates.
+Actions and Python dependency updates. Unlike Actions `schedule`, Dependabot
+supports a `timezone`, so its weekly run is pinned to `Europe/Berlin` (Monday
+03:00).
 
 ## Local Checks
 

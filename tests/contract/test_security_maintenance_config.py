@@ -28,7 +28,8 @@ def test_image_scan_is_advisory_and_not_a_pr_check() -> None:
     merge_gate = MERGE_GATE_PATH.read_text(encoding="utf-8")
 
     assert "name: image-scan" in image_scan
-    assert '- cron: "23 3 * * *"' in image_scan
+    # UTC cron timed for the Berlin night (~03:23 CEST); Actions cron is UTC-only.
+    assert '- cron: "23 1 * * *"' in image_scan
     assert "workflow_dispatch:" in image_scan
     assert "pull_request:" not in image_scan
     assert "permissions:\n  contents: read" in image_scan
