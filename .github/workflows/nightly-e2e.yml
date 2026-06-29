@@ -2,7 +2,10 @@ name: Nightly E2E
 
 on:
   schedule:
-    - cron: "37 2 * * *"
+    # 03:37 Europe/Berlin (CEST) / 02:37 (CET). Actions cron is UTC-only and
+    # cannot follow DST, so this fixed UTC time drifts ±1h but stays in the
+    # deep Berlin night.
+    - cron: "37 1 * * *"
   workflow_dispatch:
 
 permissions:

@@ -3,8 +3,13 @@ version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
+    # Unlike Actions cron (UTC-only), Dependabot supports a timezone, so the
+    # weekly run is pinned to the Berlin night.
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 5
     groups:
       github-actions:
@@ -15,6 +20,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 5
     groups:
       python-dependencies:
