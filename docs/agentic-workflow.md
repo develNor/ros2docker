@@ -8,9 +8,10 @@ operating rules in [../AGENTS.md](../AGENTS.md).
 
 ## Identity
 
-Agents act as a dedicated bot account, **`develNor-agent`**, which is separate
-from the human owner (`develNor`). The bot is a non-admin **collaborator** and
-authenticates with a token kept locally in `.agents/github.env` (gitignored).
+Agents act as a **dedicated bot account that is separate from the human owner**.
+The bot is a non-admin **collaborator** and authenticates with a token kept
+locally in `.agents/github.env` (gitignored). The concrete account names live in
+the local instance config, not in these shared docs (see below).
 
 Because this repository is owned by a different personal account, the bot uses a
 **classic PAT** with the `repo` and `workflow` scopes — a fine-grained PAT cannot
@@ -27,6 +28,43 @@ Two benefits follow:
 - **Least privilege by construction.** On a personal (user-owned) repository a
   non-admin collaborator simply cannot reach the admin tier, so most of the
   "keep this human-only" list needs no extra configuration.
+
+### Local instance configuration
+
+The shared docs (`../AGENTS.md`, this file) stay generic and reusable: they
+assume only that GitHub writes go through a dedicated bot account. The concrete
+instance — account names, credential handling, and any permission grants the
+local user chooses (what may run under which identity, what must be asked first)
+— lives in `.agents/agents.local.md`, which is gitignored. This keeps
+project-specific identities and one user's permission choices out of a public,
+reusable template; another contributor can adopt different choices without
+editing the shared contract.
+
+To reuse this setup, create `.agents/agents.local.md` along these lines:
+
+```markdown
+# Local agent instance configuration (gitignored)
+
+## Accounts
+- Bot account (performs all GitHub writes): `<bot-account>`.
+- Human owner: `<owner-account>`.
+
+## Identity rule (do this first)
+- Before any GitHub write, authenticate as `<bot-account>` and verify the
+  active identity (e.g. `gh api user --jq .login`).
+- State which commands, if any, may run under the human identity without asking.
+- State which actions require asking the user first.
+
+## Credentials
+- Where the bot token lives (gitignored), its type/scopes, and the rule to never
+  print, commit, or log it.
+
+## Commit identity
+- The author name/email to use so agent commits are attributable.
+```
+
+Claude Code auto-loads the local file through the `@.agents/agents.local.md`
+import in `CLAUDE.md`; agents on other harnesses should read it directly.
 
 ## Autonomy by default
 

@@ -4,6 +4,11 @@ These instructions are for agents working in this repository. They add local
 operating details; they do not replace the shared contributor workflow. Rules in
 the project docs apply to agents the same way they apply to other developers.
 
+This file is intentionally **generic and reusable**: it assumes only the minimum
+needed to work sensibly. Project- and machine-specific identities, credentials,
+and any permission choices the local user makes live in a gitignored local
+config — see "Local instance configuration" at the end.
+
 Read first:
 
 - `README.md` for user-facing behavior.
@@ -37,60 +42,41 @@ Worktrees:
 - Keep the user's primary checkout untouched. Treat unrelated dirty state in any
   checkout or worktree as user-owned; do not clean, reset, or reuse it.
 - Check `git status --short --branch` before editing.
+- A fresh worktree does not inherit the primary checkout's virtualenv, so the
+  `pre-commit` git hook is not on `PATH`: `git commit` then aborts with
+  "`pre-commit` not found" and a following `git push` can push a branch with no
+  commits. Run `just setup` in the worktree, or put the repo's `.venv/bin` on
+  `PATH`, before committing — and confirm the commit landed (`git log`) before
+  pushing.
 - Remove the worktree after the PR merges: `git worktree remove ../ros2docker-issue-<NN>`.
 - Do not duplicate shared contributor policy here. Update the shared docs when a rule applies to every developer.
 
-Local GitHub credentials:
+GitHub identity:
 
-Identity rule (do this first):
-
-- **Before any git/GitHub write, become the bot.** Run
-  `set -a; . .agents/github.env; set +a`, then confirm with `gh auth status`
-  (or `gh api user --jq .login`) that the active identity is `develNor-agent`.
-  This covers every write: issues, PRs, comments, labels, commits, pushes,
-  auto-merge, and Actions. The owner's keyring `gh` login and SSH key are often
-  active locally, so without this step `gh`/git silently default to `develNor`.
-- **Read-only commands may run as the human `develNor`.** That is fine — just
-  tell the user you used the human identity; no permission needed.
-- **Any write as `develNor`, or as any non-bot identity, requires asking the
-  user first.** Never open, comment, label, push, or merge as the human owner
-  without explicit approval.
-- `CLAUDE.md` is a symlink to this file so Claude Code — which auto-loads
-  `CLAUDE.md`, not `AGENTS.md` — gets this policy in context; Codex reads
-  `AGENTS.md` directly. Keep the policy in `AGENTS.md` as the single source.
-
-- Agents act as the dedicated bot account `develNor-agent`, not as the human
-  owner. Because this repository is owned by another personal account
-  (`develNor`) and the bot only collaborates on it, the bot authenticates with a
-  **classic** personal access token with the `repo` and `workflow` scopes. (A
-  fine-grained PAT cannot grant write to a repo owned by a different personal
-  account; a GitHub App is the granular alternative — see
-  `docs/agentic-workflow.md`.)
-- Store the token only in `.agents/github.env`, which is gitignored and must
-  stay local to this checkout. Do not print it, commit it, copy it into logs, or
-  persist it anywhere else; source it only for the command that needs it.
-- Use it for issue, PR, auto-merge, Actions/CI, and branch/push operations.
-  Expected format:
-
-  ```bash
-  GITHUB_REPO=develNor/ros2docker
-  GH_TOKEN=ghp_...
-  GIT_AUTHOR_NAME=develNor-agent
-  GIT_AUTHOR_EMAIL=<bot-id>+develNor-agent@users.noreply.github.com
-  ```
-
-- Least privilege still holds without per-repo token scoping: the bot is a
-  non-admin collaborator, so it cannot change repository settings, rulesets, or
-  secrets, cannot create `v*` release tags, and cannot approve the `pypi`
-  deployment — those are owner-only by design. The token's blast radius is only
-  the repositories the bot collaborates on. See `docs/agentic-workflow.md`.
-
-Identity and attribution:
-
-- Author commits and PRs as `develNor-agent` (set `user.name` / `user.email`
-  from `.agents/github.env`) so agent work is natively attributable and distinct
-  from the human owner.
+- GitHub writes (issues, PRs, comments, labels, commits, pushes, auto-merge, and
+  Actions) are made through a **dedicated bot account that is separate from the
+  human owner**, so agent work is natively attributable. Authenticate as the bot
+  before any write.
 - Do not add contribution-attribution trailers or footers to commits or PR
-  descriptions: no `Co-Authored-By:` lines and no "Generated with …" footers.
-  The bot account already identifies agent work; keep messages free of extra
-  authorship attribution.
+  descriptions: no `Co-Authored-By:` lines and no "Generated with …" footers. The
+  bot account already identifies agent work.
+- The concrete bot account, its credential handling, and any permission choices
+  the local user makes — what may run under which identity, and what must be
+  asked first — are **not part of this shared contract**. Assume only the minimum
+  above and neither grant nor restrict further here; those choices belong to the
+  local user and live in the local instance config below.
+
+Local instance configuration:
+
+- Project- and machine-specific agent details live in `.agents/agents.local.md`
+  (the `.agents/` directory is gitignored). This keeps concrete account names,
+  credential handling, and the local user's permission grants out of these
+  reusable shared docs. **Read that file before acting.** Claude Code auto-loads
+  it through the import below; an agent whose harness does not import should read
+  it directly. `docs/agentic-workflow.md` documents the expected shape for anyone
+  reusing this setup.
+- `CLAUDE.md` is a symlink to this file so Claude Code — which auto-loads
+  `CLAUDE.md`, not `AGENTS.md` — gets these instructions; Codex reads `AGENTS.md`
+  directly. Keep the shared policy in `AGENTS.md` as the single source.
+
+@.agents/agents.local.md
