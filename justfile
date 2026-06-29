@@ -29,6 +29,13 @@ typecheck:
 lint-workflows:
 	{{python}} -m pre_commit run actionlint-docker --all-files
 
+# Lint the Docker build assets: hadolint on Dockerfile.generic and shellcheck on
+# entrypoint.sh (via the pinned pre-commit docker hooks). Mirrors the build-lint
+# CI job.
+lint-build:
+	{{python}} -m pre_commit run hadolint-docker --all-files
+	{{python}} -m pre_commit run shellcheck --all-files
+
 test: test-unit test-contract
 
 test-unit:

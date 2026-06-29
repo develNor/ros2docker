@@ -1,0 +1,32 @@
+# hadolint configuration for src/ros2docker/resources/build/Dockerfile.generic
+#
+# These rules are ignored on purpose. They flag patterns that are idiomatic for
+# a parameterized ROS development image and changing them would alter build
+# behavior (out of scope for adding a lint gate). hadolint still enforces every
+# other rule, so genuinely new mistakes are caught.
+ignored:
+  # Base image is `FROM ${BASE_IMAGE}${DIGEST}` — parameterized and pinned by
+  # digest at build time (see ARG DIGEST), which hadolint cannot resolve.
+  - DL3006
+  # ROS apt packages track the upstream ROS apt repository; pinning every apt
+  # version would break on routine repo updates and is not how ROS images work.
+  - DL3008
+  # PIP_PACKAGES are user/profile-provided and the fixed tools are pinned by
+  # SHA elsewhere, so a blanket "pin every pip version" does not apply.
+  - DL3013
+  # ROS desktop relies on recommended packages; --no-install-recommends would
+  # drop needed runtime dependencies.
+  - DL3015
+  # Separate RUN layers are intentional for build-cache granularity and
+  # readability.
+  - DL3059
+  # `cd` inside a single RUN/subshell is intentional; using WORKDIR would change
+  # the working directory for later layers.
+  - DL3003
+  # Pipes in RUN steps would benefit from `SHELL -o pipefail`, but setting a
+  # global SHELL changes how every RUN executes (bash vs sh) and is a build
+  # change, not a lint fix. Tracked separately if we harden the Dockerfile.
+  - DL4006
+  # Embedded shell word-splitting in a RUN is intentional here; quoting would
+  # change the command's behavior.
+  - SC2086
