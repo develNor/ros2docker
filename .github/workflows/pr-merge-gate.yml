@@ -15,7 +15,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  merge-lightweight:
+  static-checks:
+    name: static-checks
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install just
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y just
+
+      - name: Set up local environment
+        run: just setup
+
+      - name: Interpreter-independent checks
+        # ruff (lint), mypy (typecheck, targets 3.10), and the markdown/readme
+        # contract tests (docs) do not vary by interpreter, so they run once.
+        run: |
+          just lint
+          just typecheck
+          just docs
+
+  tests:
+    name: tests
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     strategy:
@@ -43,12 +77,8 @@ jobs:
       - name: Set up local environment
         run: just setup
 
-      - name: Required lightweight checks
-        run: |
-          just lint
-          just typecheck
-          just test-nondocker-cov
-          just docs
+      - name: Unit and contract tests under coverage
+        run: just test-nondocker-cov
 
       - name: Upload coverage report
         if: always()
@@ -178,14 +208,18 @@ jobs:
   ci-success:
     name: ci-success
     runs-on: ubuntu-latest
-    needs: [merge-lightweight, package, fast-e2e, workflow-lint, dependency-review]
+    needs: [static-checks, tests, package, fast-e2e, workflow-lint, dependency-review]
     if: always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
 
     steps:
       - name: Check required jobs
         run: |
-          if [[ "${{ needs.merge-lightweight.result }}" != "success" ]]; then
-            echo "merge-lightweight failed or was skipped: ${{ needs.merge-lightweight.result }}"
+          if [[ "${{ needs.static-checks.result }}" != "success" ]]; then
+            echo "static-checks failed or was skipped: ${{ needs.static-checks.result }}"
+            exit 1
+          fi
+          if [[ "${{ needs.tests.result }}" != "success" ]]; then
+            echo "tests failed or was skipped: ${{ needs.tests.result }}"
             exit 1
           fi
           if [[ "${{ needs.workflow-lint.result }}" != "success" ]]; then
