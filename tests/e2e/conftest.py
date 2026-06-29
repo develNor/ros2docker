@@ -285,7 +285,9 @@ def shared_image(docker_harness: DockerHarness, tmp_path_factory: pytest.TempPat
             "command": ["bash", "-lc", "true"],
             "bake_ros_packages": [str(FIXTURES_ROOT / "bake" / "e2e_msgs")],
             "build_args": {
-                "APT_PACKAGES": "jq",
+                # openssh-client provides ssh-add and x11-apps provides xdpyinfo,
+                # used by the GUI/SSH-agent forwarding E2E tests.
+                "APT_PACKAGES": "jq openssh-client x11-apps",
                 "PIP_PACKAGES": "rich",
             },
         },

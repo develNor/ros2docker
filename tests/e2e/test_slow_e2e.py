@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+import os
+import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
-from conftest import FIXTURES_ROOT, write_config
+from conftest import FIXTURES_ROOT, wait_for_file, write_config
 
 pytestmark = [pytest.mark.e2e, pytest.mark.slow]
+
+
+def _parse_agent_var(agent_output: str, name: str) -> str:
+    match = re.search(rf"{name}=([^;]+);", agent_output)
+    assert match, f"{name} not found in ssh-agent output:\n{agent_output}"
+    return match.group(1)
 
 
 def test_rosbag_record_and_play_round_trip(docker_harness, shared_image: str, tmp_path: Path) -> None:
@@ -113,3 +123,93 @@ def test_latest_base_image_matrix_builds_and_runs(
     result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=180)
 
     assert "E2E_ALT_BASE_OK" in result.stdout
+
+
+@pytest.mark.skipif(shutil.which("Xvfb") is None, reason="Xvfb is not installed on the host")
+def test_gui_forwarding_forwards_x_socket(docker_harness, shared_image: str, tmp_path: Path) -> None:
+    # Prove GUI (X11) forwarding works end to end: a real X server (Xvfb) on the
+    # host, then a GUI-forwarding container whose `xdpyinfo` succeeds against the
+    # forwarded /tmp/.X11-unix socket. `-ac` disables X access control so the
+    # container (running as the same UID) can connect without an Xauthority.
+    display = ":99"
+    x11_socket = Path("/tmp/.X11-unix") / f"X{display.lstrip(':')}"
+    xvfb = subprocess.Popen(
+        ["Xvfb", display, "-screen", "0", "1024x768x24", "-ac", "-nolisten", "tcp"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        wait_for_file(x11_socket, timeout=15)
+        container = docker_harness.container_name("gui_forward")
+        command = "xdpyinfo >/tmp/xdpyinfo.log 2>&1 && echo E2E_GUI_OK"
+        config_path = write_config(
+            tmp_path / "gui.ros2docker.json",
+            {
+                "container_name": container,
+                "image_name": shared_image,
+                "enable_gui_forwarding": True,
+                "run_type": "command",
+                "command": ["bash", "-lc", command],
+            },
+        )
+
+        result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=120, env={"DISPLAY": display})
+
+        assert "E2E_GUI_OK" in result.stdout
+    finally:
+        xvfb.terminate()
+        try:
+            xvfb.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            xvfb.kill()
+
+
+@pytest.mark.skipif(
+    any(shutil.which(tool) is None for tool in ("ssh-agent", "ssh-add", "ssh-keygen")),
+    reason="openssh-client is not installed on the host",
+)
+def test_ssh_agent_forwarding_socket_is_usable(docker_harness, shared_image: str, tmp_path: Path) -> None:
+    # Prove SSH-agent forwarding works end to end: an ephemeral host agent holding
+    # a throwaway key, then a `forward_ssh_agent` container whose `ssh-add -l`
+    # lists that key over the forwarded agent socket.
+    key = tmp_path / "id_ed25519"
+    subprocess.run(
+        ["ssh-keygen", "-t", "ed25519", "-N", "", "-f", str(key)],
+        check=True,
+        capture_output=True,
+    )
+    agent = subprocess.run(["ssh-agent", "-s"], check=True, capture_output=True, text=True)
+    auth_sock = _parse_agent_var(agent.stdout, "SSH_AUTH_SOCK")
+    agent_pid = _parse_agent_var(agent.stdout, "SSH_AGENT_PID")
+    try:
+        subprocess.run(
+            ["ssh-add", str(key)],
+            check=True,
+            capture_output=True,
+            env={**os.environ, "SSH_AUTH_SOCK": auth_sock},
+        )
+        container = docker_harness.container_name("ssh_forward")
+        command = "ssh-add -l >/tmp/ssh_add.log 2>&1 && echo E2E_SSH_OK"
+        config_path = write_config(
+            tmp_path / "ssh.ros2docker.json",
+            {
+                "container_name": container,
+                "image_name": shared_image,
+                "forward_ssh_agent": True,
+                "run_type": "command",
+                "command": ["bash", "-lc", command],
+            },
+        )
+
+        result = docker_harness.cli(
+            "run", "--no-build", "-f", str(config_path), timeout=120, env={"SSH_AUTH_SOCK": auth_sock}
+        )
+
+        assert "E2E_SSH_OK" in result.stdout
+    finally:
+        subprocess.run(
+            ["ssh-agent", "-k"],
+            check=False,
+            capture_output=True,
+            env={**os.environ, "SSH_AGENT_PID": agent_pid, "SSH_AUTH_SOCK": auth_sock},
+        )
