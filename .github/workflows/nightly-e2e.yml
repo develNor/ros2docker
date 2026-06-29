@@ -38,6 +38,13 @@ jobs:
       - name: Set up local environment
         run: just setup
 
+      - name: Install Xvfb and SSH client for forwarding E2E
+        # Xvfb gives a real X display and openssh-client gives ssh-agent/ssh-add,
+        # so the GUI and SSH-agent forwarding E2E tests run as live integrations.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb openssh-client
+
       - name: Show Docker environment
         run: docker info
 

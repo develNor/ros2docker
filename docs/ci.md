@@ -139,10 +139,13 @@ entrypoints, or ROS workspace behavior change.
 `just test-e2e-slow` runs the complete Docker E2E suite. It is intended for
 slow image and ROS launch coverage.
 
-When changing GUI forwarding or SSH agent forwarding behavior, also do one
-manual runtime check on a host with a real X11 display or SSH agent. CI validates
-the command contracts, but hosted runners may not expose those host integrations
-as live services.
+GUI (X11) forwarding and SSH-agent forwarding are validated end to end in the
+nightly slow E2E suite, not just as command contracts: the nightly job installs
+`xvfb` and `openssh-client`, then the slow tests start a real `Xvfb` display and
+an ephemeral `ssh-agent` with a throwaway key and assert that `xdpyinfo` and
+`ssh-add -l` succeed *inside* a forwarding container. Locally these two tests
+self-skip when `Xvfb` / `openssh-client` are not installed, so a manual check is
+only needed when changing forwarding behavior on a host without those tools.
 
 ## Nightly
 
