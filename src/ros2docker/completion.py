@@ -23,8 +23,8 @@ DIRECTIVE_FILES = ":files"
 
 GLOBAL_OPTIONS: tuple[str, ...] = ("-h", "--help", "--version")
 
-# Subcommand -> its option flags. Positional/value arguments are completed via
-# VALUE_COMPLETERS below, not listed here.
+# Subcommand -> its option flags. Positional/value arguments are handled by the
+# value-specific branches in `complete`, not listed here.
 COMMAND_OPTIONS: dict[str, tuple[str, ...]] = {
     "build": ("-h", "--help", "-f", "--config", "-o", "--override", "--dry-run"),
     "run": ("-h", "--help", "-f", "--config", "-o", "--override", "--dry-run", "-m", "--mount", "--no-build"),

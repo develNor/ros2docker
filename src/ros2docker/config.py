@@ -421,11 +421,4 @@ def _is_relative_path(path: str) -> bool:
 
 def _looks_like_host_path(path: str) -> bool:
     expanded = os.path.expanduser(os.path.expandvars(path))
-    return (
-        path in {".", ".."}
-        or path.startswith("./")
-        or path.startswith("../")
-        or path.startswith("~")
-        or path.startswith("$")
-        or os.path.isabs(expanded)
-    )
+    return _is_relative_path(path) or path.startswith("~") or path.startswith("$") or os.path.isabs(expanded)
