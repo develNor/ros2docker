@@ -15,7 +15,7 @@ repos:
   # pre-commit and `just lint`/`just format` run the identical ruff version.
   # tests/contract/test_tooling_versions.py enforces this invariant.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.19
+    rev: v0.15.20
     hooks:
       - id: ruff
         args: ["--fix"]
