@@ -2,6 +2,21 @@
 
 Releases are built by `.github/workflows/release.yml`.
 
+## Pre-Release Soft-Check
+
+Before cutting a release, run the repository quality soft-check pass. Hard checks
+(the contract tests and `ci-success`) catch mechanically-verifiable problems, but
+issue-driven, organic growth also produces drift that only a review pass catches:
+naming and framing that no longer fit, stale or deprecated docs, and interfaces
+that eroded through least-invasive patches.
+
+Run the multi-PR quality workflow
+([../.github/ISSUE_TEMPLATE/quality-workflow.md](../.github/ISSUE_TEMPLATE/quality-workflow.md)),
+which sequences `test-ci-audit`, `documentation-audit`, and
+`implementation-cleanup`. This is a recommended checklist step, **not** a CI
+gate — there is intentionally no automation that fails a release based on how
+recently an audit ran.
+
 ## Version Source
 
 Package versions come from Git tags through `setuptools-scm`. The project does

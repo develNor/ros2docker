@@ -205,6 +205,15 @@ See [docs/ci.md](docs/ci.md) for the contributor-facing CI workflow summary.
 
 ## Release Workflow
 
+Before cutting a release, run the repository quality soft-check pass to catch
+organic drift that hard checks miss — naming and framing that no longer fit,
+stale or deprecated docs, and interfaces that eroded through least-invasive
+patches. This is the multi-PR quality workflow
+([.github/ISSUE_TEMPLATE/quality-workflow.md](.github/ISSUE_TEMPLATE/quality-workflow.md)),
+which sequences `test-ci-audit`, `documentation-audit`, and
+`implementation-cleanup`. It is a recommended checklist step, not a CI gate.
+See [docs/release.md](docs/release.md) for details.
+
 Releases are built from version tags. After the release PR has merged, create
 and push a tag in the form `vX.Y.Z` from the release commit:
 
