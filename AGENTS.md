@@ -42,6 +42,23 @@ Worktrees:
 
 Local GitHub credentials:
 
+Identity rule (do this first):
+
+- **Before any git/GitHub write, become the bot.** Run
+  `set -a; . .agents/github.env; set +a`, then confirm with `gh auth status`
+  (or `gh api user --jq .login`) that the active identity is `develNor-agent`.
+  This covers every write: issues, PRs, comments, labels, commits, pushes,
+  auto-merge, and Actions. The owner's keyring `gh` login and SSH key are often
+  active locally, so without this step `gh`/git silently default to `develNor`.
+- **Read-only commands may run as the human `develNor`.** That is fine — just
+  tell the user you used the human identity; no permission needed.
+- **Any write as `develNor`, or as any non-bot identity, requires asking the
+  user first.** Never open, comment, label, push, or merge as the human owner
+  without explicit approval.
+- `CLAUDE.md` is a symlink to this file so Claude Code — which auto-loads
+  `CLAUDE.md`, not `AGENTS.md` — gets this policy in context; Codex reads
+  `AGENTS.md` directly. Keep the policy in `AGENTS.md` as the single source.
+
 - Agents act as the dedicated bot account `develNor-agent`, not as the human
   owner. Because this repository is owned by another personal account
   (`develNor`) and the bot only collaborates on it, the bot authenticates with a
