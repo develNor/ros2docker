@@ -7,6 +7,7 @@ fi
 
 echo "**** Entrypoint script starting ****"
 
+# shellcheck source=/dev/null  # generated at image build time; not present at lint time.
 source "${CUSTOM_WS}/install/setup.bash"
 
 source_ros2_workspace() {
@@ -15,6 +16,7 @@ source_ros2_workspace() {
         return 0
     fi
 
+    # shellcheck source=/dev/null  # runtime overlay path is not constant.
     source "$setup_file"
     echo "Sourced ROS 2 workspace overlay: $setup_file"
 }

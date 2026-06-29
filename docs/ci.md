@@ -98,6 +98,29 @@ for CI changes is enforced by branch protection plus `CODEOWNERS`, not by a
 separate policy job — see
 [docs/github-repository-settings.md](github-repository-settings.md).
 
+### Build Lint
+
+`pr-merge-gate.yml` includes a `build-lint` job that lints the packaged Docker
+build assets, giving them the same rigor workflows already get from actionlint:
+
+- [hadolint](https://github.com/hadolint/hadolint) on
+  `src/ros2docker/resources/build/Dockerfile.generic`. Intentional rule ignores
+  (patterns idiomatic to a parameterized ROS image) live in
+  [`.hadolint.yaml`](../.hadolint.yaml) with a reason for each.
+- [shellcheck](https://github.com/koalaman/shellcheck) on the shipped shell
+  (`entrypoint.sh`), which previously had only a `bash -n` syntax check.
+
+The job is part of the required `ci-success` aggregate, so a hadolint or
+shellcheck violation blocks the merge. Run the same checks locally:
+
+```bash
+just lint-build
+```
+
+Both CI and `just lint-build` run the pinned `hadolint-docker` and `shellcheck`
+pre-commit hooks, so the pinned `rev` in `.pre-commit-config.yaml` is the single
+source of truth for the tool versions — no separate CI pin to keep in sync.
+
 ## Docker E2E
 
 `just test-e2e-fast` runs the Docker smoke fixtures used by the merge gate.

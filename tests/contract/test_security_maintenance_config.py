@@ -8,7 +8,8 @@ IMAGE_SCAN_PATH = PACKAGE_ROOT / ".github" / "workflows" / "image-scan.yml"
 MERGE_GATE_PATH = PACKAGE_ROOT / ".github" / "workflows" / "pr-merge-gate.yml"
 CODEOWNERS_PATH = PACKAGE_ROOT / ".github" / "CODEOWNERS"
 
-CI_SUCCESS_NEEDS = "needs: [merge-lightweight, package, fast-e2e, workflow-lint, dependency-review]"
+CI_SUCCESS_NEEDS = "needs: [merge-lightweight, package, fast-e2e, workflow-lint, dependency-review, build-lint]"
+PRE_COMMIT_PATH = PACKAGE_ROOT / ".pre-commit-config.yaml"
 
 
 def test_dependabot_groups_weekly_actions_and_python_updates() -> None:
@@ -60,6 +61,23 @@ def test_pr_merge_gate_runs_required_workflow_lint() -> None:
     assert "ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8" in merge_gate
     assert "actionlint -color" in merge_gate
     # Part of the required aggregate gate.
+    assert CI_SUCCESS_NEEDS in merge_gate
+
+
+def test_pr_merge_gate_runs_required_build_lint() -> None:
+    merge_gate = MERGE_GATE_PATH.read_text(encoding="utf-8")
+    pre_commit = PRE_COMMIT_PATH.read_text(encoding="utf-8")
+
+    # hadolint (Dockerfile) and shellcheck (entrypoint.sh) lint the build assets.
+    assert "build-lint:" in merge_gate
+    assert "just lint-build" in merge_gate
+    # The pinned pre-commit docker hooks are the single source of truth shared by
+    # CI and `just lint-build`.
+    assert "hadolint/hadolint" in pre_commit
+    assert "id: hadolint-docker" in pre_commit
+    assert "koalaman/shellcheck-precommit" in pre_commit
+    assert "id: shellcheck" in pre_commit
+    # Wired into the required aggregate gate.
     assert CI_SUCCESS_NEEDS in merge_gate
 
 
