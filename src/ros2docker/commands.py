@@ -151,7 +151,8 @@ def _docker_run_mode_args(config: Mapping[str, object]) -> list[str]:
         args.append("-d")
     if run_type in {"bash", "catmux", "command", "up"}:
         return args
-    raise ConfigError(f"Unsupported run_type: {run_type!r}")
+    # Defensive: run_type is schema-constrained to this enum, so this is unreachable.
+    raise ConfigError(f"Unsupported run_type: {run_type!r}")  # pragma: no cover
 
 
 def _run_command(config: Mapping[str, object]) -> list[str]:
@@ -183,13 +184,16 @@ def _run_command(config: Mapping[str, object]) -> list[str]:
             return shlex.split(raw_command)
         if isinstance(raw_command, list):
             return [str(part) for part in raw_command]
-        raise ConfigError("'command' must be a string or list.")
+        # Defensive: the schema constrains `command` to a string or array.
+        raise ConfigError("'command' must be a string or list.")  # pragma: no cover
 
-    raise ConfigError(f"Unsupported run_type: {run_type!r}")
+    # Defensive: run_type is schema-constrained to the enum handled above.
+    raise ConfigError(f"Unsupported run_type: {run_type!r}")  # pragma: no cover
 
 
 def _string_list(config: Mapping[str, object], key: str) -> list[str]:
     value = config.get(key, [])
     if not isinstance(value, list):
-        raise ConfigError(f"{key!r} must be a list.")
+        # Defensive: run_args/extra_run_args are schema-typed as arrays.
+        raise ConfigError(f"{key!r} must be a list.")  # pragma: no cover
     return [str(item) for item in value]
