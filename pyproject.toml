@@ -115,7 +115,7 @@ source = [
 # Hard, required coverage gate (runs inside `ci-success` via test-nondocker-cov).
 # Kept a few points below actual coverage so it guards against real regressions
 # without forcing churn. Raise only when actual coverage rises with real tests.
-fail_under = 80
+fail_under = 90
 show_missing = true
 skip_covered = true
 exclude_also = [
