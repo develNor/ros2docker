@@ -74,6 +74,34 @@ echo E2E_FOXGLOVE_OK
     assert "E2E_FOXGLOVE_OK" in result.stdout
 
 
+def test_minimal_profile_ros_base_builds_and_runs(docker_harness, tmp_path: Path) -> None:
+    # The shared E2E image is desktop-full; the minimal profile's ros-base path
+    # (ros:*-ros-base, no desktop) is otherwise never built or run in E2E, so a
+    # regression that only affects ros-base would go undetected. Build it and run
+    # a basic ROS tool command to confirm the path builds and runs.
+    image = docker_harness.image_tag("minimal-profile")
+    container = docker_harness.container_name("minimal_profile")
+    config_path = write_config(
+        tmp_path / "minimal.ros2docker.json",
+        {
+            "profile": "minimal",
+            "container_name": container,
+            "image_name": image,
+            "run_type": "command",
+            "command": [
+                "bash",
+                "-lc",
+                "ros2 pkg list >/tmp/ros2_pkg_list && ros2 --help >/tmp/ros2_help && echo E2E_MINIMAL_OK",
+            ],
+        },
+    )
+
+    docker_harness.cli("build", "-f", str(config_path), timeout=2400)
+    result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=180)
+
+    assert "E2E_MINIMAL_OK" in result.stdout
+
+
 @pytest.mark.parametrize(
     ("ros_distro", "base_image"),
     [

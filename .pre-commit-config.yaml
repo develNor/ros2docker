@@ -11,8 +11,11 @@ repos:
       - id: check-merge-conflict
       - id: debug-statements
 
+  # Keep this rev in sync with the `ruff==` pin in pyproject.toml `[dev]`, so
+  # pre-commit and `just lint`/`just format` run the identical ruff version.
+  # tests/contract/test_tooling_versions.py enforces this invariant.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.6
+    rev: v0.15.19
     hooks:
       - id: ruff
         args: ["--fix"]

@@ -83,7 +83,7 @@ def _build_context_diagnostics(config: Mapping[str, object]) -> list[Diagnostic]
     if dockerfile.is_file() and entrypoint.is_file():
         msg = f"Packaged {dockerfile_name} and entrypoint are available."
         diagnostics.append(Diagnostic("OK", "build context", msg))
-    else:
+    else:  # pragma: no cover - packaged resources are guaranteed present in an installed wheel.
         msg = f"Packaged {dockerfile_name} or entrypoint is missing."
         diagnostics.append(Diagnostic("ERROR", "build context", msg))
 
@@ -152,4 +152,4 @@ def _list_config_value(config: Mapping[str, object], key: str) -> list[object]:
     value = config.get(key, [])
     if isinstance(value, list):
         return value
-    return []
+    return []  # pragma: no cover - run_args/extra_run_args are schema-typed as arrays.

@@ -63,6 +63,15 @@ severity vulnerability, across both `runtime` and `development` scopes. The job
 is part of the required `ci-success` aggregate; it is tolerated as skipped on
 direct pushes to `main`, where there is no PR diff to review.
 
+It also enforces a **license gate** via `deny-licenses`: a PR that adds a
+strong-copyleft dependency (`GPL-2.0-only`, `GPL-3.0-only`, `AGPL-3.0-only`,
+`AGPL-3.0-or-later`), which is incompatible with this BSD-3-Clause project, is
+blocked. A denylist is used rather than a permissive `allow-licenses` allowlist
+on purpose: GitHub's dependency-graph license detection has gaps, and an
+allowlist would flag any package whose license it cannot detect, whereas a
+denylist only fails on the specific copyleft families above. The current
+dependencies (`jsonschema` and the `[dev]` tools) are permissive and pass.
+
 This complements rather than duplicates the other security tooling:
 
 - **Dependabot** alerts on dependencies that are already merged.
