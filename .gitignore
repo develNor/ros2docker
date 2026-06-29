@@ -5,6 +5,8 @@ __pycache__
 .ruff_cache/
 .venv/
 .agents/
+.claude/settings.local.json
+.codex/
 /build/
 /coverage.xml
 /dist/
