@@ -3,6 +3,6 @@
   "dockerfile": "Dockerfile.generic",
   "build_args": {
     "BASE_IMAGE": "osrf/ros:lyrical-desktop-full-resolute",
-    "DIGEST": "@sha256:ac6471b5c13e57674d9660630d0cb140f518cb5ea6add7169e5dd91e16bf0b50"
+    "DIGEST": "@sha256:8c6f54903768a8e344f17385b9323e2a68fe24cf113b67352f66a3faf84c4412"
   }
 }
