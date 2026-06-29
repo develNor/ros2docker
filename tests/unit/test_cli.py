@@ -277,6 +277,16 @@ def test_completion_command_prints_bash_script(capsys) -> None:
     assert "complete -F _ros2docker_completion ros2docker" in captured.out
 
 
+def test_completion_command_prints_zsh_script(capsys) -> None:
+    result = main(["completion", "zsh"])
+
+    captured = capsys.readouterr()
+    assert result == 0
+    assert captured.err == ""
+    assert "bashcompinit" in captured.out
+    assert "complete -F _ros2docker_completion ros2docker" in captured.out
+
+
 def test_completion_command_rejects_unknown_shell(capsys) -> None:
     with pytest.raises(SystemExit) as exc_info:
         main(["completion", "fish"])
