@@ -2,6 +2,66 @@
 
 Releases are built by `.github/workflows/release.yml`.
 
+## Owner runbook: cutting a release
+
+Cutting a release is mostly autonomous. The human owner performs only the three
+gated steps — Code Owner approvals, the `vX.Y.Z` tag, and the `pypi` deployment
+approval (the three gates in [agentic-workflow.md](agentic-workflow.md)). Full
+hands-off publish is intentionally impossible; "as autonomous as possible" means
+autonomous through the release PR, with the owner approving the irreversible
+publish. Follow these steps in order. Replace `vX.Y.Z` with the target version.
+
+### 1. Quality pass — clear drift first (agent)
+
+Skip for a trivial patch release. Otherwise prompt the agent:
+
+> Run the repository quality workflow autonomously for a release: create and
+> complete focused PRs for test-ci-audit, then documentation-audit, then
+> implementation-cleanup — each started from a fresh `origin/main`, opened ready
+> with auto-merge. Report each PR URL and CI status.
+
+Depth comes from running these as separate, focused PRs, not one pass (see
+[quality-model.md](quality-model.md)). **Your part:** approve the Code Owner
+review on any PR that touches an owned path (`.github/`, `tests/contract/`,
+`pyproject.toml`, `docs/release.md`, …) — the bot cannot self-approve those.
+
+### 2. Prepare the release PR (agent)
+
+Prompt the agent:
+
+> Prepare release vX.Y.Z: open an issue from release-process.md and a PR that
+> reviews the diff since the previous tag, writes `docs/release-notes/vX.Y.Z.md`
+> from the template, updates the Dockerfile base image digest and the pinned
+> `ZENOH_VERSION` / `ZENOH_ROS2DDS_VERSION` / `MCAP_CLI_VERSION`, and records the
+> validation checks in the PR body. Open it ready with auto-merge.
+
+**Your part:** review and approve the release PR (it touches `docs/release.md`,
+an owned path, so it needs your Code Owner approval). It merges once green.
+
+### 3. Tag the release (owner — manual)
+
+`vX.Y.Z` tags are restricted to the owner, so push the tag yourself after the
+release PR merges:
+
+```bash
+git switch main && git fetch --prune && git pull --ff-only
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
+
+### 4. Approve the publish (owner — manual)
+
+The tag push starts `release.yml`, which validates and then waits on the `pypi`
+deployment environment. Approve the `pypi` deployment in the Actions run. The
+workflow then publishes to PyPI through Trusted Publishing and creates the GitHub
+Release from `docs/release-notes/vX.Y.Z.md`.
+
+### 5. Verify
+
+Confirm the new version on PyPI and the GitHub Release page. For a rehearsal,
+publish to TestPyPI first via the manual `release` workflow dispatch (see
+[Publishing](#publishing)).
+
 ## Pre-Release Soft-Check
 
 Before cutting a release, run the repository quality soft-check pass. Hard checks

@@ -203,9 +203,11 @@ workflow, see [CONTRIBUTING.md](CONTRIBUTING.md). CI behavior is summarized in
 [docs/ci.md](docs/ci.md), release publishing is summarized in
 [docs/release.md](docs/release.md), issue-driven work tracking is summarized in
 [docs/work-items.md](docs/work-items.md), and reusable task recipes live in
-[.github/ISSUE_TEMPLATE/](.github/ISSUE_TEMPLATE/) (with a compatibility pointer
-at [docs/playbooks/](docs/playbooks/README.md)). The quality rules applied in
-audits and reviews are in [docs/quality-audit.md](docs/quality-audit.md).
+[.github/ISSUE_TEMPLATE/](.github/ISSUE_TEMPLATE/). The quality model behind
+those recipes — hard vs. soft checks, the task hierarchy, and how a release is
+orchestrated — is in [docs/quality-model.md](docs/quality-model.md), and the
+quality rules applied in audits and reviews are in
+[docs/quality-audit.md](docs/quality-audit.md).
 
 ## Python API
 
