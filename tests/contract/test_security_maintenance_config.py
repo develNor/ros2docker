@@ -8,7 +8,7 @@ IMAGE_SCAN_PATH = PACKAGE_ROOT / ".github" / "workflows" / "image-scan.yml"
 MERGE_GATE_PATH = PACKAGE_ROOT / ".github" / "workflows" / "pr-merge-gate.yml"
 CODEOWNERS_PATH = PACKAGE_ROOT / ".github" / "CODEOWNERS"
 
-CI_SUCCESS_NEEDS = "needs: [merge-lightweight, package, fast-e2e, workflow-lint, dependency-review]"
+CI_SUCCESS_NEEDS = "needs: [static-checks, tests, package, fast-e2e, workflow-lint, dependency-review]"
 
 
 def test_dependabot_groups_weekly_actions_and_python_updates() -> None:
@@ -47,6 +47,11 @@ def test_pr_merge_gate_runs_required_dependency_review() -> None:
     assert "actions/dependency-review-action@v5" in merge_gate
     assert "fail-on-severity: high" in merge_gate
     assert "fail-on-scopes: runtime, development" in merge_gate
+    # License gate: strong copyleft is incompatible with this BSD-3-Clause
+    # project and must block the PR.
+    assert "deny-licenses:" in merge_gate
+    for license_id in ("GPL-2.0-only", "GPL-3.0-only", "AGPL-3.0-only", "AGPL-3.0-or-later"):
+        assert license_id in merge_gate, license_id
     # Wired into the required aggregate gate, not a standalone advisory check.
     assert CI_SUCCESS_NEEDS in merge_gate
 

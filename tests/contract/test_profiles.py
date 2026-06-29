@@ -8,13 +8,28 @@ packages/flags they advertise.
 
 from __future__ import annotations
 
+import json
+import re
+from pathlib import Path
+
 import pytest
 
 from ros2docker.config import load_config, load_profile
 
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+PROFILES_DIR = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "profiles"
+DOCKERFILE_GENERIC_PATH = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "build" / "Dockerfile.generic"
+ARG_RE = re.compile(r"^\s*ARG\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)", re.MULTILINE)
+
 BASE_PROFILES = ("minimal", "desktop")
 ADDON_PROFILES = ("foxglove", "zenoh", "mcap", "novatel")
 ALL_PROFILES = (*BASE_PROFILES, *ADDON_PROFILES, "project-develnor")
+
+PROFILE_PATHS = sorted(PROFILES_DIR.glob("*.json"))
+
+
+def _declared_args() -> set[str]:
+    return set(ARG_RE.findall(DOCKERFILE_GENERIC_PATH.read_text(encoding="utf-8")))
 
 
 @pytest.mark.parametrize("name", ALL_PROFILES)
@@ -89,3 +104,26 @@ def test_project_develnor_matches_composed_addons() -> None:
         assert composed[flag] == develnor[flag] == "1"
     # The composed add-ons cover the same characteristic apt packages.
     assert set(develnor["APT_PACKAGES"].split()) <= set(composed["APT_PACKAGES"].split())
+
+
+@pytest.mark.parametrize("profile_path", PROFILE_PATHS, ids=lambda p: p.stem)
+def test_profile_build_args_are_declared_dockerfile_args(profile_path: Path) -> None:
+    # `docker build --build-arg FOO=1` is silently ignored when no `ARG FOO`
+    # exists, so a typo'd build-arg key (e.g. INSTALL_ZENO for INSTALL_ZENOH)
+    # would install nothing with zero signal. Cross-link the two sides here.
+    declared = _declared_args()
+    profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    build_args = profile.get("build_args", {})
+
+    undeclared = sorted(key for key in build_args if key not in declared)
+    assert not undeclared, (
+        f"{profile_path.name} sets build_args not declared as ARG in "
+        f"Dockerfile.generic: {undeclared}. Add the ARG or fix the typo."
+    )
+
+
+def test_profiles_and_args_are_discovered() -> None:
+    # Guard against the glob or the ARG parser silently matching nothing, which
+    # would make the cross-link test vacuously pass.
+    assert PROFILE_PATHS, f"no profile JSON files found in {PROFILES_DIR}"
+    assert _declared_args(), "no ARG declarations parsed from Dockerfile.generic"

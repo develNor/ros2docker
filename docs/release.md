@@ -30,8 +30,10 @@ release notes should summarize the diff from the previous release tag to the
 new tag, including user-facing CLI, config, API, Docker, dependency, packaging,
 compatibility, and migration changes.
 
-The GitHub Release job fails if the tag-specific release notes file is missing.
-When present, that file becomes the GitHub Release description.
+A required `verify-release-notes` job fails the release *before* any publish
+step if the tag-specific release notes file is missing, so a tag push with no
+notes never reaches PyPI (publishing is irreversible). When present, that same
+file becomes the GitHub Release description.
 
 ## Validation
 
