@@ -121,10 +121,41 @@ jobs:
       - name: Run fast E2E
         run: just test-e2e-fast
 
+  slow-e2e:
+    name: slow-e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install just
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y just
+
+      - name: Set up local environment
+        run: just setup
+
+      - name: Show Docker environment
+        run: docker info
+
+      - name: Run full slow E2E
+        run: just test-e2e-slow
+
   publish-pypi:
     name: publish-pypi
     runs-on: ubuntu-latest
-    needs: [non-docker, package, fast-e2e]
+    needs: [non-docker, package, fast-e2e, slow-e2e]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     environment:
       name: pypi
@@ -148,7 +179,7 @@ jobs:
   publish-testpypi:
     name: publish-testpypi
     runs-on: ubuntu-latest
-    needs: [non-docker, package, fast-e2e]
+    needs: [non-docker, package, fast-e2e, slow-e2e]
     if: github.event_name == 'workflow_dispatch'
     environment:
       name: testpypi
