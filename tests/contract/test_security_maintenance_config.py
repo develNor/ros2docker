@@ -8,7 +8,7 @@ IMAGE_SCAN_PATH = PACKAGE_ROOT / ".github" / "workflows" / "image-scan.yml"
 MERGE_GATE_PATH = PACKAGE_ROOT / ".github" / "workflows" / "pr-merge-gate.yml"
 CODEOWNERS_PATH = PACKAGE_ROOT / ".github" / "CODEOWNERS"
 
-CI_SUCCESS_NEEDS = "needs: [merge-lightweight, package, fast-e2e, workflow-lint, dependency-review]"
+CI_SUCCESS_NEEDS = "needs: [static-checks, tests, package, fast-e2e, workflow-lint, dependency-review]"
 
 
 def test_dependabot_groups_weekly_actions_and_python_updates() -> None:
