@@ -16,6 +16,7 @@ Read first:
 - `DEVELOPMENT_PRINCIPLES.md` for quality rules.
 - `docs/work-items.md` for issue-driven work tracking.
 - `docs/agentic-workflow.md` for the human + multi-agent model: identity, autonomy, and the human-only gates.
+- `docs/quality-model.md` for hard vs. soft checks, the task hierarchy, and the depth-via-decomposition principle behind the issue templates.
 - `.github/ISSUE_TEMPLATE/` for reusable task recipes when a request matches one.
 - `docs/github-repository-settings.md` before changing GitHub repository policy or workflows.
 - `tests/contract/test_public_config_surface.py` before changing README config examples, packaged examples, schemas, or config keys.

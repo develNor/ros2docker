@@ -12,7 +12,10 @@ Ship a validated, well-described ros2docker release.
 
 ## Use When
 
-A maintainer is preparing a new version tag and GitHub/PyPI release.
+A maintainer is preparing a new version tag and GitHub/PyPI release. This is the
+executable checklist for step 2 of the owner release runbook in
+[docs/release.md](../../docs/release.md#owner-runbook-cutting-a-release); the
+runbook covers the surrounding human-gated steps (tag and publish approval).
 
 ## Target
 

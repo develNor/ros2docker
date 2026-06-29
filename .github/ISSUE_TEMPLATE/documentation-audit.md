@@ -22,11 +22,9 @@ the repository.
 
 ## Document Ownership
 
-- README: user-facing purpose, installation, quick start, common usage.
-- CONTRIBUTING: contributor workflow, PR expectations, local checks.
-- DEVELOPMENT: technical setup, architecture, testing, release process.
-- Issue templates: reusable task recipes.
-- docs/: focused supporting guides.
+Align each document with its owned concern. The canonical ownership map lives in
+[docs/quality-model.md](../../docs/quality-model.md#document-ownership) — audit
+against it; do not restate it here.
 
 ## Constraints
 
