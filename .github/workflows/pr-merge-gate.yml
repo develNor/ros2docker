@@ -204,6 +204,11 @@ jobs:
         with:
           fail-on-severity: high
           fail-on-scopes: runtime, development
+          # License gate: block PRs that add a strong-copyleft dependency, which
+          # is incompatible with this BSD-3-Clause project. A denylist (not an
+          # allowlist) is used deliberately: it avoids false positives on
+          # packages whose license GitHub's dependency graph cannot detect.
+          deny-licenses: GPL-2.0-only, GPL-3.0-only, AGPL-3.0-only, AGPL-3.0-or-later
 
   ci-success:
     name: ci-success
