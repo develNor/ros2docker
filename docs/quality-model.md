@@ -40,10 +40,12 @@ no subfolders), but they form a hierarchy of **orchestrators** and **leaf tasks*
 
 ```
 release-readiness  (owner runbook, see release.md)
-└─ quality-workflow            orchestrator: one focused PR per goal, in order
+└─ quality-workflow            orchestrator: diagnose first, then one focused PR per triaged goal
+   ├─ repository-diagnosis     keystone: read-only; triage findings, may find nothing
    ├─ test-ci-audit            leaf: tests, CI wiring, coverage of documented behavior
-   ├─ documentation-audit      leaf: align docs, remove drift/duplication
-   ├─ implementation-cleanup   leaf: simplify code, remove dead/over-abstracted paths
+   ├─ documentation-audit      leaf: justify-or-delete docs; remove drift/duplication/bloat
+   ├─ implementation-cleanup   leaf: small, safe simplification of code
+   ├─ redesign                 leaf: bold, cross-cutting redesign of a diagnosed concern
    └─ maintainer-review        leaf: strict review of a PR
 work-item        leaf: any other actionable change
 release-process  leaf: prepare, validate, and publish a version
@@ -51,13 +53,40 @@ release-process  leaf: prepare, validate, and publish a version
 
 | Template | Role |
 |---|---|
-| [quality-workflow](../.github/ISSUE_TEMPLATE/quality-workflow.md) | Orchestrates the soft-check pass as a sequence of focused PRs. |
+| [quality-workflow](../.github/ISSUE_TEMPLATE/quality-workflow.md) | Orchestrates the soft-check pass: diagnose first, then a focused PR per triaged goal. |
+| [repository-diagnosis](../.github/ISSUE_TEMPLATE/repository-diagnosis.md) | Read-only diagnosis and triage that routes the pass. The planning keystone. |
 | [test-ci-audit](../.github/ISSUE_TEMPLATE/test-ci-audit.md) | Audit tests, CI wiring, and coverage of documented behavior. |
-| [documentation-audit](../.github/ISSUE_TEMPLATE/documentation-audit.md) | Align public docs; remove duplicated or stale text. |
-| [implementation-cleanup](../.github/ISSUE_TEMPLATE/implementation-cleanup.md) | Simplify implementation while preserving the public contract. |
+| [documentation-audit](../.github/ISSUE_TEMPLATE/documentation-audit.md) | Justify-or-delete public docs; remove duplicated, stale, or disproportionate text. |
+| [implementation-cleanup](../.github/ISSUE_TEMPLATE/implementation-cleanup.md) | Small, safe simplification that preserves the public contract. |
+| [redesign](../.github/ISSUE_TEMPLATE/redesign.md) | Bold, cross-cutting redesign of a single diagnosed concern, backed by the tests. |
 | [maintainer-review](../.github/ISSUE_TEMPLATE/maintainer-review.md) | Review a PR from a strict maintainer perspective. |
 | [work-item](../.github/ISSUE_TEMPLATE/work-item.md) | Track a single actionable change. |
 | [release-process](../.github/ISSUE_TEMPLATE/release-process.md) | Prepare, validate, describe, and publish a release. |
+
+## Diagnosis first: route by need, not by reflex
+
+The soft-check pass does not fire every leaf on every run. It starts with one
+read-only pass — [repository-diagnosis](../.github/ISSUE_TEMPLATE/repository-diagnosis.md)
+— that takes in the whole repo and classifies each finding two ways:
+
+- **Altitude** — where it lives: *vision* (does the README still match the
+  repo?), *architecture*, *module / interface*, *line / local*, and *meta /
+  governance* (do the docs and process earn their keep, proportionate to the
+  product?).
+- **Disposition** — what it needs: *none* (healthy — a first-class outcome),
+  *inline*, *scoped* (a focused audit or cleanup leaf), or *redesign* (a bold,
+  cross-cutting change routed to
+  [redesign](../.github/ISSUE_TEMPLATE/redesign.md)).
+
+Three lenses apply across altitudes: **value / proportionality** (does each file
+or section earn its place, or belong somewhere more canonical?), **generality**
+(reusable files avoid repo-specific names except where they must live — badges,
+CODEOWNERS, packaging, local config), and **drift** (do documented commands and
+settings match reality?).
+
+The orchestrator then creates and completes exactly the issues triage names. A
+healthy repo legitimately produces **zero PRs** — that is success, not a failed
+run.
 
 ## Depth comes from decomposition, not one big pass
 
@@ -74,6 +103,15 @@ fresh-context tasks (a separate issue + PR, ideally a separate agent run, per
 goal), not collapse them into one pass. The command is one; the execution is
 many. The concrete entrypoint is the owner release runbook in
 [release.md](release.md).
+
+Decomposition also has a *direction*. The audit leaves decompose **horizontally**
+by artifact — tests, then docs, then code — and each stays in its lane. Some
+improvements only cohere as a **vertical** slice: one concept's code, tests,
+docs, and naming changed together. That is what
+[redesign](../.github/ISSUE_TEMPLATE/redesign.md) is for — triage routes a single
+concern to it, and it is licensed to cross the artifact lanes and be bold, backed
+by the tests. Cleanup is small and safe; redesign is bold and scoped; diagnosis
+decides which, or neither.
 
 ## Document ownership
 
