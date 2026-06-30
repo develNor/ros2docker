@@ -132,6 +132,16 @@ just test-e2e-fast
 just test-e2e-slow
 ```
 
+Tag protection and PyPI publishing are intentionally separate gates. The
+protected `v*` tag gate verifies release authority and that the tagged commit
+already passed `ci-success`. Tag-triggered release checks such as slow Docker
+E2E and tag-specific release notes cannot protect creation of that same tag
+without becoming circular, because those checks are created by the tag push.
+Instead, the release workflow runs them automatically after tagging and blocks
+`publish-pypi` until they pass. A failed tagged release can therefore leave a
+protected tag without a PyPI publish, which is preferable to publishing an
+irreversible package before final release validation passes.
+
 ## Publishing
 
 Tag pushes publish to PyPI through Trusted Publishing and create a GitHub
