@@ -214,8 +214,11 @@ which sequences `test-ci-audit`, `documentation-audit`, and
 `implementation-cleanup`. It is a recommended checklist step, not a CI gate.
 See [docs/release.md](docs/release.md) for details.
 
-Releases are built from version tags. After the release PR has merged, create
-and push a tag in the form `vX.Y.Z` from the release commit:
+Releases are built from version tags. After the release PR has merged, the
+owner creates and pushes a tag in the form `vX.Y.Z` from the release commit.
+The `release protection` ruleset protects `refs/tags/v*`, so only repository
+admins can create, update, or delete those tags, and the tagged commit must
+already have the required `ci-success` status check:
 
 Release PRs must include `docs/release-notes/vX.Y.Z.md`, copied from
 `docs/release-notes/TEMPLATE.md` and filled with a summary of user-facing
@@ -232,10 +235,10 @@ git push origin vX.Y.Z
 ```
 
 The `release` workflow validates the tag with non-Docker checks, package
-artifact validation, tag-specific release notes, and fast Docker E2E before
-publishing. Successful tag releases publish the wheel and sdist to PyPI through
-Trusted Publishing, then create a GitHub Release with the release notes, wheel,
-sdist, and `SHA256SUMS`.
+artifact validation, tag-specific release notes, and both fast and slow Docker
+E2E before publishing. Successful tag releases publish the wheel and sdist to
+PyPI through Trusted Publishing, then create a GitHub Release with the release
+notes, wheel, sdist, and `SHA256SUMS`.
 
 Maintainers must configure pending Trusted Publishers on PyPI and TestPyPI for
 repository `develNor/ros2docker`, workflow `.github/workflows/release.yml`, and
