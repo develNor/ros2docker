@@ -207,7 +207,7 @@ workflow, see [CONTRIBUTING.md](CONTRIBUTING.md). CI behavior is summarized in
 those recipes — hard vs. soft checks, the task hierarchy, and how a release is
 orchestrated — is in [docs/quality-model.md](docs/quality-model.md), and the
 quality rules applied in audits and reviews are in
-[docs/quality-audit.md](docs/quality-audit.md).
+[DEVELOPMENT_PRINCIPLES.md](DEVELOPMENT_PRINCIPLES.md).
 
 ## Python API
 

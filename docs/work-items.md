@@ -19,9 +19,9 @@ files only for private scratch.
 Use the matching issue template for reusable work:
 
 ```bash
-gh issue create --repo develNor/ros2docker --template work-item.md
-gh issue create --repo develNor/ros2docker --template documentation-audit.md
-gh issue create --repo develNor/ros2docker --template test-ci-audit.md
+gh issue create --template work-item.md
+gh issue create --template documentation-audit.md
+gh issue create --template test-ci-audit.md
 ```
 
 Then work from an up-to-date topic branch:
