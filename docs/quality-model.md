@@ -19,9 +19,8 @@ Hard checks are objective and block merges. They live in CI and the `justfile`,
 and the [contract tests](../tests/contract/) encode repository invariants
 (config surface, docs reachability, link resolution, profile/just-target
 consistency, security config, …). If a hard check can express a rule, it should:
-deterministic enforcement beats review. See [ci.md](ci.md) for what runs and
-[quality-audit.md](quality-audit.md) for the rule of thumb (*prefer deterministic
-checks over judgement*).
+deterministic enforcement beats review (*prefer deterministic checks over
+judgement*). See [ci.md](ci.md) for what runs.
 
 ## Soft checks (agent-run audits / review passes)
 
@@ -125,7 +124,7 @@ enforces):
 - **docs/**: focused supporting guides — [agentic-workflow.md](agentic-workflow.md)
   (the human + agent model and the three gates), [ci.md](ci.md),
   [configuration.md](configuration.md), [release.md](release.md),
-  [work-items.md](work-items.md), [quality-audit.md](quality-audit.md), and this
+  [work-items.md](work-items.md), and this
   file.
 - **Issue templates** (`.github/ISSUE_TEMPLATE/`): reusable, executable task
   recipes — the *do*, where the docs are the *read*.

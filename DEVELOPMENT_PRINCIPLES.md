@@ -51,3 +51,13 @@ New dependencies require:
 - why stdlib or existing dependencies are insufficient,
 - whether it is runtime or dev-only,
 - license/security consideration.
+
+## Quality and Review
+
+- Public-facing claims must be backed by code, tests, or an explicit manual
+  verification note; if a behavior cannot sensibly be tested automatically,
+  document the manual check.
+- Prefer the simplest implementation that satisfies the tests; justify any
+  abstraction.
+- For every non-trivial change, record what changed, why it is safe, and which
+  tests or checks cover it.
