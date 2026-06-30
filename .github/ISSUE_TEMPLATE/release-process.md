@@ -52,7 +52,8 @@ runbook covers the surrounding human-gated steps (tag and publish approval).
 - [ ] Update checksum verification where already specified.
 - [ ] Include a release notes draft and local command results in the PR
       description.
-- [ ] After the PR merges, tag the release commit and push the tag.
+- [ ] After the PR merges, have the owner tag the release commit on `main` and
+      push the protected `vX.Y.Z` tag.
 - [ ] Confirm the release workflow publishes to PyPI and creates the GitHub
       Release from `docs/release-notes/vX.Y.Z.md`.
 
@@ -72,6 +73,7 @@ runbook covers the surrounding human-gated steps (tag and publish approval).
 - [ ] `just docs`
 - [ ] `just package`
 - [ ] `just test-e2e-fast`
+- [ ] `just test-e2e-slow`
 
 ## Final Report
 

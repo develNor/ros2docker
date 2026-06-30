@@ -46,6 +46,32 @@ ci-success
 
 See [docs/ci.md](ci.md) for the workflow contract behind that aggregate check.
 
+## Release Tag Protection
+
+Expected state:
+
+- Stable release tags are protected by a repository ruleset named
+  `release protection`.
+- The ruleset target is tags matching `refs/tags/v*`.
+- The ruleset enforcement is active.
+- The ruleset protects tag creation, updates, deletion, and non-fast-forward
+  updates.
+- The ruleset requires the `ci-success` status check on the tagged commit,
+  including when the tag is created.
+- The ruleset bypass list contains the **Repository admin** role, so the owner
+  can create release tags; the `develNor-agent` bot is not a bypass actor.
+
+Practical effect: only a repository admin can create, update, or delete stable
+release tags, and the tag push succeeds only when the target commit already has
+`ci-success`.
+
+Verify:
+
+```bash
+gh ruleset view 18176807 --repo develNor/ros2docker
+gh api repos/develNor/ros2docker/rulesets/18176807
+```
+
 ## Agent Identity And Human-Only Gates
 
 Agents operate as the dedicated bot account `develNor-agent`, separate from the
@@ -73,9 +99,10 @@ Expected state:
   approval — which works only because the bot is a different account and cannot
   self-approve. PRs that touch nothing owned auto-merge with zero approvals.
 - **Releases are owner-only.** A tag ruleset restricts creation of `v*` tags to
-  the Repository admin role, and the `pypi` deployment environment lists
-  `develNor` as a **required reviewer**, so the irreversible Trusted Publishing
-  step waits for an explicit human approval even if a tag is created.
+  the Repository admin role, protects those tags from update/deletion, requires
+  `ci-success` on the tagged commit, and the `pypi` deployment environment
+  lists `develNor` as a **required reviewer**, so the irreversible Trusted
+  Publishing step waits for an explicit human approval even if a tag is created.
 - **Fork pull requests on a public repository** still run with a read-only
   `GITHUB_TOKEN` and no secrets; the Actions *"require approval for outside/
   first-time contributors"* setting governs whether their workflows run.
@@ -93,14 +120,56 @@ gh api repos/develNor/ros2docker/codeowners/errors
 # bypass list includes the Repository admin role.
 gh api repos/develNor/ros2docker/rulesets/17518226
 
-# Tag protection ruleset for v* exists.
-gh ruleset list --repo develNor/ros2docker --parents
+# Tag protection ruleset for v* exists and requires ci-success.
+gh api repos/develNor/ros2docker/rulesets/18176807
 
 # pypi environment has develNor as a required reviewer.
 gh api repos/develNor/ros2docker/environments/pypi
 
 # Actions approval policy for outside contributors.
 gh api repos/develNor/ros2docker/actions/permissions/workflow
+```
+
+## Repository Merge Settings
+
+Expected state:
+
+- Auto-merge is allowed.
+- Squash merge is the only enabled merge method.
+- Merge commits and rebase merges are disabled.
+- Branches are deleted automatically after merge.
+- Update-branch is disabled.
+
+Verify:
+
+```bash
+gh api repos/develNor/ros2docker --jq '{
+  allow_auto_merge,
+  allow_squash_merge,
+  allow_merge_commit,
+  allow_rebase_merge,
+  delete_branch_on_merge,
+  allow_update_branch
+}'
+```
+
+## GitHub Actions Settings
+
+Expected state:
+
+- GitHub Actions is enabled.
+- All actions are allowed, and SHA pinning is not required.
+- The default `GITHUB_TOKEN` workflow permission is read-only.
+- Workflows cannot approve pull request reviews.
+- Outside contributor workflow approval is required for first-time
+  contributors.
+
+Verify:
+
+```bash
+gh api repos/develNor/ros2docker/actions/permissions
+gh api repos/develNor/ros2docker/actions/permissions/workflow
+gh api repos/develNor/ros2docker/actions/permissions/fork-pr-contributor-approval
 ```
 
 ## CodeQL Default Setup
@@ -117,6 +186,26 @@ Verify:
 
 ```bash
 gh api repos/develNor/ros2docker/code-scanning/default-setup
+```
+
+## Security And Secrets
+
+Expected state:
+
+- Dependabot security updates are enabled.
+- Secret scanning is enabled.
+- Secret scanning non-provider patterns, push protection, and validity checks
+  are disabled.
+- The repository has a `CODECOV_TOKEN` Actions secret for Codecov upload from
+  the Python 3.12 non-Docker check.
+- No repository Actions variables are required.
+
+Verify:
+
+```bash
+gh api repos/develNor/ros2docker --jq '.security_and_analysis'
+gh secret list --repo develNor/ros2docker
+gh variable list --repo develNor/ros2docker
 ```
 
 ## Repository Metadata

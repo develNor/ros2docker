@@ -41,7 +41,9 @@ an owned path, so it needs your Code Owner approval). It merges once green.
 ### 3. Tag the release (owner — manual)
 
 `vX.Y.Z` tags are restricted to the owner, so push the tag yourself after the
-release PR merges:
+release PR merges. The `release protection` ruleset also requires the tagged
+commit to already have the `ci-success` status check, so tag the merged release
+commit on `main` rather than an unmerged local commit:
 
 ```bash
 git switch main && git fetch --prune && git pull --ff-only
@@ -91,6 +93,9 @@ vX.Y.Z
 ```
 
 Push the tag from the release commit after the release PR has merged.
+The live GitHub `release protection` ruleset protects `refs/tags/v*`: only
+repository admins can create, update, or delete those tags, and the tagged
+commit must already have the required `ci-success` status check.
 
 ## Release Notes
 
@@ -112,9 +117,9 @@ file becomes the GitHub Release description.
 
 ## Validation
 
-The release workflow runs non-Docker checks on Python 3.10 and 3.12, validates
-package artifacts, verifies tag-specific release notes, and runs fast Docker E2E
-before publishing:
+The release workflow runs non-Docker checks on Python 3.10 through 3.14,
+validates package artifacts, verifies tag-specific release notes, and runs both
+fast and slow Docker E2E before publishing:
 
 ```bash
 just lint
@@ -124,7 +129,18 @@ just test-contract
 just docs
 just package
 just test-e2e-fast
+just test-e2e-slow
 ```
+
+Tag protection and PyPI publishing are intentionally separate gates. The
+protected `v*` tag gate verifies release authority and that the tagged commit
+already passed `ci-success`. Tag-triggered release checks such as slow Docker
+E2E and tag-specific release notes cannot protect creation of that same tag
+without becoming circular, because those checks are created by the tag push.
+Instead, the release workflow runs them automatically after tagging and blocks
+`publish-pypi` until they pass. A failed tagged release can therefore leave a
+protected tag without a PyPI publish, which is preferable to publishing an
+irreversible package before final release validation passes.
 
 ## Publishing
 
