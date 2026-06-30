@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     build-essential \
     libyaml-cpp-dev \
-    x11-apps \
+    x11-utils \
     iperf3 \
  && rm -rf /var/lib/apt/lists/*
 
