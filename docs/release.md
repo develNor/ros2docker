@@ -15,10 +15,11 @@ publish. Follow these steps in order. Replace `vX.Y.Z` with the target version.
 
 Skip for a trivial patch release. Otherwise prompt the agent:
 
-> Run the repository quality workflow autonomously for a release: create and
-> complete focused PRs for test-ci-audit, then documentation-audit, then
-> implementation-cleanup — each started from a fresh `origin/main`, opened ready
-> with auto-merge. Report each PR URL and CI status.
+> Run the repository quality workflow autonomously for a release: first run the
+> repository-diagnosis pass, then create and complete the focused PRs it triages
+> (audits, cleanup, or redesign) in priority order — each started from a fresh
+> `origin/main`, opened ready with auto-merge. If the diagnosis finds nothing
+> actionable, report that and stop. Report each PR URL and CI status.
 
 Depth comes from running these as separate, focused PRs, not one pass (see
 [quality-model.md](quality-model.md)). **Your part:** approve the Code Owner
@@ -74,10 +75,10 @@ that eroded through least-invasive patches.
 
 Run the multi-PR quality workflow
 ([../.github/ISSUE_TEMPLATE/quality-workflow.md](../.github/ISSUE_TEMPLATE/quality-workflow.md)),
-which sequences `test-ci-audit`, `documentation-audit`, and
-`implementation-cleanup`. This is a recommended checklist step, **not** a CI
-gate — there is intentionally no automation that fails a release based on how
-recently an audit ran.
+which runs a read-only diagnosis pass that triages findings and routes each to a
+focused PR (an audit, a cleanup, or a redesign). This is a recommended checklist
+step, **not** a CI gate — there is intentionally no automation that fails a
+release based on how recently an audit ran.
 
 ## Version Source
 

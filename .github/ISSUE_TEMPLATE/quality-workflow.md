@@ -8,7 +8,9 @@ assignees: ""
 
 ## Goal
 
-Execute a multi-goal repository quality workflow with focused PRs.
+Run the repository quality pass: diagnose first, then create one focused PR for
+each goal the diagnosis triages — in priority order. A healthy repo may yield no
+PRs at all; that is a successful outcome.
 
 ## Autonomous Mode
 
@@ -29,22 +31,28 @@ after each PR is ready for human review.
 - If CI fails, fix the current PR instead of starting a new goal.
 - If a PR cannot be merged automatically, stop and report the blocker.
 - Do not weaken tests, remove checks, or hide failures with broad skips/xfails.
-- Keep each PR small and reviewable.
+- Keep each PR focused and reviewable.
 
 ## Execution Plan
 
 - [ ] Create and complete an issue from
-      [test-ci-audit.md](test-ci-audit.md).
-- [ ] Create and complete an issue from
-      [documentation-audit.md](documentation-audit.md).
-- [ ] After both are merged into `main`, create and complete an issue from
-      [implementation-cleanup.md](implementation-cleanup.md).
-- [ ] After the cleanup PR is created, create and complete an issue from
+      [repository-diagnosis.md](repository-diagnosis.md). This read-only pass
+      triages findings by altitude and disposition and proposes the issues to
+      open. If it finds nothing actionable, report that and stop here.
+- [ ] For each actionable finding, in the diagnosis's priority order, create and
+      complete one focused issue using the leaf template it names
+      ([test-ci-audit.md](test-ci-audit.md),
+      [documentation-audit.md](documentation-audit.md),
+      [implementation-cleanup.md](implementation-cleanup.md), or
+      [redesign.md](redesign.md)).
+- [ ] After the change PRs are open, create and complete an issue from
       [maintainer-review.md](maintainer-review.md) as a review-only task.
 
 ## Acceptance Criteria
 
-- [ ] Each goal has a separate issue and PR.
+- [ ] The diagnosis ran first and its triage is recorded.
+- [ ] Each triaged goal has a separate issue and PR (a healthy repo may have
+      none — record the "no action" result instead).
 - [ ] Each PR links its issue and reports checks run.
 - [ ] Dependent goals start only after prerequisite PRs merge.
 
@@ -54,6 +62,7 @@ Use the checks listed in each issue template.
 
 ## Final Report
 
+- Diagnosis summary (or "no action needed"):
 - Issues created:
 - PRs created:
 - PR URLs and CI status:
