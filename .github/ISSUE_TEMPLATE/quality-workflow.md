@@ -65,4 +65,6 @@ Use the checks listed in each issue template.
 - PRs created:
 - PR URLs and CI status:
 - Merged PRs:
+- Net line delta (product vs governance), with any net increase justified by the
+  capability it bought:
 - Blockers:

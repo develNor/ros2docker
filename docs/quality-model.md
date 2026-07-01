@@ -90,20 +90,24 @@ read-only pass — [repository-diagnosis](../.github/ISSUE_TEMPLATE/repository-d
   repo?), *architecture*, *module / interface*, *line / local*, and *meta /
   governance* (do the docs and process earn their keep, proportionate to the
   product?).
-- **Disposition** — what it needs: *none* (healthy — a first-class outcome),
+- **Disposition** — what it needs: *none* (healthy — a first-class outcome,
+  earned with an actual probe, not just the absence of surface markers),
   *inline*, *scoped* (a focused audit or cleanup leaf), or *redesign* (a bold,
   cross-cutting change routed to
   [redesign](../.github/ISSUE_TEMPLATE/redesign.md)).
 
-Three lenses apply across altitudes: **value / proportionality** (does each file
-or section earn its place, or belong somewhere more canonical?), **generality**
+Three lenses apply across altitudes: **value / proportionality** — a budget, not
+just a question: each artifact must earn its keep and be stated once, so a
+governance layer that grows without adding capability is itself a routable
+finding — **generality**
 (reusable files avoid repo-specific names except where they must live — badges,
 CODEOWNERS, packaging, local config), and **drift** (do documented commands and
 settings match reality?).
 
 The orchestrator then creates and completes exactly the issues triage names. A
 healthy repo legitimately produces **zero PRs** — that is success, not a failed
-run.
+run. Each pass reports its net line delta (product vs governance) so the workflow
+is accountable to *reduction*, not just activity.
 
 ## Depth comes from decomposition, not one big pass
 
