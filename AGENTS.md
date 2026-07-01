@@ -31,7 +31,7 @@ Shared workflow:
 - If the work is not possible or not sensible, add an issue comment explaining why and apply a fitting label such as `question`, `invalid`, or `help wanted`.
 - Update README, docs, examples, schemas, and tests when CLI, config, API, Docker, or public behavior changes.
 - Do not skip, weaken, or delete tests/CI to make a change pass.
-- Open the PR ready and enable auto-merge by default: `gh pr merge --auto --squash --delete-branch` (squash is the only allowed method). Use a draft PR with no auto-merge only when the user asks for review before merge. Never bypass protected-branch rules, required checks, or required Code Owner review; if auto-merge is blocked, record why in the PR.
+- Open the PR ready and enable auto-merge by default: `gh pr merge --auto --squash --delete-branch` (squash is the only allowed method). Use a draft PR with no auto-merge only when the user asks for review before merge. Never bypass protected-branch rules, required checks, or required code-owners review; if auto-merge is blocked, record why in the PR.
 - After opening or updating a PR, check the real remote PR/CI state with `gh pr view` / `gh pr checks` and report the actual status with the PR URL — not just that a branch was pushed.
 
 Worktrees:

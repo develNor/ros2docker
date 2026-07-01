@@ -84,10 +84,10 @@ The repository has two audiences, and every file serves one:
 
 - **Owner layer** — the handful of entrypoints the owner invokes, collected in
   [owner-runbook.md](owner-runbook.md): the quality maintenance pass, cutting a
-  release, and the three owner-only gates. If you own the repo, this is all you
-  touch.
+  release, and the three owner-only gates. For whoever owns the repo, this is all
+  they touch.
 - **Agent layer** — the issue templates and the supporting docs agents read while
-  executing those entrypoints. The owner never invokes these directly.
+  executing those entrypoints, not invoked directly at the owner layer.
 
 This split makes proportionality decidable — **per artifact, not per layer.** For
 each agent-layer artifact ask the counterfactual: *if it were deleted, which
@@ -160,12 +160,12 @@ decides which, or neither.
 
 This machinery is **stable by default** — "adaptable" (cheap to change) is not
 "needs adapting" (a treadmill). Change a template or check only in reaction to a
-*concrete misbehavior you have observed* — the same evidence bar as a bug fix,
+*concrete, observed misbehavior* — the same evidence bar as a bug fix,
 never on a schedule or a hunch. The method: observe the misbehavior → encode the
 fix as a hard check (preferred) or a forcing question at the point of work →
 verify by re-running the workflow. Apply the *Two layers* reachability test to the
 rule itself first: name the real run where it would have changed the outcome; if
-you cannot, do not add it. The owner's Code Owner review is where this judgment
+it cannot be named, do not add it. The code-owners review is where this judgment
 lives — it is the meta-check and the top of the ladder, with no level above it to
 automate.
 

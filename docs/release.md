@@ -5,7 +5,7 @@ Releases are built by `.github/workflows/release.yml`.
 ## Owner runbook: cutting a release
 
 Cutting a release is mostly autonomous. The owner performs only the three
-gated steps — Code Owner approvals, the `vX.Y.Z` tag, and the `pypi` deployment
+gated steps — code-owners review, the `vX.Y.Z` tag, and the `pypi` deployment
 approval (the three gates in [owner-runbook.md](owner-runbook.md)). Full
 hands-off publish is intentionally impossible; "as autonomous as possible" means
 autonomous through the release PR, with the owner approving the irreversible
@@ -17,14 +17,13 @@ Skip for a trivial patch release. Otherwise run the **quality maintenance pass**
 from the [owner runbook](owner-runbook.md) to clear drift first.
 
 Depth comes from running these as separate, focused PRs, not one pass (see
-[quality-model.md](quality-model.md)). **Your part:** approve the Code Owner
-review on any PR that touches an owned path (`.github/`, `tests/contract/`,
-`pyproject.toml`, `docs/release.md`, …) — the agent account cannot self-approve
-those.
+[quality-model.md](quality-model.md)). A PR that touches an owned path
+(`.github/`, `tests/contract/`, `pyproject.toml`, `docs/release.md`, …) needs a
+review from code-owners that its author cannot self-approve.
 
 ### 2. Prepare the release PR (agent)
 
-Prompt the agent:
+Prompt an agent:
 
 > Prepare release vX.Y.Z: open an issue from release-process.md and a PR that
 > reviews the diff since the previous tag, writes `docs/release-notes/vX.Y.Z.md`
@@ -32,12 +31,12 @@ Prompt the agent:
 > `ZENOH_VERSION` / `ZENOH_ROS2DDS_VERSION` / `MCAP_CLI_VERSION`, and records the
 > validation checks in the PR body. Open it ready with auto-merge.
 
-**Your part:** review and approve the release PR (it touches `docs/release.md`,
-an owned path, so it needs your Code Owner approval). It merges once green.
+Code-owners review and approve the release PR (it touches `docs/release.md`, an
+owned path, so it needs a review from code-owners). It merges once green.
 
 ### 3. Tag the release (owner — manual)
 
-`vX.Y.Z` tags are restricted to the owner, so push the tag yourself after the
+`vX.Y.Z` tags are restricted to the owner, who pushes the tag after the
 release PR merges. The `release protection` ruleset also requires the tagged
 commit to already have the `ci-success` status check, so tag the merged release
 commit on `main` rather than an unmerged local commit:
@@ -147,9 +146,8 @@ Release with the release notes, wheel, source distribution, and `SHA256SUMS`.
 Manual workflow dispatch publishes only to TestPyPI. Use it for release
 rehearsals before cutting a PyPI tag.
 
-Trusted Publishers must be configured for repository `develNor/ros2docker`,
-workflow `.github/workflows/release.yml`, and environments `pypi` and
-`testpypi`.
+Trusted Publishers must be configured for this repository, workflow
+`.github/workflows/release.yml`, and environments `pypi` and `testpypi`.
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) for the canonical maintainer release
 workflow.
