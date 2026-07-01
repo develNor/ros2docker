@@ -44,8 +44,8 @@
   "extra_run_args": [],
 
   // ROS packages to pre-build into the Docker image, relative to this config.
-  // These are installed into /opt/ros/$ROS_DISTRO so every container gets them without
-  // needing them in each workspace's ros2src/.
+  // These are staged in /opt/custom_ws/install and sourced before each command,
+  // so every container gets them without needing them in each workspace's ros2src/.
   "bake_ros_packages": [],
 
   // Optional Docker build arguments.

@@ -44,8 +44,7 @@ owner-runbook  (the owner's entrypoints — see owner-runbook.md)
 │  ├─ test-ci-audit            leaf: tests, CI wiring, coverage of documented behavior
 │  ├─ documentation-audit      leaf: justify-or-delete docs; remove drift/duplication/bloat
 │  ├─ implementation-cleanup   leaf: small, safe simplification of code
-│  ├─ redesign                 leaf: bold, cross-cutting redesign of a diagnosed concern
-│  └─ maintainer-review        leaf: strict review of a PR
+│  └─ redesign                 leaf: bold, cross-cutting redesign of a diagnosed concern
 └─ release-process             leaf: prepare, validate, and publish a version (see release.md)
 work-item                      leaf: any other actionable change (not an owner entrypoint)
 ```
@@ -58,7 +57,6 @@ work-item                      leaf: any other actionable change (not an owner e
 | [documentation-audit](../.github/ISSUE_TEMPLATE/documentation-audit.md) | Justify-or-delete public docs; remove duplicated, stale, or disproportionate text. |
 | [implementation-cleanup](../.github/ISSUE_TEMPLATE/implementation-cleanup.md) | Small, safe simplification that preserves the public contract. |
 | [redesign](../.github/ISSUE_TEMPLATE/redesign.md) | Bold, cross-cutting redesign of a single diagnosed concern, backed by the tests. |
-| [maintainer-review](../.github/ISSUE_TEMPLATE/maintainer-review.md) | Review a PR from a strict maintainer perspective. |
 | [work-item](../.github/ISSUE_TEMPLATE/work-item.md) | Track a single actionable change. |
 | [release-process](../.github/ISSUE_TEMPLATE/release-process.md) | Prepare, validate, describe, and publish a release. |
 
