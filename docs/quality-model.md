@@ -27,8 +27,8 @@ judgement*). See [ci.md](ci.md) for what runs.
 Some properties are not reliably algorithmic — "is this name still apt?", "is
 this doc still relevant and correct?", "did this interface erode?". For those the
 project uses **soft checks**: focused audit and review tasks, captured as reusable
-[issue templates](../.github/ISSUE_TEMPLATE/), that an agent (or human) runs
-periodically — especially before a release. They are checklists, not gates;
+[issue templates](../.github/ISSUE_TEMPLATE/), run periodically — especially
+before a release. They are checklists, not gates;
 deliberately *not* wired into CI (a "did an audit run recently?" gate would be
 brittle and low-value — see #98).
 
@@ -82,9 +82,9 @@ A read-only task follows only the parts that apply — quality rules and trackin
 
 The repository has two audiences, and every file serves one:
 
-- **Owner layer** — the handful of entrypoints a human invokes, collected in
+- **Owner layer** — the handful of entrypoints the owner invokes, collected in
   [owner-runbook.md](owner-runbook.md): the quality maintenance pass, cutting a
-  release, and the three human-only gates. If you own the repo, this is all you
+  release, and the three owner-only gates. If you own the repo, this is all you
   touch.
 - **Agent layer** — the issue templates and the supporting docs agents read while
   executing those entrypoints. The owner never invokes these directly.
@@ -141,7 +141,7 @@ goal**: that is exactly why `quality-workflow` mandates *one focused PR per goal
 each started from a fresh `origin/main`, dependent goals waiting for prerequisites
 to merge*.
 
-So a single human entrypoint is fine — but it should **orchestrate** focused,
+So a single owner entrypoint is fine — but it should **orchestrate** focused,
 fresh-context tasks (a separate issue + PR, ideally a separate agent run, per
 goal), not collapse them into one pass. The command is one; the execution is
 many. The concrete entrypoints are collected in the
@@ -179,17 +179,17 @@ enforces):
 - **CONTRIBUTING**: contributor workflow, PR expectations, local checks.
 - **DEVELOPMENT_PRINCIPLES**: quality rules and the definition of done.
 - **docs/**: focused supporting guides — [owner-runbook.md](owner-runbook.md)
-  (the owner's entrypoints), [agentic-workflow.md](agentic-workflow.md)
-  (the human + agent model and the three gates), [ci.md](ci.md),
+  (the owner's entrypoints and the three gates), [ci.md](ci.md),
   [configuration.md](configuration.md), [release.md](release.md),
-  [work-items.md](work-items.md), and this file.
+  [work-items.md](work-items.md), and this file. Repository policy that lives
+  outside git is mirrored in
+  [github-repository-settings.md](github-repository-settings.md).
 - **Issue templates** (`.github/ISSUE_TEMPLATE/`): reusable, executable task
   recipes — the *do*, where the docs are the *read*.
 
 ## See also
 
-- [owner-runbook.md](owner-runbook.md) — the handful of prompts the owner runs.
-- [agentic-workflow.md](agentic-workflow.md) — autonomy by default and the three
-  human-only gates (admin, CI/tests/deps, releases).
+- [owner-runbook.md](owner-runbook.md) — the handful of prompts the owner runs
+  and the three owner-only gates (admin, CI/tests/deps, releases).
 - [work-items.md](work-items.md) — where work lives and how issues drive it.
 - [release.md](release.md) — the owner release runbook.

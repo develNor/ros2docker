@@ -4,9 +4,9 @@ Releases are built by `.github/workflows/release.yml`.
 
 ## Owner runbook: cutting a release
 
-Cutting a release is mostly autonomous. The human owner performs only the three
+Cutting a release is mostly autonomous. The owner performs only the three
 gated steps — Code Owner approvals, the `vX.Y.Z` tag, and the `pypi` deployment
-approval (the three gates in [agentic-workflow.md](agentic-workflow.md)). Full
+approval (the three gates in [owner-runbook.md](owner-runbook.md)). Full
 hands-off publish is intentionally impossible; "as autonomous as possible" means
 autonomous through the release PR, with the owner approving the irreversible
 publish. Follow these steps in order. Replace `vX.Y.Z` with the target version.
@@ -19,7 +19,8 @@ from the [owner runbook](owner-runbook.md) to clear drift first.
 Depth comes from running these as separate, focused PRs, not one pass (see
 [quality-model.md](quality-model.md)). **Your part:** approve the Code Owner
 review on any PR that touches an owned path (`.github/`, `tests/contract/`,
-`pyproject.toml`, `docs/release.md`, …) — the bot cannot self-approve those.
+`pyproject.toml`, `docs/release.md`, …) — the agent account cannot self-approve
+those.
 
 ### 2. Prepare the release PR (agent)
 

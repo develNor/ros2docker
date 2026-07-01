@@ -169,7 +169,7 @@ the multi-PR
 drift that hard checks miss. It is a recommended checklist step, not a CI gate.
 
 Releases are cut by the owner from `vX.Y.Z` tags after the release PR merges, and
-publishing to PyPI runs through Trusted Publishing behind a human-approved
+publishing to PyPI runs through Trusted Publishing behind an owner-approved
 deployment. The full runbook — tag protection, the required
 `docs/release-notes/vX.Y.Z.md`, validation checks, and Trusted Publishing /
 TestPyPI setup — lives in [docs/release.md](docs/release.md).

@@ -211,7 +211,7 @@ quality rules applied in audits and reviews are in
 
 If you own this repository, [docs/owner-runbook.md](docs/owner-runbook.md)
 collects the handful of prompts you actually run (quality pass, release) and the
-three human-only gates — everything else is the agent layer you never invoke
+three owner-only gates — everything else is the agent layer you never invoke
 directly.
 
 ## Python API

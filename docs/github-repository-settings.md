@@ -13,12 +13,12 @@ below for how to inspect live state and handle drift.
 - It requires pull requests and allows squash merges only.
 - It prevents branch deletion and non-fast-forward updates.
 - It requires the `ci-success` status check and CodeQL code scanning.
-- It requires review from Code Owners (see **Agent Identity And Human-Only
+- It requires review from Code Owners (see **Agent Identity And Owner-Only
   Gates**).
 - It keeps `required_approving_review_count` at `0`, so Code Owner review only
   gates PRs that touch owned paths; everything else can auto-merge on green.
 - Its bypass list contains the **Repository admin** role, so the owner is never
-  blocked; the `develNor-agent` bot is not a bypass actor.
+  blocked; the `develNor-agent` account is not a bypass actor.
 
 `ci-success` is the single required status check. See [docs/ci.md](ci.md) for the
 workflow contract behind that aggregate.
@@ -38,34 +38,36 @@ Practical effect: only a repository admin can create, update, or delete stable
 release tags, and the tag push succeeds only when the target commit already has
 `ci-success`.
 
-## Agent Identity And Human-Only Gates
+## Agent Identity And Owner-Only Gates
 
-Agents operate as the dedicated bot account `develNor-agent`, separate from the
-human owner. See [docs/agentic-workflow.md](agentic-workflow.md) for the model
-and rationale; this section records the settings that enforce it.
+Agents operate as the dedicated account `develNor-agent`, separate from the
+owner. The identity choice and its rationale are instance-specific and live in
+the local instance config; this section records the settings that enforce the
+gates.
 
-- **Bot collaborator.** `develNor-agent` is a collaborator with the **write**
+- **Agent collaborator.** `develNor-agent` is a collaborator with the **write**
   (`push`) role and no admin. On a personal (user-owned) repository a non-admin
   collaborator cannot change settings, rulesets, secrets, or delete/transfer the
   repository, so the entire admin tier is reserved to the owner automatically.
-- **Bot token.** A **classic** PAT on `develNor-agent` with the `repo` and
+- **Agent token.** A **classic** PAT on `develNor-agent` with the `repo` and
   `workflow` scopes. A fine-grained PAT cannot authorize write on a repository
   owned by a different personal account; a GitHub App installed on this repo is
   the granular, per-repo alternative if finer scoping is wanted later. Least
-  privilege still holds because the bot is a non-admin collaborator: the token
-  cannot reach repository settings, secrets, rulesets, `v*` tags, or the `pypi`
-  environment regardless of its scopes.
+  privilege still holds because the agent account is a non-admin collaborator: the
+  token cannot reach repository settings, secrets, rulesets, `v*` tags, or the
+  `pypi` environment regardless of its scopes.
 - **Code Owners.** `.github/CODEOWNERS` assigns `@develNor` to the CI/test/deps
   and release policy surface (`.github/**`, `.pre-commit-config.yaml`,
   `pyproject.toml`, `justfile`, `codecov.yml`, `tests/contract/**`,
   `docs/release.md`, `docs/release-notes/**`). With **require review from Code
-  Owners** on the ruleset, a bot PR touching those paths needs the owner's
-  approval — which works only because the bot is a different account and cannot
-  self-approve. PRs that touch nothing owned auto-merge with zero approvals.
+  Owners** on the ruleset, an agent-account PR touching those paths needs the
+  owner's approval — which works only because it is a different account and
+  cannot self-approve. PRs that touch nothing owned auto-merge with zero
+  approvals.
 - **Releases are owner-only.** The `v*` tag ruleset restricts tag creation to the
   Repository admin role and requires `ci-success` on the tagged commit, and the
   `pypi` deployment environment lists `develNor` as a **required reviewer**, so
-  the irreversible Trusted Publishing step waits for an explicit human approval
+  the irreversible Trusted Publishing step waits for an explicit owner approval
   even if a tag is created.
 - **Fork pull requests on a public repository** run with a read-only
   `GITHUB_TOKEN` and no secrets; the Actions *"require approval for outside/
