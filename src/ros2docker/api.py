@@ -216,7 +216,7 @@ def init(
         config_data["build_args"] = {"BASE_IMAGE": base_image, "DIGEST": ""}
 
     # Generate workspace directories and files
-    (base_dir / "ws" / "src").mkdir(parents=True, exist_ok=True)
+    (base_dir / "ws" / "ros2src").mkdir(parents=True, exist_ok=True)
 
     gitignore_path = base_dir / "ws" / ".gitignore"
     gitignore_path.write_text("build/\ninstall/\nlog/\n", encoding="utf-8")

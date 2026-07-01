@@ -13,7 +13,7 @@ def test_init_creates_default_starter_files(tmp_path: Path) -> None:
     init(cwd=tmp_path)
 
     assert (tmp_path / "ros2docker.json").is_file()
-    assert (tmp_path / "ws" / "src").is_dir()
+    assert (tmp_path / "ws" / "ros2src").is_dir()
     assert (tmp_path / "ws" / ".gitignore").is_file()
     assert (tmp_path / "catmux.yaml").is_file()
     assert not (tmp_path / ".devcontainer" / "devcontainer.json").exists()
