@@ -58,8 +58,8 @@ RUN if [ "${INSTALL_NOVATEL}" = "1" ]; then \
         && git checkout --detach FETCH_HEAD; \
     fi
 
-# bake_packages: project-specific ROS packages staged by build.py
-# from paths listed in config "bake_ros_packages"
+# bake_packages: project-specific ROS packages staged by the Python build API
+# from paths listed in config "bake_ros_packages".
 COPY bake_packages/ ${CUSTOM_WS}/src/
 
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \

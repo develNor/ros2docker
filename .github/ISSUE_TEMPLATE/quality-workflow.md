@@ -43,8 +43,6 @@ after each PR is ready for human review.
       [documentation-audit.md](documentation-audit.md),
       [implementation-cleanup.md](implementation-cleanup.md), or
       [redesign.md](redesign.md)).
-- [ ] After the change PRs are open, create and complete an issue from
-      [maintainer-review.md](maintainer-review.md) as a review-only task.
 
 ## Acceptance Criteria
 
