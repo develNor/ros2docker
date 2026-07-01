@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import shutil
+import subprocess
 from pathlib import Path
 
+import pytest
+
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+GITIGNORE_PATH = PACKAGE_ROOT / ".gitignore"
 DEPENDABOT_PATH = PACKAGE_ROOT / ".github" / "dependabot.yml"
 IMAGE_SCAN_PATH = PACKAGE_ROOT / ".github" / "workflows" / "image-scan.yml"
 MERGE_GATE_PATH = PACKAGE_ROOT / ".github" / "workflows" / "pr-merge-gate.yml"
@@ -103,3 +108,26 @@ def test_codeowners_protects_ci_definition() -> None:
     assert "/.github/" in codeowners
     assert "/pyproject.toml" in codeowners
     assert "@develNor" in codeowners
+
+
+def test_local_instance_config_stays_gitignored_and_untracked() -> None:
+    # The `.agents/` local instance config holds instance identities and
+    # credentials; public docs describe the project in roles, not around that
+    # local setup (the generality lens in docs/quality-model.md). That framing is
+    # a soft check, but committing the local config is a hard, deterministic leak
+    # of identities/secrets, so guard it here. A test that forbade the bare
+    # account string would have to embed it — leaking the identity it guards — so
+    # this checks the tracked-file vector instead of doc prose.
+    gitignore = GITIGNORE_PATH.read_text(encoding="utf-8").splitlines()
+    assert ".agents/" in gitignore, ".agents/ must stay gitignored"
+
+    if shutil.which("git") is None:
+        pytest.skip("git not available")
+    tracked = subprocess.run(
+        ["git", "ls-files", "--", ".agents"],
+        cwd=PACKAGE_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    assert not tracked, f"local instance config must not be committed; tracked: {tracked!r}"
