@@ -270,13 +270,6 @@ def _resolve_config_file(config_file: str | os.PathLike[str]) -> Path:
     return path.resolve()
 
 
-def _validate_public_config_keys(config: Mapping[str, Any]) -> None:
-    unknown_keys = sorted(set(config) - public_config_keys())
-    if unknown_keys:
-        key = unknown_keys[0]
-        raise ConfigError(f"Unknown config key {key!r}. This key is not part of ros2docker core.")
-
-
 @lru_cache
 def _schema_validator() -> Draft202012Validator:
     schema = config_schema()
