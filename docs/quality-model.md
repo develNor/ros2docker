@@ -91,14 +91,18 @@ The repository has two audiences, and every file serves one:
 - **Agent layer** — the issue templates and the supporting docs agents read while
   executing those entrypoints. The owner never invokes these directly.
 
-This split makes proportionality decidable. An agent-layer artifact earns its
-place only when some owner-entrypoint path **reaches** it *and* reaching it
-**changes an outcome** (gates a merge, alters what ships, or changes what the
-agent produces). Reachable-but-inert artifacts — an audit that never finds
-anything, a doc no entrypoint needs, a step whose verdict no decision consumes —
-are empty weight: the diagnosis routes them for removal or for being made
-load-bearing. The `value / proportionality` lens asks this first: not "is this
-duplicated?" but "does any owner path need this at all?"
+This split makes proportionality decidable — **per artifact, not per layer.** For
+each agent-layer artifact ask the counterfactual: *if it were deleted, which
+owner-visible outcome would change?* It earns its place only when some
+owner-entrypoint path **reaches** it *and* deleting it would change a concrete
+outcome (a merge it gates, what ships, or what the agent produces). "The layer as
+a whole routes work and gates surfaces" does **not** justify any single artifact —
+that reasoning lets an inert step ride on its neighbours. Artifacts whose deletion
+changes nothing — an audit that never finds anything, a doc no entrypoint needs, a
+review whose verdict does not gate the merge it reviews — are empty weight: the
+diagnosis routes them for removal or for being made load-bearing. The
+`value / proportionality` lens asks this first: not "is this duplicated?" but
+"does any owner path need this at all?"
 
 ## Diagnosis first: route by need, not by reflex
 
@@ -117,8 +121,8 @@ read-only pass — [repository-diagnosis](../.github/ISSUE_TEMPLATE/repository-d
   [redesign](../.github/ISSUE_TEMPLATE/redesign.md)).
 
 Three lenses apply across altitudes: **value / proportionality** — a budget, not
-just a question: each artifact must earn its keep (tested by owner-reachability,
-per *Two layers* above) and be stated once, so a layer that grows without adding
+just a question: each artifact must earn its keep (tested per-artifact by the deletion
+counterfactual in *Two layers* above) and be stated once, so a layer that grows without adding
 capability is itself a routable finding — **generality**
 (reusable files avoid repo-specific names except where they must live — badges,
 CODEOWNERS, packaging, local config), and **drift** (do documented commands and
