@@ -156,6 +156,19 @@ concern to it, and it is licensed to cross the artifact lanes and be bold, backe
 by the tests. Cleanup is small and safe; redesign is bold and scoped; diagnosis
 decides which, or neither.
 
+## Evolving this machinery
+
+This machinery is **stable by default** — "adaptable" (cheap to change) is not
+"needs adapting" (a treadmill). Change a template or check only in reaction to a
+*concrete misbehavior you have observed* — the same evidence bar as a bug fix,
+never on a schedule or a hunch. The method: observe the misbehavior → encode the
+fix as a hard check (preferred) or a forcing question at the point of work →
+verify by re-running the workflow. Apply the *Two layers* reachability test to the
+rule itself first: name the real run where it would have changed the outcome; if
+you cannot, do not add it. The owner's Code Owner review is where this judgment
+lives — it is the meta-check and the top of the ladder, with no level above it to
+automate.
+
 ## Document ownership
 
 Each public-facing document owns a distinct concern; keep content in its owner and
