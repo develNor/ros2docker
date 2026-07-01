@@ -144,111 +144,35 @@ branch, push the update, and repeat until the PR merges or is clearly blocked.
 
 ## CI Policy
 
-The required merge gate for `main` is:
+The required merge gate for `main` is the single aggregate status check
+`ci-success`; a PR cannot merge into `main` until it is green.
 
-```text
-ci-success
-```
+- Draft (review) PRs run `pr-lightweight` for quick feedback: `just lint`,
+  `just typecheck`, `just test-unit`.
+- Ready PRs and merge-queue entries run `pr-merge-gate`, whose `ci-success` job
+  runs the full `just check` plus `just test-e2e-fast`.
 
-Draft PRs run `pr-lightweight` for quick feedback. The lightweight workflow runs:
+Avoid path or branch filters on required workflows: a filtered-out required check
+can stay pending and block merging.
 
-```bash
-just lint
-just typecheck
-just test-unit
-```
-
-Ready PRs and merge queue entries run `pr-merge-gate`. The `ci-success` job in
-that workflow requires:
-
-```bash
-just check
-just test-e2e-fast
-```
-
-The ready-PR non-Docker gate runs unit and contract tests on Python 3.10 through
-3.14 through `just test-nondocker-cov`, enforcing the configured coverage
-threshold, uploading `coverage.xml` as a workflow artifact, and publishing the
-Python 3.12 coverage report to Codecov with `CODECOV_TOKEN`. Docker E2E remains
-behavioral validation only.
-
-Coverage uses two gates with different roles:
-
-- The **hard gate** is `tool.coverage.report.fail_under` in `pyproject.toml`
-  (currently `90`), enforced by `just test-nondocker-cov` inside `ci-success`.
-  This is the only coverage number that can block a merge. It sits a few points
-  below actual coverage so it catches real regressions without forcing churn.
-- The **advisory Codecov statuses** (`codecov/patch` target `90%`,
-  `codecov/project` auto-with-threshold backstop) are signals on the PR, not
-  required checks. They encourage covering new code without "ghost hunting"
-  every single uncovered changed line. See `codecov.yml`.
-
-Raise `fail_under` only when actual coverage rises through real behavior tests;
-never weaken, skip, or delete tests to hit a number.
-
-A PR cannot merge into `main` unless `ci-success` passes. Prefer requiring only
-this stable aggregate check in branch protection so individual job names can
-change without rewriting repository policy.
-
-Expected GitHub repository settings that live outside git are documented in
+See [docs/ci.md](docs/ci.md) for the workflow contract behind `ci-success` — the
+Python 3.10–3.14 non-Docker matrix, the two-gate coverage model, and the
+dependency, build, and workflow lint jobs. Repository settings that live outside
+git are recorded in
 [docs/github-repository-settings.md](docs/github-repository-settings.md).
-
-Full Docker E2E runs in the scheduled `nightly-e2e` workflow and may also be
-triggered manually. Nightly full E2E is not a replacement for the required PR
-merge gate.
-
-Avoid path filters or branch filters for required workflows. If a required
-workflow is skipped by filtering, GitHub can leave the check pending and block
-merging.
-
-See [docs/ci.md](docs/ci.md) for the contributor-facing CI workflow summary.
 
 ## Release Workflow
 
-Before cutting a release, run the repository quality soft-check pass to catch
-organic drift that hard checks miss — naming and framing that no longer fit,
-stale or deprecated docs, and interfaces that eroded through least-invasive
-patches. This is the multi-PR quality workflow
-([.github/ISSUE_TEMPLATE/quality-workflow.md](.github/ISSUE_TEMPLATE/quality-workflow.md)),
-which runs a read-only diagnosis pass that triages findings and routes each to a
-focused PR (an audit, a cleanup, or a redesign). It is a recommended checklist
-step, not a CI gate. See [docs/release.md](docs/release.md) for details.
+Before cutting a non-trivial release, run the repository quality soft-check pass —
+the multi-PR
+[quality-workflow](.github/ISSUE_TEMPLATE/quality-workflow.md) — to clear organic
+drift that hard checks miss. It is a recommended checklist step, not a CI gate.
 
-Releases are built from version tags. After the release PR has merged, the
-owner creates and pushes a tag in the form `vX.Y.Z` from the release commit.
-The `release protection` ruleset protects `refs/tags/v*`, so only repository
-admins can create, update, or delete those tags, and the tagged commit must
-already have the required `ci-success` status check:
-
-Release PRs must include `docs/release-notes/vX.Y.Z.md`, copied from
-`docs/release-notes/TEMPLATE.md` and filled with a summary of user-facing
-changes since the previous release tag. Include compatibility, migration,
-Docker/dependency, packaging, and validation notes. If there are no breaking
-changes or migration steps, say that explicitly.
-
-```bash
-git switch main
-git fetch --prune
-git pull --ff-only
-git tag vX.Y.Z
-git push origin vX.Y.Z
-```
-
-The `release` workflow validates the tag with non-Docker checks, package
-artifact validation, tag-specific release notes, and both fast and slow Docker
-E2E before publishing. Successful tag releases publish the wheel and sdist to
-PyPI through Trusted Publishing, then create a GitHub Release with the release
-notes, wheel, sdist, and `SHA256SUMS`.
-
-Maintainers must configure pending Trusted Publishers on PyPI and TestPyPI for
-repository `develNor/ros2docker`, workflow `.github/workflows/release.yml`, and
-environments `pypi` and `testpypi`. No PyPI API token should be stored in GitHub
-secrets for the normal release path.
-
-Use the manual `release` workflow dispatch for TestPyPI rehearsals. Manual runs
-publish only to TestPyPI and do not create GitHub Releases.
-
-See [docs/release.md](docs/release.md) for the focused release workflow summary.
+Releases are cut by the owner from `vX.Y.Z` tags after the release PR merges, and
+publishing to PyPI runs through Trusted Publishing behind a human-approved
+deployment. The full runbook — tag protection, the required
+`docs/release-notes/vX.Y.Z.md`, validation checks, and Trusted Publishing /
+TestPyPI setup — lives in [docs/release.md](docs/release.md).
 
 ## Pull Request Description
 
