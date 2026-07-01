@@ -17,7 +17,7 @@ PRs at all; that is a successful outcome.
 - [ ] This issue explicitly requests autonomous PR creation and auto-merge.
 
 If autonomous mode is not checked, open draft review PRs by default and stop
-after each PR is ready for human review.
+after each PR is ready for review.
 
 ## Constraints
 

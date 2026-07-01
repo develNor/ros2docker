@@ -27,8 +27,8 @@ judgement*). See [ci.md](ci.md) for what runs.
 Some properties are not reliably algorithmic — "is this name still apt?", "is
 this doc still relevant and correct?", "did this interface erode?". For those the
 project uses **soft checks**: focused audit and review tasks, captured as reusable
-[issue templates](../.github/ISSUE_TEMPLATE/), that an agent (or human) runs
-periodically — especially before a release. They are checklists, not gates;
+[issue templates](../.github/ISSUE_TEMPLATE/), run periodically — especially
+before a release. They are checklists, not gates;
 deliberately *not* wired into CI (a "did an audit run recently?" gate would be
 brittle and low-value — see #98).
 
@@ -82,12 +82,12 @@ A read-only task follows only the parts that apply — quality rules and trackin
 
 The repository has two audiences, and every file serves one:
 
-- **Owner layer** — the handful of entrypoints a human invokes, collected in
+- **Owner layer** — the handful of entrypoints the owner invokes, collected in
   [owner-runbook.md](owner-runbook.md): the quality maintenance pass, cutting a
-  release, and the three human-only gates. If you own the repo, this is all you
-  touch.
+  release, and the three owner-only gates. For whoever owns the repo, this is all
+  they touch.
 - **Agent layer** — the issue templates and the supporting docs agents read while
-  executing those entrypoints. The owner never invokes these directly.
+  executing those entrypoints, not invoked directly at the owner layer.
 
 This split makes proportionality decidable — **per artifact, not per layer.** For
 each agent-layer artifact ask the counterfactual: *if it were deleted, which
@@ -141,7 +141,7 @@ goal**: that is exactly why `quality-workflow` mandates *one focused PR per goal
 each started from a fresh `origin/main`, dependent goals waiting for prerequisites
 to merge*.
 
-So a single human entrypoint is fine — but it should **orchestrate** focused,
+So a single owner entrypoint is fine — but it should **orchestrate** focused,
 fresh-context tasks (a separate issue + PR, ideally a separate agent run, per
 goal), not collapse them into one pass. The command is one; the execution is
 many. The concrete entrypoints are collected in the
@@ -160,12 +160,12 @@ decides which, or neither.
 
 This machinery is **stable by default** — "adaptable" (cheap to change) is not
 "needs adapting" (a treadmill). Change a template or check only in reaction to a
-*concrete misbehavior you have observed* — the same evidence bar as a bug fix,
+*concrete, observed misbehavior* — the same evidence bar as a bug fix,
 never on a schedule or a hunch. The method: observe the misbehavior → encode the
 fix as a hard check (preferred) or a forcing question at the point of work →
 verify by re-running the workflow. Apply the *Two layers* reachability test to the
 rule itself first: name the real run where it would have changed the outcome; if
-you cannot, do not add it. The owner's Code Owner review is where this judgment
+it cannot be named, do not add it. The code-owners review is where this judgment
 lives — it is the meta-check and the top of the ladder, with no level above it to
 automate.
 
@@ -179,17 +179,17 @@ enforces):
 - **CONTRIBUTING**: contributor workflow, PR expectations, local checks.
 - **DEVELOPMENT_PRINCIPLES**: quality rules and the definition of done.
 - **docs/**: focused supporting guides — [owner-runbook.md](owner-runbook.md)
-  (the owner's entrypoints), [agentic-workflow.md](agentic-workflow.md)
-  (the human + agent model and the three gates), [ci.md](ci.md),
+  (the owner's entrypoints and the three gates), [ci.md](ci.md),
   [configuration.md](configuration.md), [release.md](release.md),
-  [work-items.md](work-items.md), and this file.
+  [work-items.md](work-items.md), and this file. Repository policy that lives
+  outside git is mirrored in
+  [github-repository-settings.md](github-repository-settings.md).
 - **Issue templates** (`.github/ISSUE_TEMPLATE/`): reusable, executable task
   recipes — the *do*, where the docs are the *read*.
 
 ## See also
 
-- [owner-runbook.md](owner-runbook.md) — the handful of prompts the owner runs.
-- [agentic-workflow.md](agentic-workflow.md) — autonomy by default and the three
-  human-only gates (admin, CI/tests/deps, releases).
+- [owner-runbook.md](owner-runbook.md) — the handful of prompts the owner runs
+  and the three owner-only gates (admin, CI/tests/deps, releases).
 - [work-items.md](work-items.md) — where work lives and how issues drive it.
 - [release.md](release.md) — the owner release runbook.

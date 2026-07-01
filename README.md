@@ -209,10 +209,10 @@ orchestrated — is in [docs/quality-model.md](docs/quality-model.md), and the
 quality rules applied in audits and reviews are in
 [DEVELOPMENT_PRINCIPLES.md](DEVELOPMENT_PRINCIPLES.md).
 
-If you own this repository, [docs/owner-runbook.md](docs/owner-runbook.md)
-collects the handful of prompts you actually run (quality pass, release) and the
-three human-only gates — everything else is the agent layer you never invoke
-directly.
+For repository owners, [docs/owner-runbook.md](docs/owner-runbook.md) collects
+the handful of prompts to run (quality pass, release) and the three owner-only
+gates — everything else is the agent layer, not invoked directly at the owner
+layer.
 
 ## Python API
 

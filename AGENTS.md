@@ -15,7 +15,6 @@ Read first:
 - `CONTRIBUTING.md` for setup, checks, CI, PR workflow, merge policy, and releases.
 - `DEVELOPMENT_PRINCIPLES.md` for quality rules.
 - `docs/work-items.md` for issue-driven work tracking.
-- `docs/agentic-workflow.md` for the human + multi-agent model: identity, autonomy, and the human-only gates.
 - `docs/quality-model.md` for hard vs. soft checks, the task hierarchy, and the depth-via-decomposition principle behind the issue templates.
 - `.github/ISSUE_TEMPLATE/` for reusable task recipes when a request matches one.
 - `docs/github-repository-settings.md` before changing GitHub repository policy or workflows.
@@ -32,7 +31,7 @@ Shared workflow:
 - If the work is not possible or not sensible, add an issue comment explaining why and apply a fitting label such as `question`, `invalid`, or `help wanted`.
 - Update README, docs, examples, schemas, and tests when CLI, config, API, Docker, or public behavior changes.
 - Do not skip, weaken, or delete tests/CI to make a change pass.
-- Open the PR ready and enable auto-merge by default: `gh pr merge --auto --squash --delete-branch` (squash is the only allowed method). Use a draft PR with no auto-merge only when the user asks for review before merge. Never bypass protected-branch rules, required checks, or required Code Owner review; if auto-merge is blocked, record why in the PR.
+- Open the PR ready and enable auto-merge by default: `gh pr merge --auto --squash --delete-branch` (squash is the only allowed method). Use a draft PR with no auto-merge only when the user asks for review before merge. Never bypass protected-branch rules, required checks, or required code-owners review; if auto-merge is blocked, record why in the PR.
 - After opening or updating a PR, check the real remote PR/CI state with `gh pr view` / `gh pr checks` and report the actual status with the PR URL — not just that a branch was pushed.
 
 Worktrees:
@@ -55,27 +54,23 @@ Worktrees:
 GitHub identity:
 
 - GitHub writes (issues, PRs, comments, labels, commits, pushes, auto-merge, and
-  Actions) are made through a **dedicated bot account that is separate from the
-  human owner**, so agent work is natively attributable. Authenticate as the bot
-  before any write.
-- Do not add contribution-attribution trailers or footers to commits or PR
-  descriptions: no `Co-Authored-By:` lines and no "Generated with …" footers. The
-  bot account already identifies agent work.
-- The concrete bot account, its credential handling, and any permission choices
-  the local user makes — what may run under which identity, and what must be
-  asked first — are **not part of this shared contract**. Assume only the minimum
-  above and neither grant nor restrict further here; those choices belong to the
-  local user and live in the local instance config below.
+  Actions) go through whatever identity the local instance config designates.
+  Authenticate as that identity and confirm it before any write.
+- Which identity is used, its credentials, attribution conventions (such as
+  whether to add commit trailers), and any permission choices the local user
+  makes — what may run under which identity, and what must be asked first — are
+  **not part of this shared contract**. Those choices belong to the local user
+  and live in the local instance config below.
 
 Local instance configuration:
 
 - Project- and machine-specific agent details live in `.agents/agents.local.md`
   (the `.agents/` directory is gitignored). This keeps concrete account names,
-  credential handling, and the local user's permission grants out of these
-  reusable shared docs. **Read that file before acting.** Claude Code auto-loads
-  it through the import below; an agent whose harness does not import should read
-  it directly. `docs/agentic-workflow.md` documents the expected shape for anyone
-  reusing this setup.
+  credentials, attribution conventions, permission grants, and any agentic
+  operating preferences (autonomy defaults, the gate model) out of these reusable
+  shared docs. **Read that file before acting.** Claude Code auto-loads it through
+  the import below; an agent whose harness does not import should read it
+  directly.
 - `CLAUDE.md` is a symlink to this file so Claude Code — which auto-loads
   `CLAUDE.md`, not `AGENTS.md` — gets these instructions; Codex reads `AGENTS.md`
   directly. Keep the shared policy in `AGENTS.md` as the single source.
