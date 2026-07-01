@@ -122,8 +122,13 @@ Three lenses apply across altitudes: **value / proportionality** — a budget, n
 just a question: each artifact must earn its keep (tested per-artifact by the deletion
 counterfactual in *Two layers* above) and be stated once, so a layer that grows without adding
 capability is itself a routable finding — **generality**
-(reusable files avoid repo-specific names except where they must live — badges,
-CODEOWNERS, packaging, local config), and **drift** (do documented commands and
+(public, checked-in files describe the project in roles — owner/admin,
+code-owners, non-admin collaborator — not around any local setup: no instance
+identities or account names, roles written for one-or-many holders, and a neutral
+voice rather than second-person address to a specific operator. Instance
+identities, credentials, and operating preferences stay in the gitignored local
+config. Repo-specific names appear only where they must — badges, CODEOWNERS,
+packaging, and that local config), and **drift** (do documented commands and
 settings match reality?).
 
 The orchestrator then creates and completes exactly the issues triage names. A
