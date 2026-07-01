@@ -38,16 +38,16 @@ Issue templates must live flat in `.github/ISSUE_TEMPLATE/` (GitHub's chooser ha
 no subfolders), but they form a hierarchy of **orchestrators** and **leaf tasks**:
 
 ```
-release-readiness  (owner runbook, see release.md)
-└─ quality-workflow            orchestrator: diagnose first, then one focused PR per triaged goal
-   ├─ repository-diagnosis     keystone: read-only; triage findings, may find nothing
-   ├─ test-ci-audit            leaf: tests, CI wiring, coverage of documented behavior
-   ├─ documentation-audit      leaf: justify-or-delete docs; remove drift/duplication/bloat
-   ├─ implementation-cleanup   leaf: small, safe simplification of code
-   ├─ redesign                 leaf: bold, cross-cutting redesign of a diagnosed concern
-   └─ maintainer-review        leaf: strict review of a PR
-work-item        leaf: any other actionable change
-release-process  leaf: prepare, validate, and publish a version
+owner-runbook  (the owner's entrypoints — see owner-runbook.md)
+├─ quality-workflow            orchestrator: diagnose first, then one focused PR per triaged goal
+│  ├─ repository-diagnosis     keystone: read-only; triage findings, may find nothing
+│  ├─ test-ci-audit            leaf: tests, CI wiring, coverage of documented behavior
+│  ├─ documentation-audit      leaf: justify-or-delete docs; remove drift/duplication/bloat
+│  ├─ implementation-cleanup   leaf: small, safe simplification of code
+│  ├─ redesign                 leaf: bold, cross-cutting redesign of a diagnosed concern
+│  └─ maintainer-review        leaf: strict review of a PR
+└─ release-process             leaf: prepare, validate, and publish a version (see release.md)
+work-item                      leaf: any other actionable change (not an owner entrypoint)
 ```
 
 | Template | Role |
@@ -80,6 +80,26 @@ A read-only task follows only the parts that apply — quality rules and trackin
 — since it opens no PR and changes no tests; see
 [repository-diagnosis](../.github/ISSUE_TEMPLATE/repository-diagnosis.md).
 
+## Two layers: owner and agent
+
+The repository has two audiences, and every file serves one:
+
+- **Owner layer** — the handful of entrypoints a human invokes, collected in
+  [owner-runbook.md](owner-runbook.md): the quality maintenance pass, cutting a
+  release, and the three human-only gates. If you own the repo, this is all you
+  touch.
+- **Agent layer** — the issue templates and the supporting docs agents read while
+  executing those entrypoints. The owner never invokes these directly.
+
+This split makes proportionality decidable. An agent-layer artifact earns its
+place only when some owner-entrypoint path **reaches** it *and* reaching it
+**changes an outcome** (gates a merge, alters what ships, or changes what the
+agent produces). Reachable-but-inert artifacts — an audit that never finds
+anything, a doc no entrypoint needs, a step whose verdict no decision consumes —
+are empty weight: the diagnosis routes them for removal or for being made
+load-bearing. The `value / proportionality` lens asks this first: not "is this
+duplicated?" but "does any owner path need this at all?"
+
 ## Diagnosis first: route by need, not by reflex
 
 The soft-check pass does not fire every leaf on every run. It starts with one
@@ -97,9 +117,9 @@ read-only pass — [repository-diagnosis](../.github/ISSUE_TEMPLATE/repository-d
   [redesign](../.github/ISSUE_TEMPLATE/redesign.md)).
 
 Three lenses apply across altitudes: **value / proportionality** — a budget, not
-just a question: each artifact must earn its keep and be stated once, so a
-governance layer that grows without adding capability is itself a routable
-finding — **generality**
+just a question: each artifact must earn its keep (tested by owner-reachability,
+per *Two layers* above) and be stated once, so a layer that grows without adding
+capability is itself a routable finding — **generality**
 (reusable files avoid repo-specific names except where they must live — badges,
 CODEOWNERS, packaging, local config), and **drift** (do documented commands and
 settings match reality?).
@@ -122,8 +142,8 @@ to merge*.
 So a single human entrypoint is fine — but it should **orchestrate** focused,
 fresh-context tasks (a separate issue + PR, ideally a separate agent run, per
 goal), not collapse them into one pass. The command is one; the execution is
-many. The concrete entrypoint is the owner release runbook in
-[release.md](release.md).
+many. The concrete entrypoints are collected in the
+[owner runbook](owner-runbook.md).
 
 Decomposition also has a *direction*. The audit leaves decompose **horizontally**
 by artifact — tests, then docs, then code — and each stays in its lane. Some
@@ -143,16 +163,17 @@ enforces):
 - **README**: user-facing purpose, installation, quick start, common usage.
 - **CONTRIBUTING**: contributor workflow, PR expectations, local checks.
 - **DEVELOPMENT_PRINCIPLES**: quality rules and the definition of done.
-- **docs/**: focused supporting guides — [agentic-workflow.md](agentic-workflow.md)
+- **docs/**: focused supporting guides — [owner-runbook.md](owner-runbook.md)
+  (the owner's entrypoints), [agentic-workflow.md](agentic-workflow.md)
   (the human + agent model and the three gates), [ci.md](ci.md),
   [configuration.md](configuration.md), [release.md](release.md),
-  [work-items.md](work-items.md), and this
-  file.
+  [work-items.md](work-items.md), and this file.
 - **Issue templates** (`.github/ISSUE_TEMPLATE/`): reusable, executable task
   recipes — the *do*, where the docs are the *read*.
 
 ## See also
 
+- [owner-runbook.md](owner-runbook.md) — the handful of prompts the owner runs.
 - [agentic-workflow.md](agentic-workflow.md) — autonomy by default and the three
   human-only gates (admin, CI/tests/deps, releases).
 - [work-items.md](work-items.md) — where work lives and how issues drive it.

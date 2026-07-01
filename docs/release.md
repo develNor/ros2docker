@@ -13,13 +13,8 @@ publish. Follow these steps in order. Replace `vX.Y.Z` with the target version.
 
 ### 1. Quality pass — clear drift first (agent)
 
-Skip for a trivial patch release. Otherwise prompt the agent:
-
-> Run the repository quality workflow autonomously for a release: first run the
-> repository-diagnosis pass, then create and complete the focused PRs it triages
-> (audits, cleanup, or redesign) in priority order — each started from a fresh
-> `origin/main`, opened ready with auto-merge. If the diagnosis finds nothing
-> actionable, report that and stop. Report each PR URL and CI status.
+Skip for a trivial patch release. Otherwise run the **quality maintenance pass**
+from the [owner runbook](owner-runbook.md) to clear drift first.
 
 Depth comes from running these as separate, focused PRs, not one pass (see
 [quality-model.md](quality-model.md)). **Your part:** approve the Code Owner
