@@ -17,14 +17,9 @@ Describe the outcome this issue should achieve.
 
 ## Constraints
 
-- Follow [CONTRIBUTING.md](../../CONTRIBUTING.md) for branch setup, checks, CI,
-  PR workflow, merge policy, and releases.
-- Follow [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md) for
-  quality rules and definition of done.
-- Follow [docs/work-items.md](../../docs/work-items.md) for issue ownership,
-  comments, labels, and PR linkage.
+- Follow the shared [task contract](../../docs/quality-model.md#task-contract):
+  workflow, quality rules, work tracking, and test integrity.
 - Keep the change small and coherent.
-- Do not skip, weaken, or delete tests/CI to make this pass.
 
 ## Acceptance Criteria
 

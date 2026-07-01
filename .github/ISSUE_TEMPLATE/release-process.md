@@ -23,9 +23,8 @@ runbook covers the surrounding human-gated steps (tag and publish approval).
 
 ## Constraints
 
-- Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
-  [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [docs/work-items.md](../../docs/work-items.md).
+- Follow the shared [task contract](../../docs/quality-model.md#task-contract):
+  workflow, quality rules, work tracking, and test integrity.
 - Start from a fresh `origin/main` topic branch.
 - Do not tag or publish until the release PR has merged.
 - Open a draft review PR by default.

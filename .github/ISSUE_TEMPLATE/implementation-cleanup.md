@@ -18,12 +18,10 @@ Improve implementation quality while preserving the current public contract.
 
 ## Constraints
 
-- Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
-  [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [docs/work-items.md](../../docs/work-items.md).
+- Follow the shared [task contract](../../docs/quality-model.md#task-contract):
+  workflow, quality rules, work tracking, and test integrity.
 - Do not change documented CLI/API behavior unless tests and docs prove the old
   behavior was stale or broken.
-- Do not remove tests or weaken assertions.
 - Do not add compatibility layers unless strictly required.
 - Prefer clean removal of obsolete or dead code.
 - Prefer the simplest implementation that satisfies the tests.

@@ -29,14 +29,12 @@ against it; do not restate it here.
 
 ## Constraints
 
-- Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
-  [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [docs/work-items.md](../../docs/work-items.md).
+- Follow the shared [task contract](../../docs/quality-model.md#task-contract):
+  workflow, quality rules, work tracking, and test integrity.
 - Prefer one canonical location plus links instead of repeated prose.
 - You may remove or merge whole documents or sections, not only align them, when
   they do not earn their place.
 - Do not change source code unless needed to correct a documented command.
-- Do not skip, weaken, or delete tests/CI to make this pass.
 
 ## Tasks
 

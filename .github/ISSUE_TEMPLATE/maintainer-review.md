@@ -16,9 +16,8 @@ Review the referenced PR as a strict maintainer.
 
 ## Constraints
 
-- Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
-  [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [docs/work-items.md](../../docs/work-items.md).
+- Follow the shared [task contract](../../docs/quality-model.md#task-contract):
+  workflow, quality rules, work tracking, and test integrity.
 - Do not modify files unless explicitly asked.
 - Focus on bugs, regressions, missing tests, and process risks before style.
 

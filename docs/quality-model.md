@@ -62,6 +62,24 @@ release-process  leaf: prepare, validate, and publish a version
 | [work-item](../.github/ISSUE_TEMPLATE/work-item.md) | Track a single actionable change. |
 | [release-process](../.github/ISSUE_TEMPLATE/release-process.md) | Prepare, validate, describe, and publish a release. |
 
+## Task contract
+
+Every template shares one contract, whatever the task. Templates link it instead
+of restating it, and add only the constraints specific to their own goal:
+
+- **Workflow** — [CONTRIBUTING.md](../CONTRIBUTING.md): branch setup, local
+  checks, CI, PR modes, merge policy, and releases.
+- **Quality** — [DEVELOPMENT_PRINCIPLES.md](../DEVELOPMENT_PRINCIPLES.md):
+  quality rules and the definition of done.
+- **Tracking** — [work-items.md](work-items.md): issue ownership, comments,
+  labels, and PR linkage.
+- **Test integrity** — never skip, weaken, or delete tests or CI checks, and do
+  not hide failures behind broad skips or xfails, to make a change pass.
+
+A read-only task follows only the parts that apply — quality rules and tracking
+— since it opens no PR and changes no tests; see
+[repository-diagnosis](../.github/ISSUE_TEMPLATE/repository-diagnosis.md).
+
 ## Diagnosis first: route by need, not by reflex
 
 The soft-check pass does not fire every leaf on every run. It starts with one

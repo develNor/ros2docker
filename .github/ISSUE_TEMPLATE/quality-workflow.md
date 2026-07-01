@@ -21,16 +21,14 @@ after each PR is ready for human review.
 
 ## Constraints
 
-- Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
-  [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [docs/work-items.md](../../docs/work-items.md).
+- Follow the shared [task contract](../../docs/quality-model.md#task-contract):
+  workflow, quality rules, work tracking, and test integrity.
 - Create one focused PR per goal.
 - Do not combine unrelated goals into one PR.
 - Start every goal from latest `origin/main`.
 - Do not start a dependent goal until prerequisite PRs are merged.
 - If CI fails, fix the current PR instead of starting a new goal.
 - If a PR cannot be merged automatically, stop and report the blocker.
-- Do not weaken tests, remove checks, or hide failures with broad skips/xfails.
 - Keep each PR focused and reviewable.
 
 ## Execution Plan
