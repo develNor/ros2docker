@@ -22,8 +22,9 @@ exactly the issues this triage names — which may be none.
 ## Constraints
 
 - **Read-only**: do not change code, docs, tests, or config in this task.
-- Follow [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md) and
-  [docs/work-items.md](../../docs/work-items.md).
+- Follow the shared [task contract](../../docs/quality-model.md#task-contract);
+  only its quality-rules and tracking parts apply, since this task opens no PR
+  and changes no tests.
 - Classify by what a finding *needs*, not by what is least invasive. Do not
   pre-bias toward small changes.
 - "No action needed" is a valid, first-class outcome — report it as success.

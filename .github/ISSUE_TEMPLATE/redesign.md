@@ -23,16 +23,14 @@ redesign is allowed to rename, restructure, delete, and reframe.
 
 ## Constraints
 
-- Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
-  [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [docs/work-items.md](../../docs/work-items.md).
+- Follow the shared [task contract](../../docs/quality-model.md#task-contract):
+  workflow, quality rules, work tracking, and test integrity.
 - Be bold **within the diagnosed scope**; do not expand beyond it, even if the
   diff is large.
 - Lean on the test suite as the safety net: keep public behavior covered. If the
   redesign changes a public contract, update docs and tests in the same PR and
   call it out.
-- Do not weaken or delete tests to make the redesign pass. Where behavior changes
-  on purpose, rewrite the tests to assert the new shape.
+- Where behavior changes on purpose, rewrite the tests to assert the new shape.
 - Prefer clean removal and renaming over compatibility shims (see the
   compatibility policy in
   [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md)).

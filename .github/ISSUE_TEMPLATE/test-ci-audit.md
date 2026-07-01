@@ -21,11 +21,9 @@ Audit and improve test coverage and test execution wiring.
 
 ## Constraints
 
-- Follow [CONTRIBUTING.md](../../CONTRIBUTING.md),
-  [DEVELOPMENT_PRINCIPLES.md](../../DEVELOPMENT_PRINCIPLES.md), and
-  [docs/work-items.md](../../docs/work-items.md).
+- Follow the shared [task contract](../../docs/quality-model.md#task-contract):
+  workflow, quality rules, work tracking, and test integrity.
 - Do not refactor implementation except where needed to make tests possible.
-- Do not skip, weaken, or delete tests/CI to make this pass.
 
 ## Tasks
 
