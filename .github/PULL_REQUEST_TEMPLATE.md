@@ -18,6 +18,12 @@
 - [ ] Changes public CLI/config/API/Docker behavior
 - [ ] Does not change public behavior
 
+## Invariants
+
+- [ ] A general invariant this change introduces or relies on is encoded (hard
+      check preferred; see DEVELOPMENT_PRINCIPLES.md "Definition of Done")
+- [ ] No general invariant to encode
+
 ## Checks
 
 - [ ] `just lint`

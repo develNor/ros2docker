@@ -11,6 +11,9 @@ A change is complete only if:
 5. `tests/contract/test_public_config_surface.py` passes.
 6. `just check` passes.
 7. Obsolete behavior is removed unless compatibility is explicitly requested.
+8. Any general invariant the change establishes or relies on is encoded — a hard
+   check if expressible, otherwise a soft-check note (deterministic checks beat
+   judgment).
 
 ## Compatibility Policy
 
