@@ -70,7 +70,7 @@ ros2docker --version
 python -m ros2docker --version
 ```
 
-`ros2docker init` scaffolds a starter workspace (`ros2docker.json`, `ws/src/`,
+`ros2docker init` scaffolds a starter workspace (`ros2docker.json`, `ws/ros2src/`,
 `catmux.yaml`, and optionally `.devcontainer/devcontainer.json`). It will not
 overwrite existing files unless `--overwrite` is passed. See
 [Profiles](#profiles) for `--profile`/`--ros-distro`.
