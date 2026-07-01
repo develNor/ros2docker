@@ -66,15 +66,18 @@ Disposition:
   real error class) and *stated once* (no rule restated across files). The target
   is *earns its keep*, not *small* — a model repo may carry substantial machinery
   — so a governance/process layer that grows without adding capability is itself
-  an actionable finding to route, not merely note. Test earning-its-keep by
-  **owner-reachability** (the two-layer model in
-  [quality-model.md](../../docs/quality-model.md)): an agent-layer artifact earns
-  its place only if some owner-entrypoint path
-  ([owner-runbook.md](../../docs/owner-runbook.md)) reaches it *and* reaching it
-  changes an outcome (gates a merge, alters what ships, or changes what the agent
-  produces). Reachable-but-inert artifacts — an audit that never finds anything, a
-  doc no entrypoint needs, a step whose verdict no decision consumes — are empty
-  weight: route them for removal or make them load-bearing. Ask not only "is this
+  an actionable finding to route, not merely note. Test earning-its-keep
+  **per artifact** with the deletion counterfactual (the two-layer model in
+  [quality-model.md](../../docs/quality-model.md)): for each agent-layer artifact,
+  if it were deleted, which owner-visible outcome would change? It earns its place
+  only if some owner-entrypoint path
+  ([owner-runbook.md](../../docs/owner-runbook.md)) reaches it *and* deleting it
+  would change a concrete outcome (a merge it gates, what ships, or what the agent
+  produces). A layer-level answer ("the whole agent layer routes work and gates
+  surfaces") does **not** justify any single artifact. Artifacts whose deletion
+  changes nothing — an audit that never finds anything, a doc no entrypoint needs,
+  a review whose verdict does not gate the merge it reviews — are empty weight:
+  route them for removal or make them load-bearing. Ask not only "is this
   duplicated?" but "does any owner path need this file or concept at all?"
 - **Generality**: do files meant to be reusable avoid repo-specific names and
   details? Allow specifics only where they must live (README badges, CODEOWNERS,
@@ -91,9 +94,9 @@ Disposition:
 - [ ] Size the layers (product vs governance/process) and probe the product on
       its own terms — architecture and proportionality, not just surface markers
       — before assigning any disposition.
-- [ ] Trace each agent-layer artifact (templates, supporting docs) to an owner
-      entrypoint; flag any that are unreachable or reached-but-inert as empty
-      weight.
+- [ ] For each leaf template individually, state the owner-visible outcome that
+      would change if it were deleted; flag any with "none" (reached but inert) as
+      empty weight — a layer-level "it all routes work" answer does not satisfy this.
 - [ ] Order findings by priority and note dependencies between them.
 - [ ] Propose one issue per actionable finding, naming the leaf template to use.
 - [ ] If nothing is actionable, say so explicitly.
@@ -106,8 +109,9 @@ Disposition:
       not just the absence of surface markers.
 - [ ] The report states the product-vs-governance size ratio and whether the
       governance layer earns its current size.
-- [ ] Each agent-layer artifact is either reachable-and-outcome-changing from an
-      owner entrypoint, or flagged as empty weight.
+- [ ] The report lists every leaf template with the owner-visible outcome that
+      would change if it were deleted; any with "none" is flagged as empty weight
+      (not blessed by the layer's overall value).
 - [ ] Each actionable finding maps to a proposed issue and a leaf template.
 - [ ] No files were changed by this task.
 
@@ -120,5 +124,7 @@ Triage table:
 
 - No action needed (each with the probe that would have caught a problem):
 - Layer sizes and proportionality verdict (product vs governance/process):
+- Leaf reachability (each leaf template → the owner-visible outcome that would
+  change if deleted; "none" = empty weight to route):
 - Proposed issues, in priority order:
 - Dependencies between proposed issues:
