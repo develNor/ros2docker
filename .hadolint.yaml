@@ -30,3 +30,14 @@ ignored:
   # Embedded shell word-splitting in a RUN is intentional here; quoting would
   # change the command's behavior.
   - SC2086
+  # "Potentially sensitive data should not be used in ARG or ENV". It fires on
+  # `ENV CONTAINER_USERNAME=containeruser`, matching on the name containing
+  # "USER". That is a container account name, not a credential, and it has to be
+  # an ENV because later layers and the entrypoint read it.
+  #
+  # Note how this arrived: the Dockerfile did not change. `hadolint-docker` runs
+  # `ghcr.io/hadolint/hadolint:latest`, so the `rev:` pinned in
+  # .pre-commit-config.yaml pins the hook definition but NOT the linter, and a
+  # new upstream rule turned the build-lint job red on every open PR without a
+  # commit. Worth pinning the image, but that is a separate change.
+  - DL3064
