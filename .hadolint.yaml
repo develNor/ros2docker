@@ -39,5 +39,5 @@ ignored:
   # `ghcr.io/hadolint/hadolint:latest`, so the `rev:` pinned in
   # .pre-commit-config.yaml pins the hook definition but NOT the linter, and a
   # new upstream rule turned the build-lint job red on every open PR without a
-  # commit. Worth pinning the image, but that is a separate change.
+  # commit. Pinning the image so this cannot recur is tracked in #165.
   - DL3064
