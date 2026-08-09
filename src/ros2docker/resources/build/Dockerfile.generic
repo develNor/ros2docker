@@ -74,6 +74,25 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
 ##############################################################################
 # 2c) Optional external binaries (opt-in add-ons)
 ##############################################################################
+# Everything below is fetched from a server this project does not control, so
+# every build here depends on a third party being healthy at that second. On
+# 2026-08-08 download.eclipse.org answered 502 for a few minutes; a single
+# `curl` attempt turned that into a failed layer, a failed image, and two red
+# e2e lanes on a downstream documentation PR that had touched nothing.
+#
+# `--retry` alone covers that case: curl counts 408, 429, 500, 502, 503 and 504
+# as transient and backs off exponentially between attempts.
+# `--retry-all-errors` extends it to connection-level failures, which is the
+# other way a download server fails. `--retry-max-time` bounds the total wait so
+# a genuine outage still fails the build in about two minutes instead of hanging
+# on it, and the two timeouts stop a stalled connection from occupying the
+# build for curl's very generous defaults.
+#
+# This changes only how often the artifact is asked for, never which artifact is
+# accepted: every download below is still verified against its pinned sha256,
+# and a retry that returns different bytes fails exactly as before.
+ARG CURL_RETRY="--retry 5 --retry-all-errors --retry-max-time 120 --connect-timeout 20 --max-time 600"
+
 # Zenoh router and zenoh-plugin-ros2dds (INSTALL_ZENOH=1).
 ARG INSTALL_ZENOH=0
 ARG ZENOH_VERSION=1.9.0
@@ -86,12 +105,12 @@ ENV ZENOH_PLATFORM=x86_64-unknown-linux-gnu
 # - see: https://download.eclipse.org/zenoh/zenoh-plugin-ros2dds/
 RUN if [ "${INSTALL_ZENOH}" = "1" ]; then \
         mkdir -p /opt/zenoh/lib \
-        && curl -fsSL -o /tmp/zenoh.zip \
+        && curl -fsSL ${CURL_RETRY} -o /tmp/zenoh.zip \
              "https://download.eclipse.org/zenoh/zenoh/${ZENOH_VERSION}/zenoh-${ZENOH_VERSION}-${ZENOH_PLATFORM}-standalone.zip" \
         && echo "${ZENOH_SHA256}  /tmp/zenoh.zip" | sha256sum -c - \
         && unzip -q /tmp/zenoh.zip -d /opt/zenoh \
         && rm /tmp/zenoh.zip \
-        && curl -fsSL -o /tmp/zenoh-plugin-ros2dds.zip \
+        && curl -fsSL ${CURL_RETRY} -o /tmp/zenoh-plugin-ros2dds.zip \
              "https://download.eclipse.org/zenoh/zenoh-plugin-ros2dds/${ZENOH_ROS2DDS_VERSION}/zenoh-plugin-ros2dds-${ZENOH_ROS2DDS_VERSION}-${ZENOH_PLATFORM}-standalone.zip" \
         && echo "${ZENOH_ROS2DDS_SHA256}  /tmp/zenoh-plugin-ros2dds.zip" | sha256sum -c - \
         && unzip -q /tmp/zenoh-plugin-ros2dds.zip -d /opt/zenoh \
@@ -104,7 +123,7 @@ ARG INSTALL_MCAP=0
 ARG MCAP_CLI_VERSION=0.2.0
 ARG MCAP_CLI_SHA256=53274b6ca922e2078daa02ae32aed75da046f78d6c3da9dc19065254be24b483
 RUN if [ "${INSTALL_MCAP}" = "1" ]; then \
-        curl -fsSL -o /usr/local/bin/mcap \
+        curl -fsSL ${CURL_RETRY} -o /usr/local/bin/mcap \
           "https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv${MCAP_CLI_VERSION}/mcap-linux-amd64" \
         && echo "${MCAP_CLI_SHA256}  /usr/local/bin/mcap" | sha256sum -c - \
         && chmod +x /usr/local/bin/mcap; \
