@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from ros2docker import config as config_module
 from ros2docker.config import ConfigError, load_config, strip_json_comments
 
 
@@ -52,7 +53,13 @@ def test_override_replaces_top_level_config_values(tmp_path: Path) -> None:
         ("up", False),
     ],
 )
-def test_interactivity_defaults_follow_run_type(tmp_path: Path, run_type: str, expected: bool) -> None:
+def test_interactivity_defaults_follow_run_type(
+    tmp_path: Path, run_type: str, expected: bool, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # With a terminal present. The answer is injected rather than inherited
+    # from whatever runs the suite: pytest has no terminal, so reading the real
+    # one would make this assert the opposite of what it says.
+    monkeypatch.setattr(config_module, "stdin_is_a_terminal", lambda: True)
     config = {"run_type": run_type}
     if run_type == "command":
         config["command"] = "true"
@@ -64,6 +71,40 @@ def test_interactivity_defaults_follow_run_type(tmp_path: Path, run_type: str, e
 
     assert loaded["tty"] is expected
     assert loaded["stdin_open"] is expected
+
+
+@pytest.mark.parametrize("run_type", ["bash", "catmux"])
+def test_interactivity_defaults_off_without_a_terminal(
+    tmp_path: Path, run_type: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Asking for a TTY that does not exist is a refusal, not a degraded mode.
+
+    `docker run -i -t` fails outright with "cannot attach stdin to a
+    TTY-enabled container because stdin is not a terminal", which ruled out
+    every non-interactive caller — CI, cron, a systemd unit, an SSH forced
+    command — and cost a two-host bring-up on 2026-08-09.
+    """
+    monkeypatch.setattr(config_module, "stdin_is_a_terminal", lambda: False)
+    config: dict[str, object] = {"run_type": run_type}
+    if run_type == "catmux":
+        config["catmux_file"] = "/ws/catmux.yaml"
+    config_path = write_config(tmp_path / "ros2docker.json", json.dumps(config))
+
+    loaded = load_config(config_path)
+
+    assert loaded["tty"] is False
+    assert loaded["stdin_open"] is False
+
+
+def test_an_explicit_tty_still_wins_without_a_terminal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # The old behaviour stays reachable for anyone who wants the failure.
+    monkeypatch.setattr(config_module, "stdin_is_a_terminal", lambda: False)
+    config_path = write_config(
+        tmp_path / "ros2docker.json",
+        '{"run_type": "catmux", "catmux_file": "/ws/c.yaml", "tty": true}',
+    )
+
+    assert load_config(config_path)["tty"] is True
 
 
 def test_explicit_interactivity_overrides_run_type_defaults(tmp_path: Path) -> None:

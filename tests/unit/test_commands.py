@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from ros2docker import config as config_module
 from ros2docker.commands import make_build_command, make_exec_shell_command, make_run_command, make_stop_command
 from ros2docker.config import ConfigError
 
@@ -64,7 +65,10 @@ def test_cli_mount_and_extra_args_are_rendered(tmp_path: Path) -> None:
     assert "A=B" in command
 
 
-def test_default_config_can_open_mounted_bash_shell(tmp_path: Path) -> None:
+def test_default_config_can_open_mounted_bash_shell(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # With a terminal. Injected rather than inherited: pytest has none, so
+    # reading the real one would make this assert the opposite of its name.
+    monkeypatch.setattr(config_module, "stdin_is_a_terminal", lambda: True)
     mounted_dir = tmp_path / "mounted"
     mounted_dir.mkdir()
 
@@ -78,7 +82,8 @@ def test_default_config_can_open_mounted_bash_shell(tmp_path: Path) -> None:
     assert command[-2:] == ["ros2docker", "bash"]
 
 
-def test_catmux_run_type_defaults_to_interactive_docker_run(tmp_path: Path) -> None:
+def test_catmux_run_type_defaults_to_interactive_docker_run(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(config_module, "stdin_is_a_terminal", lambda: True)
     config_path = tmp_path / "ros2docker.json"
     config_path.write_text('{"run_type": "catmux", "catmux_file": "/ws/catmux.yaml"}', encoding="utf-8")
 
@@ -86,7 +91,50 @@ def test_catmux_run_type_defaults_to_interactive_docker_run(tmp_path: Path) -> N
 
     assert "-i" in command
     assert "-t" in command
+    assert "-d" not in command
     assert command[-4:] == ["catmux_create_session", "/ws/catmux.yaml", "--session_name", "ros2docker"]
+
+
+def test_catmux_runs_detached_when_there_is_no_terminal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Both halves, or neither works.
+
+    Without `-d` the container dies the moment catmux returns, and without
+    catmux's own `--detach` catmux tries to attach to a terminal that is not
+    there. Together they make a catmux session startable by CI, cron, a systemd
+    unit, or an SSH forced command — none of which could start one before.
+    """
+    monkeypatch.setattr(config_module, "stdin_is_a_terminal", lambda: False)
+    config_path = tmp_path / "ros2docker.json"
+    config_path.write_text('{"run_type": "catmux", "catmux_file": "/ws/catmux.yaml"}', encoding="utf-8")
+
+    command = make_run_command(config_path)
+
+    assert "-t" not in command
+    assert "-i" not in command
+    assert "-d" in command
+    assert command[-5:] == [
+        "catmux_create_session",
+        "/ws/catmux.yaml",
+        "--session_name",
+        "ros2docker",
+        "--detach",
+    ]
+
+
+def test_an_explicit_tty_keeps_the_attached_command_without_a_terminal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Somebody who writes `"tty": true` gets the old command, and the old
+    # failure. That is their call to make.
+    monkeypatch.setattr(config_module, "stdin_is_a_terminal", lambda: False)
+    config_path = tmp_path / "ros2docker.json"
+    config_path.write_text('{"run_type": "catmux", "catmux_file": "/ws/c.yaml", "tty": true}', encoding="utf-8")
+
+    command = make_run_command(config_path)
+
+    assert "-t" in command
+    assert "-d" not in command
+    assert "--detach" not in command
 
 
 def test_up_run_type_defaults_to_detached_without_interactive_flags(tmp_path: Path) -> None:
