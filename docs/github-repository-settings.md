@@ -60,11 +60,29 @@ gates.
   Owners** on the ruleset, a PR touching those paths needs a review from
   code-owners; its author cannot supply that review unless they are a code-owner.
   PRs that touch nothing owned auto-merge with zero approvals.
-- **Releases are owner-only.** The `v*` tag ruleset restricts tag creation to the
-  Repository admin role and requires `ci-success` on the tagged commit, and the
-  `pypi` deployment environment lists the owner as a **required reviewer**, so
-  the irreversible Trusted Publishing step waits for an explicit owner approval
-  even if a tag is created.
+- **Stable releases are owner-only.** The `v*` tag ruleset restricts tag creation
+  to the Repository admin role and requires `ci-success` on the tagged commit,
+  and the `pypi` deployment environment lists the owner as a **required
+  reviewer**, so the irreversible Trusted Publishing step waits for an explicit
+  owner approval even if a tag is created.
+- **The dev channel is not.** `dev-release.yml` publishes `X.Y.devN` from every
+  commit that lands on `main` with green CI, so a merged fix is installable
+  without anyone deciding to cut a release. That is the point: `ros2docker` is
+  pinned by `rosotacom` and `fleet_mgmt`, both installed on machines an agent
+  brings up, and a fix that cannot be published cannot reach them.
+
+  It publishes through a Trusted Publisher registered with a **blank
+  environment**, so there is no approval gate and no token. PyPI matches the
+  OIDC claims of the workflow *file*, so `release.yml`'s registration does not
+  cover it — this needs its own:
+
+  > PyPI → the project → **Manage** → **Publishing** → add a GitHub publisher
+  > with owner `develNor`, repository `ros2docker`, workflow
+  > `dev-release.yml`, environment **left empty**.
+
+  Until that exists the build succeeds and the upload fails with
+  `invalid-publisher`. Nothing else breaks: `pip` does not resolve pre-releases
+  unless asked, so the stable line is unaffected either way.
 - **Fork pull requests on a public repository** run with a read-only
   `GITHUB_TOKEN` and no secrets; the Actions *"require approval for outside/
   first-time contributors"* setting governs whether their workflows run.
