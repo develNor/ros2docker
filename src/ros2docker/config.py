@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import sys
 from collections.abc import Mapping, Sequence
 from functools import lru_cache
 from importlib import resources
@@ -257,10 +258,37 @@ def load_config(
     return config
 
 
+def stdin_is_a_terminal() -> bool:
+    """Is there a terminal to attach to?
+
+    Its own function so tests can decide the answer instead of inheriting it
+    from whatever runs them — a suite that passes under a terminal and fails
+    under CI would be worse than the bug.
+    """
+    try:
+        return sys.stdin.isatty()
+    except (AttributeError, ValueError):  # detached or closed stdin
+        return False
+
+
 def _apply_interactivity_defaults(config: dict[str, Any]) -> None:
+    """Default `tty`/`stdin_open` from the run type *and* the caller.
+
+    `bash` and `catmux` attach to something, so they want a terminal. Asking
+    for one when there is none is not a degraded mode, it is a hard refusal:
+
+        cannot attach stdin to a TTY-enabled container because stdin is not a
+        terminal
+
+    which ruled out every non-interactive caller — CI, cron, a systemd unit, an
+    SSH forced command. So the default is "attached only when there is
+    something to attach to". An explicit `tty` in the config still wins, which
+    keeps the old behaviour reachable for anyone who wants the failure.
+    """
     interactive = config.get("run_type") in {"bash", "catmux"}
-    config.setdefault("tty", interactive)
-    config.setdefault("stdin_open", interactive)
+    attached = interactive and stdin_is_a_terminal()
+    config.setdefault("tty", attached)
+    config.setdefault("stdin_open", attached)
 
 
 def _resolve_config_file(config_file: str | os.PathLike[str]) -> Path:

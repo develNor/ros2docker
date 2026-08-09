@@ -139,6 +139,16 @@ def _workspace_mount_args(
     return []
 
 
+def _catmux_runs_headless(config: Mapping[str, object]) -> bool:
+    """A catmux session with no terminal to attach to.
+
+    Both halves follow from it: the container has to be detached, because
+    catmux returns as soon as the session exists and the container would die
+    with it, and catmux has to be told not to attach.
+    """
+    return str(config.get("run_type") or "bash") == "catmux" and not config.get("tty")
+
+
 def _docker_run_mode_args(config: Mapping[str, object]) -> list[str]:
     args: list[str] = []
     if config.get("stdin_open"):
@@ -147,7 +157,7 @@ def _docker_run_mode_args(config: Mapping[str, object]) -> list[str]:
         args.append("-t")
 
     run_type = str(config.get("run_type") or "bash")
-    if run_type == "up":
+    if run_type == "up" or _catmux_runs_headless(config):
         args.append("-d")
     if run_type in {"bash", "catmux", "command", "up"}:
         return args
@@ -166,6 +176,8 @@ def _run_command(config: Mapping[str, object]) -> list[str]:
             "--session_name",
             _container_name(config),
         ]
+        if _catmux_runs_headless(config):
+            catmux_command.append("--detach")
         catmux_params = config.get("catmux_params")
         if isinstance(catmux_params, Mapping) and catmux_params:
             params = ",".join(f"{key}={value}" for key, value in catmux_params.items())
