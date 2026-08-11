@@ -21,27 +21,41 @@ repos:
         args: ["--fix"]
       - id: ruff-format
 
-  # actionlint lints GitHub Actions workflows. The docker hook bundles
+  # The three hooks below run linters as Docker images, and `rev:` pins the
+  # *hook definition*, not the linter. Upstream's `hadolint-docker` entry is
+  # `ghcr.io/hadolint/hadolint hadolint` — no tag, so `:latest`, so a linter
+  # release could and did turn every open PR red without a commit here
+  # (DL3064, 2026-08-07), which blocked the v0.1.4 release. Each entry is
+  # therefore overridden with `name:tag@sha256:...`: the tag says which version
+  # to a reader, the digest is what actually runs, and bumping either is a
+  # commit. tests/contract/test_tooling_versions.py refuses a Docker-based hook
+  # without a digest, so this cannot silently come back.
+
+  # actionlint lints GitHub Actions workflows. The docker image bundles
   # shellcheck/pyflakes, matching the workflow-lint CI job, and needs no local
-  # Go or binary install. Keep the rev in sync with the pinned CI version.
+  # Go or binary install. Keep the tag in sync with the pinned CI version.
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.12
     hooks:
       - id: actionlint-docker
+        entry: docker.io/rhysd/actionlint:1.7.12@sha256:9d36088643581e728c969f35141f88139fec77280b2be23c1f66f8e40e1025e7
 
-  # hadolint lints the packaged Dockerfile. The docker hook needs no local
-  # install; intentional rule ignores live in .hadolint.yaml with reasons. The
-  # build-lint CI job runs this same hook, so the pinned rev is the version.
+  # hadolint lints the packaged Dockerfile. Intentional rule ignores live in
+  # .hadolint.yaml with reasons. The build-lint CI job runs this same hook.
+  # The trailing `hadolint` is the command inside the image, as upstream's
+  # entry has it.
   - repo: https://github.com/hadolint/hadolint
     rev: v2.12.0
     hooks:
       - id: hadolint-docker
+        entry: ghcr.io/hadolint/hadolint:v2.12.0@sha256:9259e253a4e299b50c92006149dd3a171c7ea3c5bd36f060022b5d2c1ff0fbbe hadolint
         files: ^src/ros2docker/resources/build/Dockerfile\.generic$
 
   # shellcheck lints the packaged entrypoint (and any other shipped shell). The
-  # docker hook needs no local install; the build-lint CI job runs it too.
+  # build-lint CI job runs it too.
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.10.0
     hooks:
       - id: shellcheck
+        entry: docker.io/koalaman/shellcheck:v0.10.0@sha256:0fa384f2a6171aef8aab2999a531c8c8158727d54a8f20157a5c3c51a734d6b2
         files: ^src/ros2docker/resources/build/.*\.sh$
