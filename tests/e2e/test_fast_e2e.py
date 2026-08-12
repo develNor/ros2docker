@@ -289,7 +289,11 @@ PY
     output = result.stdout + result.stderr
 
     assert "E2E_STD:std-ok" in result.stdout
-    assert "+ colcon build" in output
+    # `python3 -m colcon`, not bare `colcon`: running it as a module is what
+    # puts the venv interpreter into the generated console scripts (#174), so
+    # the prefix is part of the contract here rather than incidental spelling.
+    # Anchoring on it also means reverting that fix fails this test too.
+    assert "+ python3 -m colcon build" in output
     assert "--symlink-install" not in output
     assert "--no-warn-unused-cli" not in output
 
