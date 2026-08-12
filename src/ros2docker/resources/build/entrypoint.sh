@@ -60,7 +60,16 @@ if [ -d "/ws/ros2src" ]; then
         if [[ "${ROS2WS_SUPPRESS_UNUSED_CMAKE_WARNINGS:-1}" == "1" ]]; then
             colcon_args+=(--cmake-args --no-warn-unused-cli)
         fi
-        colcon build "${colcon_args[@]}"
+        # `python3 -m colcon`, not `colcon`: the executable on PATH is the apt
+        # one from the ROS base image, whose own shebang pins it to
+        # /usr/bin/python3 no matter where PATH points. setuptools then writes
+        # that interpreter into every generated console script, and `ros2 run`
+        # execs the script — so a node could not import anything from
+        # PIP_PACKAGES, which is installed into the venv. Running colcon as a
+        # module uses the venv python (first on PATH), which finds the
+        # apt-installed colcon through --system-site-packages and stamps the
+        # venv interpreter into the scripts it generates.
+        python3 -m colcon build "${colcon_args[@]}"
         popd >/dev/null
     else
         echo "Skipping building ROS 2 workspace."
