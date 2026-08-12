@@ -337,6 +337,58 @@ echo E2E_BASHRC_OK
         docker_harness.docker("stop", container, timeout=30, check=False)
 
 
+def test_workspace_node_can_import_a_pip_packages_dependency(
+    docker_harness,
+    shared_image: str,
+    tmp_path: Path,
+) -> None:
+    """A module declared in PIP_PACKAGES must be importable from a node.
+
+    It was not. `colcon` on PATH is the apt executable from the ROS base image,
+    and its shebang pins it to /usr/bin/python3 whatever PATH says; setuptools
+    then stamps that interpreter into every console script it generates, and
+    `ros2 run` execs the script. So the node ran outside the venv that
+    PIP_PACKAGES installs into, and every such dependency was unreachable —
+    silently, because the base image happened to ship the same modules
+    system-wide. rosotacom hit it as `ModuleNotFoundError: No module named
+    'lz4'` on an image whose build log said lz4 was already installed.
+
+    Asserting the import rather than the shebang: the shebang is today's
+    mechanism, the import is the promise.
+    """
+    project = copy_fixture_tree("workspaces/pipdep", tmp_path)
+    container = docker_harness.container_name("pipdep_workspace")
+    config = {
+        "container_name": container,
+        "image_name": shared_image,
+        "mount_ws": True,
+        "run_type": "up",
+        "run_args": ["-e", "BUILD_ROS2WS=1"],
+    }
+    config_path = write_config(project / "ros2docker.json", config)
+
+    docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=420)
+    try:
+        _wait_for_container_file(docker_harness, container, "/ros2ws/install/setup.bash", timeout=120)
+        exec_result = docker_harness.cli(
+            "exec",
+            "-f",
+            str(config_path),
+            "--",
+            "bash",
+            "-ic",
+            "ros2 run e2e_pipdep_pkg pipdep_probe",
+            timeout=120,
+        )
+        assert "E2E_PIPDEP:rich=" in exec_result.stdout, exec_result.stdout
+        assert "/opt/ros_venv/" in exec_result.stdout, (
+            "the node imported `rich` from outside the venv, so the guarantee is "
+            f"accidental rather than real:\n{exec_result.stdout}"
+        )
+    finally:
+        docker_harness.docker("stop", container, timeout=30, check=False)
+
+
 def test_workspace_custom_msgs_uses_baked_message_package(
     docker_harness,
     shared_image: str,
