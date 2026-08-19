@@ -89,13 +89,13 @@ trusted inputs.
 
 `build_args`: Docker build arguments passed as `--build-arg` values.
 `Dockerfile.generic` gates its optional add-ons behind `INSTALL_ZENOH`,
-`INSTALL_MCAP`, and `INSTALL_NOVATEL` flags (set by the matching profiles) and
-pins external source and binary inputs with build args such as
-`NOVATEL_OEM7_REF`, `ZENOH_SHA256`, `ZENOH_ROS2DDS_SHA256`, and
-`MCAP_CLI_SHA256`; only override those pins as an intentional maintenance
-change. The `APT_PACKAGES` and `PIP_PACKAGES` values are unioned across profiles
-and the config file rather than replaced, so a config can extend a profile's
-package list.
+`INSTALL_MCAP`, `INSTALL_NOVATEL`, and `INSTALL_DOMAIN_BRIDGE` flags (set by the
+matching profiles) and pins external source and binary inputs with build args
+such as `NOVATEL_OEM7_REF`, `DOMAIN_BRIDGE_REF`, `ZENOH_SHA256`,
+`ZENOH_ROS2DDS_SHA256`, and `MCAP_CLI_SHA256`; only override those pins as an
+intentional maintenance change. The `APT_PACKAGES` and `PIP_PACKAGES` values
+are unioned across profiles and the config file rather than replaced, so a
+config can extend a profile's package list.
 
 `bake_ros_packages`: ROS package directories copied into the temporary Docker
 build context. Relative paths resolve from the config file directory.
@@ -127,6 +127,10 @@ image, so they compose:
   the Cyclone/Zenoh RMW apt packages.
 - `mcap`: the `mcap` CLI (`INSTALL_MCAP`).
 - `novatel`: `novatel_oem7_msgs` built from a pinned commit (`INSTALL_NOVATEL`).
+- `domain-bridge`: `domain_bridge` built from a pinned commit with a packaged,
+  pinned Lyrical compatibility patch (`INSTALL_DOMAIN_BRIDGE`). This fallback is
+  Lyrical-only and should be replaced by `ros-lyrical-domain-bridge` once that
+  binary package is released.
 
 `project-develnor` is a convenience profile that reproduces the historical full
 image (all add-ons enabled, Cyclone DDS default RMW) on `Dockerfile.generic`.

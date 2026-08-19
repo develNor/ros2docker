@@ -1,0 +1,5 @@
+{
+  "build_args": {
+    "INSTALL_DOMAIN_BRIDGE": "1"
+  }
+}

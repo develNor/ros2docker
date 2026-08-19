@@ -1,0 +1,122 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1686882..47b1788 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -27 +27 @@ find_package(yaml_cpp_vendor REQUIRED)
+-find_package(zstd_vendor REQUIRED)
++find_package(zstd_cmake_module REQUIRED)
+@@ -51 +51 @@ if(CMAKE_COMPILER_IS_GNUCXX)
+-  target_link_libraries(${PROJECT_NAME}_lib stdc++fs)
++  target_link_libraries(${PROJECT_NAME}_lib PRIVATE stdc++fs)
+@@ -54,8 +54,9 @@ endif()
+-ament_target_dependencies(${PROJECT_NAME}_lib
+-  rclcpp
+-  rclcpp_components
+-  rcutils
+-  rosbag2_cpp
+-  rosidl_typesupport_cpp
+-  yaml_cpp_vendor
+-  zstd
++target_link_libraries(${PROJECT_NAME}_lib PUBLIC
++  rclcpp::rclcpp
++  rclcpp_components::component
++  rclcpp_components::component_manager
++  rcutils::rcutils
++  rosbag2_cpp::rosbag2_cpp
++  rosidl_typesupport_cpp::rosidl_typesupport_cpp
++  yaml-cpp::yaml-cpp
++  zstd::zstd
+@@ -66 +67 @@ rosidl_get_typesupport_target(cpp_typesupport_target
+-target_link_libraries(${PROJECT_NAME}_lib "${cpp_typesupport_target}")
++target_link_libraries(${PROJECT_NAME}_lib PRIVATE "${cpp_typesupport_target}")
+@@ -74,2 +75,3 @@ add_executable(${PROJECT_NAME}_exec
+-ament_target_dependencies(${PROJECT_NAME}_exec
+-  "rclcpp_components")
++target_link_libraries(${PROJECT_NAME}_exec PRIVATE
++  rclcpp_components::component
++)
+@@ -79 +81 @@ set_target_properties(${PROJECT_NAME}_exec PROPERTIES OUTPUT_NAME ${PROJECT_NAME
+-target_link_libraries(${PROJECT_NAME}_exec
++target_link_libraries(${PROJECT_NAME}_exec PRIVATE
+@@ -137 +139 @@ ament_export_dependencies(
+-  zstd_vendor
++  zstd_cmake_module
+diff --git a/package.xml b/package.xml
+index 61921e5..d614cd8 100644
+--- a/package.xml
++++ b/package.xml
+@@ -19 +19 @@
+-  <depend>zstd_vendor</depend>
++  <depend>zstd_cmake_module</depend>
+diff --git a/include/domain_bridge/domain_bridge.hpp b/include/domain_bridge/domain_bridge.hpp
+index ab528d5..e1e1168 100644
+--- a/include/domain_bridge/domain_bridge.hpp
++++ b/include/domain_bridge/domain_bridge.hpp
+@@ -110,0 +111,10 @@ public:
++  /// Create one executor for each ROS context used by the bridge.
++  /**
++   * Modern rclcpp executors only accept nodes which use the executor's context. Since a domain
++   * bridge creates one context per domain, callers must spin the returned executors concurrently.
++   *
++   * \return Executors containing all nodes associated with this bridge.
++   */
++  DOMAIN_BRIDGE_PUBLIC
++  std::vector<std::shared_ptr<rclcpp::Executor>> create_executors();
++
+diff --git a/src/domain_bridge.cpp b/src/domain_bridge.cpp
+index 43ab9a2..dcc7001 100644
+--- a/src/domain_bridge.cpp
++++ b/src/domain_bridge.cpp
+@@ -15,0 +16,2 @@
++#include <thread>
++#include <vector>
+@@ -35 +37,3 @@ int main(int argc, char ** argv)
+-  // Add component manager node and domain bridge to single-threaded executor
++  // A modern rclcpp executor can only spin nodes from one context. The bridge uses one context
++  // per domain, so spin each bridge node in its own executor and keep the component manager on
++  // the default context in the foreground.
+@@ -39 +43,7 @@ int main(int argc, char ** argv)
+-  domain_bridge.add_to_executor(*executor);
++  auto bridge_executors = domain_bridge.create_executors();
++  std::vector<std::thread> bridge_threads;
++  bridge_threads.reserve(bridge_executors.size());
++  for (const auto & bridge_executor : bridge_executors) {
++    bridge_threads.emplace_back([bridge_executor]() {bridge_executor->spin();});
++  }
++
+@@ -42,0 +53,7 @@ int main(int argc, char ** argv)
++  for (const auto & bridge_executor : bridge_executors) {
++    bridge_executor->cancel();
++  }
++  for (auto & bridge_thread : bridge_threads) {
++    bridge_thread.join();
++  }
++
+diff --git a/src/domain_bridge/domain_bridge.cpp b/src/domain_bridge/domain_bridge.cpp
+index bb16831..5c7fc45 100644
+--- a/src/domain_bridge/domain_bridge.cpp
++++ b/src/domain_bridge/domain_bridge.cpp
+@@ -32,0 +33 @@
++#include "rclcpp/executors/single_threaded_executor.hpp"
+@@ -540,0 +542,15 @@ public:
++  std::vector<std::shared_ptr<rclcpp::Executor>> create_executors()
++  {
++    std::vector<std::shared_ptr<rclcpp::Executor>> executors;
++    executors.reserve(node_map_.size());
++    for (const auto & domain_id_node_pair : node_map_) {
++      const auto & node = domain_id_node_pair.second;
++      rclcpp::ExecutorOptions options;
++      options.context = node->get_node_base_interface()->get_context();
++      auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>(options);
++      executor->add_node(node);
++      executors.push_back(std::move(executor));
++    }
++    return executors;
++  }
++
+@@ -645,0 +662,5 @@ void DomainBridge::add_to_executor(rclcpp::Executor & executor)
++std::vector<std::shared_ptr<rclcpp::Executor>> DomainBridge::create_executors()
++{
++  return impl_->create_executors();
++}
++

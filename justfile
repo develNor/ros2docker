@@ -84,6 +84,7 @@ _package-smoke:
 	expected = (
 	    "py.typed",
 	    "resources/build/Dockerfile.generic",
+	    "resources/build/domain_bridge-lyrical.patch",
 	    "resources/build/entrypoint.sh",
 	    "resources/examples/ros2docker.json",
 	    "resources/schema/ros2docker.schema.json",
@@ -93,6 +94,7 @@ _package-smoke:
 	    "resources/profiles/zenoh.json",
 	    "resources/profiles/mcap.json",
 	    "resources/profiles/novatel.json",
+	    "resources/profiles/domain-bridge.json",
 	    "resources/profiles/project-develnor.json",
 	)
 	missing = [

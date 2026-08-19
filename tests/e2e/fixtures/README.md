@@ -14,6 +14,7 @@ projects that consume ros2docker.
 - `workspaces/missing_dep`: dependency-check failure fixture with a missing
   rosdep key.
 - `bake/e2e_msgs`: custom message package used by `bake_ros_packages`.
+- `domain_bridge.yaml`: two-domain `std_msgs/String` bridge used by the Lyrical source-build E2E.
 
 The tests also cover minimal CLI commands, detached `up` lifecycle, GUI/SSH
 forwarding contracts, native two-container chatter, rosbag record/play,

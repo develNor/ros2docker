@@ -11,7 +11,16 @@ PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 DOCKERFILE_GENERIC_PATH = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "build" / "Dockerfile.generic"
 ENTRYPOINT_PATH = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "build" / "entrypoint.sh"
 
-PROFILE_NAMES = ("minimal", "desktop", "foxglove", "zenoh", "mcap", "novatel", "project-develnor")
+PROFILE_NAMES = (
+    "minimal",
+    "desktop",
+    "foxglove",
+    "zenoh",
+    "mcap",
+    "novatel",
+    "domain-bridge",
+    "project-develnor",
+)
 
 
 def test_packaged_resources_include_typed_marker_build_schema_example_and_bake_context(tmp_path: Path) -> None:
@@ -20,6 +29,7 @@ def test_packaged_resources_include_typed_marker_build_schema_example_and_bake_c
     package_resources = resources.files("ros2docker").joinpath("resources")
 
     assert package_resources.joinpath("build", "Dockerfile.generic").is_file()
+    assert package_resources.joinpath("build", "domain_bridge-lyrical.patch").is_file()
     assert package_resources.joinpath("build", "entrypoint.sh").is_file()
     assert package_resources.joinpath("examples", "ros2docker.json").is_file()
     assert package_resources.joinpath("schema", "ros2docker.schema.json").is_file()
@@ -53,7 +63,7 @@ def test_generic_dockerfile_gates_optional_addons_behind_install_flags() -> None
     dockerfile = DOCKERFILE_GENERIC_PATH.read_text(encoding="utf-8")
     active_lines = "\n".join(line for line in dockerfile.splitlines() if not line.lstrip().startswith("#"))
 
-    for flag in ("INSTALL_ZENOH", "INSTALL_MCAP", "INSTALL_NOVATEL"):
+    for flag in ("INSTALL_ZENOH", "INSTALL_MCAP", "INSTALL_NOVATEL", "INSTALL_DOMAIN_BRIDGE"):
         assert re.search(rf"^ARG {flag}=0$", dockerfile, flags=re.MULTILINE), flag
         assert f'if [ "${{{flag}}}" = "1" ]' in active_lines, flag
 
@@ -82,9 +92,15 @@ def test_generic_dockerfile_git_sources_are_pinned_to_commit_refs() -> None:
     active_lines = "\n".join(line for line in dockerfile.splitlines() if not line.lstrip().startswith("#"))
 
     assert re.search(r"^ARG NOVATEL_OEM7_REF=[0-9a-f]{40}$", dockerfile, flags=re.MULTILINE)
+    assert re.search(r"^ARG DOMAIN_BRIDGE_REF=[0-9a-f]{40}$", dockerfile, flags=re.MULTILINE)
     assert "--branch kilted" not in active_lines
     assert 'git fetch --depth 1 origin "${NOVATEL_OEM7_REF}"' in active_lines
+    assert 'git fetch --depth 1 origin "${DOMAIN_BRIDGE_REF}"' in active_lines
     assert "git checkout --detach FETCH_HEAD" in active_lines
+    assert (
+        "git -C ${CUSTOM_WS}/src/domain_bridge apply --unidiff-zero --check /tmp/domain_bridge-lyrical.patch"
+        in active_lines
+    )
 
 
 def test_entrypoint_passes_bash_syntax_check() -> None:
