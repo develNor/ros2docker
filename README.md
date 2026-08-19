@@ -163,8 +163,9 @@ Two kinds of profiles ship with `ros2docker`:
   `Dockerfile.generic` feature flags and adding apt/pip packages: `foxglove`
   (Foxglove bridge/messages, transports, ament linters), `zenoh` (Zenoh router +
   `zenoh-plugin-ros2dds` binaries and the Cyclone/Zenoh RMW packages), `mcap`
-  (the `mcap` CLI), and `novatel` (`novatel_oem7_msgs` built from a pinned
-  commit).
+  (the `mcap` CLI), `novatel` (`novatel_oem7_msgs` built from a pinned commit),
+  and `domain-bridge` (`domain_bridge` built from a pinned commit with a pinned
+  Lyrical compatibility patch).
 
 `profile` accepts a single name or an ordered list of add-ons applied left to
 right. `build_args.APT_PACKAGES` and `build_args.PIP_PACKAGES` from profiles and
@@ -190,7 +191,10 @@ ros2docker init --profile desktop
 ros2docker init --profile minimal --ros-distro jazzy
 ```
 
-The add-on apt package names currently target the `lyrical` distro.
+The add-on apt package names currently target the `lyrical` distro. The
+`domain-bridge` source profile is Lyrical-only and fails closed on another ROS
+distro. It is a temporary fallback while no `ros-lyrical-domain-bridge` binary
+package is available; prefer the official package once it is released.
 
 ## Security / Trust Boundary
 

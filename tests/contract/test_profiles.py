@@ -22,7 +22,7 @@ DOCKERFILE_GENERIC_PATH = PACKAGE_ROOT / "src" / "ros2docker" / "resources" / "b
 ARG_RE = re.compile(r"^\s*ARG\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)", re.MULTILINE)
 
 BASE_PROFILES = ("minimal", "desktop")
-ADDON_PROFILES = ("foxglove", "zenoh", "mcap", "novatel")
+ADDON_PROFILES = ("foxglove", "zenoh", "mcap", "novatel", "domain-bridge")
 ALL_PROFILES = (*BASE_PROFILES, *ADDON_PROFILES, "project-develnor")
 
 PROFILE_PATHS = sorted(PROFILES_DIR.glob("*.json"))
@@ -68,6 +68,10 @@ def test_mcap_profile_enables_mcap_flag() -> None:
 
 def test_novatel_profile_enables_novatel_flag() -> None:
     assert load_profile("novatel")["build_args"]["INSTALL_NOVATEL"] == "1"
+
+
+def test_domain_bridge_profile_enables_source_build_flag() -> None:
+    assert load_profile("domain-bridge")["build_args"]["INSTALL_DOMAIN_BRIDGE"] == "1"
 
 
 def test_project_develnor_reproduces_the_full_historical_image() -> None:

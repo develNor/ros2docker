@@ -112,6 +112,34 @@ def test_minimal_profile_ros_base_builds_and_runs(docker_harness, tmp_path: Path
     assert "E2E_MINIMAL_OK" in result.stdout
 
 
+def test_domain_bridge_profile_builds_and_runs_on_lyrical(docker_harness, tmp_path: Path) -> None:
+    image = docker_harness.image_tag("domain-bridge-profile")
+    container = docker_harness.container_name("domain_bridge_profile")
+    config_path = write_config(
+        tmp_path / "domain-bridge.ros2docker.json",
+        {
+            "profile": ["minimal", "domain-bridge"],
+            "container_name": container,
+            "image_name": image,
+            "run_type": "command",
+            "command": [
+                "bash",
+                "-lc",
+                'test "$ROS_DISTRO" = lyrical && '
+                "ros2 pkg prefix domain_bridge >/tmp/domain_bridge_prefix && "
+                "(ros2 run domain_bridge domain_bridge --help >/tmp/domain_bridge_help 2>&1 || "
+                'test "$?" = 1) && '
+                "grep -q 'Usage:' /tmp/domain_bridge_help && echo E2E_DOMAIN_BRIDGE_OK",
+            ],
+        },
+    )
+
+    docker_harness.cli("build", "-f", str(config_path), timeout=2400)
+    result = docker_harness.cli("run", "--no-build", "-f", str(config_path), timeout=180)
+
+    assert "E2E_DOMAIN_BRIDGE_OK" in result.stdout
+
+
 @pytest.mark.parametrize(
     ("ros_distro", "base_image"),
     [

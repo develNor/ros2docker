@@ -1,0 +1,50 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1686882..47b1788 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -27 +27 @@ find_package(yaml_cpp_vendor REQUIRED)
+-find_package(zstd_vendor REQUIRED)
++find_package(zstd_cmake_module REQUIRED)
+@@ -51 +51 @@ if(CMAKE_COMPILER_IS_GNUCXX)
+-  target_link_libraries(${PROJECT_NAME}_lib stdc++fs)
++  target_link_libraries(${PROJECT_NAME}_lib PRIVATE stdc++fs)
+@@ -54,8 +54,9 @@ endif()
+-ament_target_dependencies(${PROJECT_NAME}_lib
+-  rclcpp
+-  rclcpp_components
+-  rcutils
+-  rosbag2_cpp
+-  rosidl_typesupport_cpp
+-  yaml_cpp_vendor
+-  zstd
++target_link_libraries(${PROJECT_NAME}_lib PUBLIC
++  rclcpp::rclcpp
++  rclcpp_components::component
++  rclcpp_components::component_manager
++  rcutils::rcutils
++  rosbag2_cpp::rosbag2_cpp
++  rosidl_typesupport_cpp::rosidl_typesupport_cpp
++  yaml-cpp::yaml-cpp
++  zstd::zstd
+@@ -66 +67 @@ rosidl_get_typesupport_target(cpp_typesupport_target
+-target_link_libraries(${PROJECT_NAME}_lib "${cpp_typesupport_target}")
++target_link_libraries(${PROJECT_NAME}_lib PRIVATE "${cpp_typesupport_target}")
+@@ -74,2 +75,3 @@ add_executable(${PROJECT_NAME}_exec
+-ament_target_dependencies(${PROJECT_NAME}_exec
+-  "rclcpp_components")
++target_link_libraries(${PROJECT_NAME}_exec PRIVATE
++  rclcpp_components::component
++)
+@@ -79 +81 @@ set_target_properties(${PROJECT_NAME}_exec PROPERTIES OUTPUT_NAME ${PROJECT_NAME
+-target_link_libraries(${PROJECT_NAME}_exec
++target_link_libraries(${PROJECT_NAME}_exec PRIVATE
+@@ -137 +139 @@ ament_export_dependencies(
+-  zstd_vendor
++  zstd_cmake_module
+diff --git a/package.xml b/package.xml
+index 61921e5..d614cd8 100644
+--- a/package.xml
++++ b/package.xml
+@@ -19 +19 @@
+-  <depend>zstd_vendor</depend>
++  <depend>zstd_cmake_module</depend>
