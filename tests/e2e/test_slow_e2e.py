@@ -115,6 +115,38 @@ def test_minimal_profile_ros_base_builds_and_runs(docker_harness, tmp_path: Path
 def test_domain_bridge_profile_builds_and_runs_on_lyrical(docker_harness, tmp_path: Path) -> None:
     image = docker_harness.image_tag("domain-bridge-profile")
     container = docker_harness.container_name("domain_bridge_profile")
+    bridge_config = FIXTURES_ROOT / "domain_bridge.yaml"
+    command = r"""
+set -euo pipefail
+bridge_pid=
+publisher_pid=
+cleanup() {
+  if [ -n "$publisher_pid" ]; then
+    kill "$publisher_pid" >/dev/null 2>&1 || true
+    wait "$publisher_pid" >/dev/null 2>&1 || true
+  fi
+  if [ -n "$bridge_pid" ]; then
+    kill -INT "$bridge_pid" >/dev/null 2>&1 || true
+    wait "$bridge_pid" >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup EXIT
+
+test "$ROS_DISTRO" = lyrical
+ros2 pkg prefix domain_bridge >/tmp/domain_bridge_prefix
+ros2 run domain_bridge domain_bridge /tmp/domain_bridge.yaml >/tmp/domain_bridge.log 2>&1 &
+bridge_pid=$!
+sleep 3
+kill -0 "$bridge_pid"
+
+ROS_DOMAIN_ID=101 ros2 topic pub -r 5 /ros2docker_e2e_bridge std_msgs/msg/String \
+  "{data: bridge-ok}" >/tmp/domain_bridge_publisher.log 2>&1 &
+publisher_pid=$!
+ROS_DOMAIN_ID=102 timeout 30 ros2 topic echo --once /ros2docker_e2e_bridge \
+  std_msgs/msg/String >/tmp/domain_bridge_echo.log 2>&1
+grep -q 'bridge-ok' /tmp/domain_bridge_echo.log
+echo E2E_DOMAIN_BRIDGE_OK
+"""
     config_path = write_config(
         tmp_path / "domain-bridge.ros2docker.json",
         {
@@ -122,15 +154,8 @@ def test_domain_bridge_profile_builds_and_runs_on_lyrical(docker_harness, tmp_pa
             "container_name": container,
             "image_name": image,
             "run_type": "command",
-            "command": [
-                "bash",
-                "-lc",
-                'test "$ROS_DISTRO" = lyrical && '
-                "ros2 pkg prefix domain_bridge >/tmp/domain_bridge_prefix && "
-                "(ros2 run domain_bridge domain_bridge --help >/tmp/domain_bridge_help 2>&1 || "
-                'test "$?" = 1) && '
-                "grep -q 'Usage:' /tmp/domain_bridge_help && echo E2E_DOMAIN_BRIDGE_OK",
-            ],
+            "command": ["bash", "-lc", command],
+            "extra_run_args": ["-v", f"{bridge_config}:/tmp/domain_bridge.yaml:ro"],
         },
     )
 

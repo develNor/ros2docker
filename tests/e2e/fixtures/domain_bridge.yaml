@@ -1,0 +1,6 @@
+name: ros2docker_e2e_domain_bridge
+topics:
+  /ros2docker_e2e_bridge:
+    type: std_msgs/msg/String
+    from_domain: 101
+    to_domain: 102
